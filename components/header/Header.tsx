@@ -7,7 +7,7 @@ export const Header = () => {
                <img src="/logo.png" alt="Logo" className="w-56 h-auto"/>
             </a>
             <div className="flex items-center lg:order-2">
-                <a href="#" className="text-white p-2 mr-5">Log in</a>
+                <a href="/login" className="text-white p-2 mr-5">Log in</a>
                 <a href="#" className="text-gray-900 bg-white rounded-lg p-2">Sign up</a>
 
 
