@@ -47,6 +47,7 @@ export const BannerSearch = () => {
                     </div>
                 </div>
             </div>
+            <div></div>
         </div>
     );
 };
