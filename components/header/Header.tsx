@@ -43,8 +43,8 @@ export const Header = () => {
 
           {/* Botones login/signup */}
           <div className="hidden lg:flex items-center lg:order-2">
-            <a href="/login" className="text-white p-2 mr-5">Log in</a>
-            <a href="#" className="text-gray-900 bg-white rounded-lg p-2">Sign up</a>
+            <a href="/login" className="text-white p-2 mr-5">Iniciar sesión</a>
+            <a href="#" className="text-white bg-[#015C85] rounded-lg p-2">Registrarse</a>
           </div>
 
           {/* Vista móvil */}
@@ -106,15 +106,15 @@ export const Header = () => {
                 href="/login"
                 className="block py-2 px-3 text-white rounded hover:bg-gray-800"
               >
-                Log in
+                Iniciar sesión
               </a>
             </li>
             <li>
               <a
                 href="#"
-                className="block py-2 px-3 rounded bg-white text-black hover:bg-gray-200"
+                className="block py-2 px-3 rounded bg-[#015C85] text-white"
               >
-                Sign up
+                Registrarse
               </a>
             </li>
           </ul>
