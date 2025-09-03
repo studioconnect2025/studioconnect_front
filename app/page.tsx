@@ -30,7 +30,7 @@ export default function Home() {
         <BannerSearch />
       </div>
 
-      <div className="h-10"></div>
+      <div className="h-10">Otra sección</div>
     </div>
   );
 }
