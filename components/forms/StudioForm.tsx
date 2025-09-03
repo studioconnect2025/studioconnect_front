@@ -4,15 +4,10 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { ReactNode } from "react";
 
-// 🎨 Colores de marca (ajustado a Figma)
 const brand = {
   primary: "#015E88",
   light: "#F5F7FA",
 };
-
-// ----------------------
-// Componentes auxiliares
-// ----------------------
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return (
@@ -88,9 +83,9 @@ const Checkbox = ({
   </label>
 );
 
-// ----------------------
-// Schema de validación
-// ----------------------
+
+// VALIDACION CON YUP!
+
 
 const StudioSchema = Yup.object().shape({
   ownerName: Yup.string().required("Requerido"),
@@ -109,9 +104,8 @@ const StudioSchema = Yup.object().shape({
   terms: Yup.boolean().oneOf([true], "Debes aceptar los términos"),
 });
 
-// ----------------------
-// Form principal
-// ----------------------
+
+// Formulario con FOMIK
 
 export default function StudioConnectStudioForm() {
   return (
@@ -151,7 +145,6 @@ export default function StudioConnectStudioForm() {
         >
           {({ setFieldValue }) => (
             <Form className="space-y-6">
-              {/* Info propietario */}
               <SectionTitle>Información del Propietario</SectionTitle>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -175,12 +168,11 @@ export default function StudioConnectStudioForm() {
               </div>
               <div>
                 <Label htmlFor="phone" required>
-                  Teléfono
+                  Teléfono 
                 </Label>
                 <Input name="phone" placeholder="+54 11 1234 5678" />
               </div>
 
-              {/* Info estudio */}
               <SectionTitle>Información del Estudio</SectionTitle>
               <div>
                 <Label htmlFor="studioName" required>
@@ -201,7 +193,7 @@ export default function StudioConnectStudioForm() {
                 <Input name="city" placeholder="Buenos Aires" />
               </div>
 
-              {/* Descripción */}
+              {/* Agregue cuadro de Descripción */}
               <div>
                 <Label htmlFor="description" required>
                   Descripción del estudio
@@ -217,41 +209,39 @@ export default function StudioConnectStudioForm() {
                 <HelpError name="description" />
               </div>
 
-              {/* Tarifas */}
+              {/* Agregue Tarifas */}
               <SectionTitle>Tarifas</SectionTitle>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="tarifaHora" required>
-                    Tarifa por hora ($)
+                    Tarifa por hora 💲
                   </Label>
                   <Input name="tarifaHora" type="number" placeholder="0" />
                 </div>
                 <div>
                   <Label htmlFor="tarifaDia" required>
-                    Tarifa diaria ($)
+                    Tarifa diaria 💲
                   </Label>
                   <Input name="tarifaDia" type="number" placeholder="0" />
                 </div>
               </div>
 
-              {/* Horarios */}
               <SectionTitle>Disponibilidad</SectionTitle>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="openHour" required>
-                    Hora apertura
+                    Hora apertura 🕒
                   </Label>
                   <Input name="openHour" type="time" />
                 </div>
                 <div>
                   <Label htmlFor="closeHour" required>
-                    Hora cierre
+                    Hora cierre 🕒
                   </Label>
                   <Input name="closeHour" type="time" />
                 </div>
               </div>
 
-              {/* Servicios */}
               <SectionTitle>Servicios</SectionTitle>
               <div className="flex flex-wrap gap-4">
                 <Checkbox name="services" value="sala ensayo" label="Sala de ensayo" />
@@ -261,8 +251,7 @@ export default function StudioConnectStudioForm() {
                 <Checkbox name="services" value="estacionamiento" label="Estacionamiento" />
               </div>
 
-              {/* Equipamiento */}
-              <SectionTitle>Equipamiento</SectionTitle>
+               <SectionTitle>Equipamiento</SectionTitle>
               <div className="flex flex-wrap gap-4">
                 <Checkbox name="equipment" value="bateria" label="Batería" />
                 <Checkbox name="equipment" value="guitarra" label="Guitarra" />
@@ -271,7 +260,7 @@ export default function StudioConnectStudioForm() {
                 <Checkbox name="equipment" value="consola" label="Consola" />
               </div>
 
-              {/* Registro comercial */}
+              {/* Agregue el cuadro upload p/ Registro comercial */}
               <SectionTitle>Registro Comercial</SectionTitle>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-50">
                 <input
@@ -290,7 +279,6 @@ export default function StudioConnectStudioForm() {
                 <HelpError name="registroComercial" />
               </div>
 
-              {/* Términos */}
               <div className="flex items-center gap-2">
                 <Field type="checkbox" name="terms" className="h-4 w-4" />
                 <span className="text-sm text-gray-700">
@@ -299,14 +287,13 @@ export default function StudioConnectStudioForm() {
               </div>
               <HelpError name="terms" />
 
-              {/* Submit */}
               <div className="pt-4">
                 <button
                   type="submit"
                   className="w-full py-2 px-4 rounded-lg text-white font-medium shadow-md hover:opacity-90"
                   style={{ backgroundColor: brand.primary }}
                 >
-                  Registrar estudio
+                  Registrar estudio/sala
                 </button>
               </div>
             </Form>
