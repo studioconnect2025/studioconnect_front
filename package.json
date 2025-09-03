@@ -8,8 +8,12 @@
     "start": "next start"
   },
   "dependencies": {
+
+    "formik": "^2.4.6",
+
 <<<<<<< HEAD
     "leaflet": "^1.9.4",
+
 =======
     "formik": "^2.4.6",
 >>>>>>> 0bc6e8b (StudioForm page)
@@ -18,8 +22,12 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-icons": "^5.5.0",
+
+    "yup": "^1.7.0",
+
 <<<<<<< HEAD
     "react-leaflet": "^5.0.0"
+
 =======
     "yup": "^1.7.0"
 >>>>>>> 0bc6e8b (StudioForm page)

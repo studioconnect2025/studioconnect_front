@@ -1,7 +1,8 @@
+// app/page.tsx
 import { BannerImg } from "@/components/banners/BannerImg";
 import { BannerSearch } from "@/components/banners/BannerSearch";
 import { BannerText } from "@/components/banners/BannerText";
-import { UserLocationMap } from "@/components/LocationMap/UserLocationMap";
+import ClientUserLocationMap from "@/components/LocationMap/ClientUserLocationMap";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
         }}
       >
         <div className="flex flex-col md:flex-row w-full max-w-6xl justify-between items-center gap-8">
+          
           {/* Texto */}
           <div className="w-full md:w-1/2 flex items-center justify-center">
             <BannerText />
@@ -26,20 +28,19 @@ export default function Home() {
         </div>
       </div>
 
-    {/* Banner de búsqueda */}
-<div className="bg-gray-100 flex flex-col items-center p-4 sm:p-6">
-  <div className="w-full max-w-6xl">
-    <BannerSearch />
-  </div>
-</div>
+      {/* Banner de búsqueda */}
+      <div className="bg-gray-100 flex flex-col items-center p-4 sm:p-6">
+        <div className="w-full max-w-6xl">
+          <BannerSearch />
+        </div>
+      </div>
 
-{/* Mapa de ubicación del usuario */}
-<div className="bg-gray-100 flex flex-col items-center p-4 sm:p-6 -mt-6">
-  <div className="w-full max-w-6xl bg-white rounded-xl shadow-lg">
-    <UserLocationMap />
-  </div>
-</div>
-      
+      {/* Mapa de ubicación del usuario */}
+      <div className="bg-gray-100 flex flex-col items-center p-4 sm:p-6 -mt-6">
+        <div className="w-full max-w-6xl bg-white rounded-xl shadow-lg">
+          <ClientUserLocationMap />
+        </div>
+      </div>
     </div>
   );
 }
