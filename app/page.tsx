@@ -1,6 +1,7 @@
 import { BannerImg } from "@/components/banners/BannerImg";
 import { BannerSearch } from "@/components/banners/BannerSearch";
 import { BannerText } from "@/components/banners/BannerText";
+import { UserLocationMap } from "@/components/LocationMap/UserLocationMap";
 
 export default function Home() {
   return (
@@ -25,12 +26,20 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Banner de búsqueda */}
-      <div className="flex justify-center bg-gray-100 px-4 sm:px-6">
-        <BannerSearch />
-      </div>
+    {/* Banner de búsqueda */}
+<div className="bg-gray-100 flex flex-col items-center p-4 sm:p-6">
+  <div className="w-full max-w-6xl">
+    <BannerSearch />
+  </div>
+</div>
 
-      <div className="h-10">Otra sección </div>
+{/* Mapa de ubicación del usuario */}
+<div className="bg-gray-100 flex flex-col items-center p-4 sm:p-6 -mt-6">
+  <div className="w-full max-w-6xl bg-white rounded-xl shadow-lg">
+    <UserLocationMap />
+  </div>
+</div>
+      
     </div>
   );
 }
