@@ -12,6 +12,7 @@ export const Header = () => {
     <header>
       <nav className="bg-black border-gray-200 px-4 lg:px-6 py-6 dark:bg-black">
         <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
+          
           {/* Logo */}
           <a href="#" className="flex items-center">
             <img src="/logo.png" alt="Logo" className="w-56 h-auto" />
@@ -39,15 +40,14 @@ export const Header = () => {
               </li>
             </ul>
           </div>
+
+          {/* Botones login/signup */}
           <div className="hidden lg:flex items-center lg:order-2">
-            <a href="#" className="text-white p-2 mr-5">
-              Iniciar sesión
-            </a>
-            <a href="#" className="text-white bg-[#015C85] rounded-lg p-2">
-              Registrarse
-            </a>
+            <a href="/login" className="text-white p-2 mr-5">Iniciar sesión</a>
+            <a href="#" className="text-white bg-[#015C85] rounded-lg p-2">Registrarse</a>
           </div>
-          {/* Vista movil */}
+
+          {/* Vista móvil */}
           <div className="flex lg:hidden items-center">
             <button
               className="text-white p-2 focus:outline-none"
@@ -59,7 +59,7 @@ export const Header = () => {
         </div>
       </nav>
 
-      {/* Sidebar movil */}
+      {/* Sidebar móvil */}
       <div
         className={`fixed top-0 left-0 h-full w-full z-50 transition-opacity duration-300 ${
           isOpen ? "opacity-100 visible" : "opacity-0 invisible"
@@ -103,7 +103,7 @@ export const Header = () => {
             </li>
             <li>
               <a
-                href="#"
+                href="/login"
                 className="block py-2 px-3 text-white rounded hover:bg-gray-800"
               >
                 Iniciar sesión
@@ -112,7 +112,7 @@ export const Header = () => {
             <li>
               <a
                 href="#"
-                className="block py-2 px-3 rounded bg-white text-black hover:bg-gray-200"
+                className="block py-2 px-3 rounded bg-[#015C85] text-white"
               >
                 Registrarse
               </a>

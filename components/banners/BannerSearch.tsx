@@ -9,9 +9,7 @@ export const BannerSearch = () => {
       <h3 className="text-sm sm:text-base md:text-lg text-center mb-6 mt-2 sm:mt-4">
         Busca y filtra estudios por ubicación, equipamiento y disponibilidad.
       </h3>
-
       <div className="bg-white flex flex-col sm:flex-row flex-wrap justify-center items-start p-4 sm:p-6 mt-6 sm:mt-10 mb-10 rounded-md shadow-md gap-4 sm:gap-8">
-
         {/* Location */}
         <div className="flex flex-col w-full sm:w-62">
           <label htmlFor="location" className="mb-2 font-medium">Locación</label>
