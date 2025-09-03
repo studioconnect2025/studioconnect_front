@@ -24,3 +24,23 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+@layer base {
+  input::placeholder,
+  textarea::placeholder {
+    /* gray-400 de Tailwind */
+    color: #9ca3af;
+    opacity: 1;
+  }
+}
+
+/* Modo oscuro (ajustá si usan dark) */
+@media (prefers-color-scheme: dark) {
+  @layer base {
+    input::placeholder,
+    textarea::placeholder {
+      color: #9ca3af; /* o gray-500 si tu fondo es más claro */
+      opacity: 1;
+    }
+  }
+}
+
