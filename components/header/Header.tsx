@@ -1,6 +1,8 @@
 "use client"
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
+import Link from "next/link";
+
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -8,43 +10,45 @@ export const Header = () => {
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
 
+  
+
   return (
     <header>
       <nav className="bg-black border-gray-200 px-4 lg:px-6 py-6 dark:bg-black">
         <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
           
           {/* Logo */}
-          <a href="#" className="flex items-center">
+          <Link href="/" className="flex items-center">
             <img src="/logo.png" alt="Logo" className="w-56 h-auto" />
-          </a>
+          </Link>
 
           {/* Links vista normal */}
           <div className="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1" id="desktop-menu">
             <ul className="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
               <li>
-                <a
+                <Link
                   href="#"
                   className="block py-2 pr-4 pl-3 text-white rounded bg-primary-700 lg:bg-transparent lg:text-primary-700 lg:p-0 dark:text-white"
                   aria-current="page"
                 >
                   Únete como músico
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/StudioForm"
                   className="block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
                 >
                   Únete como anfitrión
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
 
           {/* Botones login/signup */}
           <div className="hidden lg:flex items-center lg:order-2">
-            <a href="/login" className="text-white p-2 mr-5">Iniciar sesión</a>
-            <a href="#" className="text-white bg-[#015C85] rounded-lg p-2">Registrarse</a>
+            <Link href="/login" className="text-white p-2 mr-5">Iniciar sesión</Link>
+            <Link href="#" className="text-white bg-[#015C85] rounded-lg p-2">Registrarse</Link>
           </div>
 
           {/* Vista móvil */}
@@ -85,37 +89,37 @@ export const Header = () => {
 
           {/* Links vista móvil */}
           <ul className="flex flex-col mt-6 space-y-4 p-4">
-            <li>
-              <a
-                href="#"
-                className="block py-2 px-3 text-white rounded hover:bg-gray-800"
-              >
-                Únete como anfitrión
-              </a>
-            </li>
-            <li>
-              <a
+              <li>
+              <Link
                 href="#"
                 className="block py-2 px-3 text-white rounded hover:bg-gray-800"
               >
                 Únete como músico
-              </a>
+              </Link>
             </li>
             <li>
-              <a
+              <Link
+                href="/StudioForm"
+                className="block py-2 px-3 text-white rounded hover:bg-gray-800"
+              >
+                Únete como anfitrión
+              </Link>
+            </li>
+            <li>
+              <Link
                 href="/login"
                 className="block py-2 px-3 text-white rounded hover:bg-gray-800"
               >
                 Iniciar sesión
-              </a>
+              </Link>
             </li>
             <li>
-              <a
+              <Link
                 href="#"
                 className="block py-2 px-3 rounded bg-[#015C85] text-white"
               >
                 Registrarse
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
