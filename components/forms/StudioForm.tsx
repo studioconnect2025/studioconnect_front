@@ -2,253 +2,153 @@
 
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { ReactNode } from "react";
+import Input from "@/components/ui/Input";
+import { useState } from "react";
 
-const brand = {
-  primary: "#015E88",
-  light: "#F5F7FA",
-};
-
-// ----------------------
-// Componentes auxiliares
-// ----------------------
-
-function SectionTitle({ children }: { children: ReactNode }) {
-  return (
-    <h3 className="text-sm md:text-base font-semibold text-gray-700 mb-3 mt-6">
-      {children}
-    </h3>
-  );
-}
-
-function Label({
-  htmlFor,
-  children,
-  required,
-}: {
-  htmlFor: string;
-  children: ReactNode;
-  required?: boolean;
-}) {
-  return (
-    <label
-      htmlFor={htmlFor}
-      className="block text-sm font-medium text-gray-700 mb-1"
-    >
-      {children}
-      {required && <span className="text-red-500 ml-1">*</span>}
-    </label>
-  );
-}
-
-function HelpError({ name }: { name: string }) {
-  return (
-    <ErrorMessage
-      name={name}
-      component="div"
-      className="text-xs text-red-600 mt-1"
-    />
-  );
-}
-
-const Input = ({
-  name,
-  type = "text",
-  placeholder,
-}: {
-  name: string;
-  type?: string;
-  placeholder?: string;
-}) => (
-  <div>
-    <Field
-      id={name}
-      name={name}
-      type={type}
-      placeholder={placeholder}
-      className="w-full border border-gray-300 rounded-lg bg-white px-3 py-2 text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-    />
-    <HelpError name={name} />
-  </div>
-);
-
-const Checkbox = ({
-  name,
-  value,
-  label,
-}: {
-  name: string;
-  value: string;
-  label: string;
-}) => (
-  <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-    <Field type="checkbox" name={name} value={value} className="h-4 w-4" />
-    {label}
-  </label>
-);
-
-// VALIDACIONES CON YUP
-
-
-const StudioSchema = Yup.object().shape({
-  ownerName: Yup.string().required("Requerido"),
-  ownerLastName: Yup.string().required("Requerido"),
-  email: Yup.string().email("Email inválido").required("Requerido"),
-  phone: Yup.string().required("Requerido"),
-  studioName: Yup.string().required("Requerido"),
-  address: Yup.string().required("Requerido"),
-  city: Yup.string().required("Requerido"),
-  openHour: Yup.string().required("Requerido"),
-  closeHour: Yup.string().required("Requerido"),
-  terms: Yup.boolean().oneOf([true], "Debes aceptar los términos"),
+// Validación Yup
+const studioSchema = Yup.object().shape({
+  nombrePropietario: Yup.string().required("El nombre es obligatorio"),
+  nombreEstudio: Yup.string().required("El nombre del estudio es obligatorio"),
+  descripcion: Yup.string().required("La descripción es obligatoria"),
+  tarifaHora: Yup.number().min(0, "Debe ser mayor o igual a 0"),
+  tarifaDia: Yup.number().min(0, "Debe ser mayor o igual a 0"),
+  horarioDesde: Yup.string().required("Campo obligatorio"),
+  horarioHasta: Yup.string().required("Campo obligatorio"),
+  registroComercial: Yup.mixed().required("El comprobante es obligatorio"),
+  aceptaTerminos: Yup.boolean().oneOf([true], "Debes aceptar los términos"),
 });
 
-// SE HIZO FORMULARIO CON FORIMIK
+export default function StudioForm() {
+  const [archivo, setArchivo] = useState<File | null>(null);
 
-export default function StudioConnectStudioForm() {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setArchivo(event.target.files[0]);
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-10 px-4">
-      <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-8">
-        <h2
-          className="text-xl font-bold text-center mb-6"
-          style={{ color: brand.primary }}
-        >
-          Registro de Estudio/Sala
-        </h2>
+    <Formik
+      initialValues={{
+        nombrePropietario: "",
+        nombreEstudio: "",
+        descripcion: "",
+        tarifaHora: 0,
+        tarifaDia: 0,
+        horarioDesde: "",
+        horarioHasta: "",
+        registroComercial: null,
+        aceptaTerminos: false,
+      }}
+      validationSchema={studioSchema}
+      onSubmit={(values) => {
+        console.log("Datos enviados:", values);
+      }}
+    >
+      {({ setFieldValue }) => (
+        <Form className="space-y-6 bg-white p-6 rounded-2xl shadow-md">
 
-        <Formik
-          initialValues={{
-            ownerName: "",
-            ownerLastName: "",
-            email: "",
-            phone: "",
-            studioName: "",
-            address: "",
-            city: "",
-            openHour: "",
-            closeHour: "",
-            services: [] as string[],
-            equipment: [] as string[],
-            terms: false,
-          }}
-          validationSchema={StudioSchema}
-          onSubmit={(values) => {
-            console.log("StudioConnect – form payload:", values);
-            alert("Formulario enviado! Revisa la consola.");
-          }}
-        >
-          {() => (
-            <Form className="space-y-6">
-              {/* Info propietario */}
-              <SectionTitle>Información del Propietario</SectionTitle>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="ownerName" required>
-                    Nombre
-                  </Label>
-                  <Input name="ownerName" placeholder="Juan" />
-                </div>
-                <div>
-                  <Label htmlFor="ownerLastName" required>
-                    Apellido
-                  </Label>
-                  <Input name="ownerLastName" placeholder="Pérez" />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="email" required>
-                  Email
-                </Label>
-                <Input name="email" type="email" placeholder="correo@ejemplo.com" />
-              </div>
-              <div>
-                <Label htmlFor="phone" required>
-                  Teléfono
-                </Label>
-                <Input name="phone" placeholder="+54 11 1234 5678" />
-              </div>
+          <Input name="nombrePropietario" label="Nombre del propietario" />
 
-              {/* Info estudio */}
-              <SectionTitle>Información del Estudio</SectionTitle>
-              <div>
-                <Label htmlFor="studioName" required>
-                  Nombre del estudio
-                </Label>
-                <Input name="studioName" placeholder="Studio Connect" />
-              </div>
-              <div>
-                <Label htmlFor="address" required>
-                  Dirección
-                </Label>
-                <Input name="address" placeholder="Av. Siempre Viva 123" />
-              </div>
-              <div>
-                <Label htmlFor="city" required>
-                  Ciudad
-                </Label>
-                <Input name="city" placeholder="Buenos Aires" />
-              </div>
+          <Input name="nombreEstudio" label="Nombre del estudio" />
 
-              {/* Horarios */}
-              <SectionTitle>Disponibilidad</SectionTitle>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="openHour" required>
-                    Hora apertura
-                  </Label>
-                  <Input name="openHour" type="time" />
-                </div>
-                <div>
-                  <Label htmlFor="closeHour" required>
-                    Hora cierre
-                  </Label>
-                  <Input name="closeHour" type="time" />
-                </div>
-              </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Descripción del estudio/sala
+            </label>
+            <Field
+              as="textarea"
+              name="descripcion"
+              className="w-full border rounded-lg p-2 h-28 focus:ring focus:ring-blue-300"
+              placeholder="Describe tu estudio o sala..."
+            />
+            <ErrorMessage
+              name="descripcion"
+              component="p"
+              className="text-red-500 text-sm mt-1"
+            />
+          </div>
 
-              {/* Servicios */}
-              <SectionTitle>Servicios</SectionTitle>
-              <div className="flex flex-wrap gap-4">
-                <Checkbox name="services" value="sala ensayo" label="Sala de ensayo" />
-                <Checkbox name="services" value="sala grabacion" label="Sala de grabación" />
-                <Checkbox name="services" value="sala estar" label="Sala de estar" />
-                <Checkbox name="services" value="cafeteria" label="Cafetería" />
-                <Checkbox name="services" value="estacionamiento" label="Estacionamiento" />
-              </div>
+          {/* Tarifas */}
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              name="tarifaHora"
+              label="Tarifa por hora ($)"
+              type="number"
+            />
+            <Input
+              name="tarifaDia"
+              label="Tarifa diaria ($)"
+              type="number"
+            />
+          </div>
 
-              {/* Equipamiento */}
-              <SectionTitle>Equipamiento</SectionTitle>
-              <div className="flex flex-wrap gap-4">
-                <Checkbox name="equipment" value="bateria" label="Batería" />
-                <Checkbox name="equipment" value="guitarra" label="Guitarra" />
-                <Checkbox name="equipment" value="bajo" label="Bajo" />
-                <Checkbox name="equipment" value="microfonos" label="Micrófonos" />
-                <Checkbox name="equipment" value="consola" label="Consola" />
-              </div>
+          {/* Horarios */}
+          <div className="grid grid-cols-2 gap-4">
+            <Input name="horarioDesde" label="Horario desde" type="time" />
+            <Input name="horarioHasta" label="Horario hasta" type="time" />
+          </div>
 
-              {/* Términos */}
-              <div className="flex items-center gap-2">
-                <Field type="checkbox" name="terms" className="h-4 w-4" />
-                <span className="text-sm text-gray-700">
-                  Acepto los términos y condiciones
-                </span>
-              </div>
-              <HelpError name="terms" />
+          {/* Upload comprobante */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Comprobante de registro comercial
+            </label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+              <input
+                id="registroComercial"
+                name="registroComercial"
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => {
+                  handleFileChange(e);
+                  setFieldValue("registroComercial", e.target.files?.[0] || null);
+                }}
+                className="hidden"
+              />
+              <label
+                htmlFor="registroComercial"
+                className="cursor-pointer text-blue-600 hover:underline"
+              >
+                {archivo ? archivo.name : "Sueltá tu PDF aquí o haz clic para subir"}
+              </label>
+            </div>
+            <ErrorMessage
+              name="registroComercial"
+              component="p"
+              className="text-red-500 text-sm mt-1"
+            />
+          </div>
 
-              {/* Submit */}
-              <div className="pt-4">
-                <button
-                  type="submit"
-                  className="w-full py-2 px-4 rounded-lg text-white font-medium shadow-md hover:opacity-90"
-                  style={{ backgroundColor: brand.primary }}
-                >
-                  Registrar estudio
-                </button>
-              </div>
-            </Form>
-          )}
-        </Formik>
-      </div>
-    </div>
+
+          <div className="flex items-center gap-2">
+            <Field type="checkbox" name="aceptaTerminos" />
+            <label className="text-sm">
+              Estoy de acuerdo con los{" "}
+              <a href="#" className="text-blue-600 hover:underline">
+                Términos de servicio
+              </a>{" "}
+              y la{" "}
+              <a href="#" className="text-blue-600 hover:underline">
+                Política de privacidad
+              </a>
+            </label>
+          </div>
+          <ErrorMessage
+            name="aceptaTerminos"
+            component="p"
+            className="text-red-500 text-sm"
+          />
+
+          {/* Botón */}
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            Registrar Estudio/Sala
+          </button>
+        </Form>
+      )}
+    </Formik>
   );
 }
