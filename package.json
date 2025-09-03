@@ -8,13 +8,21 @@
     "start": "next start"
   },
   "dependencies": {
+<<<<<<< HEAD
     "leaflet": "^1.9.4",
+=======
+    "formik": "^2.4.6",
+>>>>>>> 0bc6e8b (StudioForm page)
     "lucide-react": "^0.542.0",
     "next": "15.5.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-icons": "^5.5.0",
+<<<<<<< HEAD
     "react-leaflet": "^5.0.0"
+=======
+    "yup": "^1.7.0"
+>>>>>>> 0bc6e8b (StudioForm page)
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
