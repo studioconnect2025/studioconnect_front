@@ -19,7 +19,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="rounded-t-xl bg-black text-white text-center py-3">
-          <h1 className="text-lg font-bold">Login</h1>
+          <h1 className="text-lg font-bold">Inicio Sesion</h1>
         </div>
 
         <div className="rounded-b-xl bg-white shadow-md p-6">
