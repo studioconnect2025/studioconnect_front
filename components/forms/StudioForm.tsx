@@ -4,6 +4,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { ReactNode } from "react";
 import { FaBuilding, FaCloudUploadAlt} from "react-icons/fa";
+import { Link } from "lucide-react";
 
 const brand = {
   primary: "#015E88",
@@ -293,7 +294,7 @@ export default function StudioConnectStudioForm() {
               <div className="flex items-center gap-2">
                 <Field type="checkbox" name="terms" className="h-4 w-4" />
                 <span className="text-sm text-gray-700">
-                  Acepto los términos y condiciones
+                  Acepto los <Link href="/#">términos y condiciones</Link>
                 </span>
               </div>
               <HelpError name="terms" />

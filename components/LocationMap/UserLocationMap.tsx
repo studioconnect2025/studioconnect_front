@@ -8,9 +8,9 @@ import "leaflet/dist/leaflet.css";
 // Configuración del ícono de Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "/leaflet/marker-icon-2x.png", //TODO: Agregar iconos
-  iconUrl: "/leaflet/marker-icon.png",
-  shadowUrl: "/leaflet/marker-shadow.png",
+  iconRetinaUrl: "/leaflet/marker-icon-2x.png", 
+/*   iconUrl: "/leaflet/marker-icon.png",
+  shadowUrl: "/leaflet/marker-shadow.png", */
 });
 
 const UserLocationMap = () => {

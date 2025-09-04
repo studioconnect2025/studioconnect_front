@@ -17,6 +17,9 @@ export type Studio = {
   address?: string;
   mapQuery?: string;
   reviews: Review[]; // agregado
+
+  pricePerHour?: number;
+
 };
 
 // Mock principal
@@ -29,6 +32,7 @@ const STUDIOS: Record<string, Studio> = {
     description:
       "Estudio profesional con cabinas tratadas, consola de mezcla y backline completo. Ideal para grabación, mezcla y pre-producción.",
     amenities: ["Internet de fibra", "Monitores Neumann", "Consola SSL", "Aire acondicionado"],
+
     address: "Av. Santa Fe 3200, Palermo, Buenos Aires, AR",
     mapQuery: "Av. Santa Fe 3200, Palermo, Buenos Aires, Argentina",
     reviews: [
@@ -49,6 +53,10 @@ const STUDIOS: Record<string, Studio> = {
           "Ubicación y servicio profesional. Volvería a contratarlos sin duda.",
       },
     ],
+
+    photos: ["/studios/studio1.jpg"],
+    pricePerHour: 3500
+
   },
 
   // 2) Almagro
@@ -59,6 +67,7 @@ const STUDIOS: Record<string, Studio> = {
     description:
       "Sala principal con tratamiento acústico y control room independiente. Perfecto para sesiones vocales e instrumentales.",
     amenities: ["Wi-Fi 600Mb", "Monitores Genelec", "Preamps UA", "Café de cortesía"],
+
     address: "Av. Rivadavia 4200, Almagro, Buenos Aires, AR",
     mapQuery: "Av. Rivadavia 4200, Almagro, Buenos Aires, Argentina",
     reviews: [
@@ -79,6 +88,10 @@ const STUDIOS: Record<string, Studio> = {
           "Muy buena atención y café. Reservo de nuevo para voces la semana próxima.",
       },
     ],
+
+    photos: ["/studios/studio2.jpg"],
+    pricePerHour: 3000
+
   },
 
   // 3) San Telmo
@@ -89,6 +102,7 @@ const STUDIOS: Record<string, Studio> = {
     description:
       "Sonido cálido con sala de tomas de ladrillo visto. Excelente para bandas en vivo y sets acústicos.",
     amenities: ["Micros Shure/AKG", "Cabina aislada", "Piano vertical", "Sala lounge"],
+
     address: "Defensa 900, San Telmo, Buenos Aires, AR",
     mapQuery: "Defensa 900, San Telmo, Buenos Aires, Argentina",
     reviews: [
@@ -109,6 +123,10 @@ const STUDIOS: Record<string, Studio> = {
           "Piano muy bien mantenido. Grabamos dos temas en una tarde sin problemas.",
       },
     ],
+
+    photos: ["/studios/studio3.jpg"],
+    pricePerHour: 2800
+
   },
 
   // 4) Recoleta
@@ -119,6 +137,7 @@ const STUDIOS: Record<string, Studio> = {
     description:
       "Espacio premium para mezcla y mastering con monitores de alta precisión y acondicionamiento acústico de primer nivel.",
     amenities: ["Tratamiento acústico", "Monitores Focal", "Outboard analógico", "Sillón ergonómico"],
+
     address: "Av. Alvear 1600, Recoleta, Buenos Aires, AR",
     mapQuery: "Av. Alvear 1600, Recoleta, Buenos Aires, Argentina",
     reviews: [
@@ -139,6 +158,10 @@ const STUDIOS: Record<string, Studio> = {
           "Mastering transparente y prolijo. Entrega con DDP y todo en regla.",
       },
     ],
+
+    photos: ["/studios/studio4.jpg"],
+    pricePerHour: 3200
+
   },
 
   // 5) Villa Urquiza
@@ -149,6 +172,7 @@ const STUDIOS: Record<string, Studio> = {
     description:
       "Estudio versátil orientado a producción urbana y electrónica. Workflow rápido con control room híbrido.",
     amenities: ["Control híbrido", "MIDI controllers", "Subwoofer dedicado", "Iluminación RGB"],
+
     address: "Av. Triunvirato 4800, Villa Urquiza, Buenos Aires, AR",
     mapQuery: "Av. Triunvirato 4800, Villa Urquiza, Buenos Aires, Argentina",
     reviews: [
@@ -169,6 +193,10 @@ const STUDIOS: Record<string, Studio> = {
           "Subwoofer calibrado. Mezclar low-end fue más fácil de lo habitual.",
       },
     ],
+
+    photos: ["/studios/studio5.jpg"],
+    pricePerHour: 2800
+
   },
 
   // 6) Colegiales
@@ -179,6 +207,7 @@ const STUDIOS: Record<string, Studio> = {
     description:
       "Ambiente silencioso en pasaje arbolado. Ideal para locución, podcast y overdubs precisos.",
     amenities: ["Cabina voice-over", "Mic Neumann TLM", "Interface Apogee", "Tratamiento vocal"],
+
     address: "Conde 600, Colegiales, Buenos Aires, AR",
     mapQuery: "Conde 600, Colegiales, Buenos Aires, Argentina",
     reviews: [
@@ -199,6 +228,10 @@ const STUDIOS: Record<string, Studio> = {
           "Cadena TLM + Apogee muy nítida. Entregamos podcast en el día.",
       },
     ],
+
+    photos: ["/studios/studio6.jpg"],
+    pricePerHour: 2500
+
   },
 
   // 7) Belgrano
@@ -209,6 +242,7 @@ const STUDIOS: Record<string, Studio> = {
     description:
       "Sala amplia con luz natural y backline para ensayos pro y pre-producción de shows.",
     amenities: ["Batería DW", "Amplis Fender/Marshall", "PA QSC", "Aire acondicionado"],
+
     address: "Av. Cabildo 2200, Belgrano, Buenos Aires, AR",
     mapQuery: "Av. Cabildo 2200, Belgrano, Buenos Aires, Argentina",
     reviews: [
@@ -229,6 +263,10 @@ const STUDIOS: Record<string, Studio> = {
           "Sala cómoda para banda completa. Buena atención del staff.",
       },
     ],
+
+    photos: ["/studios/studio6.jpg"],
+    pricePerHour: 3500
+
   },
 
   // 8) Caballito
@@ -239,6 +277,7 @@ const STUDIOS: Record<string, Studio> = {
     description:
       "Cuarto de control optimizado para mezcla ITB/OTB y edición. Ideal para proyectos independientes.",
     amenities: ["Control ITB/OTB", "Preamps Focusrite", "Paneles difusores", "Sillón reclinable"],
+
     address: "Av. José María Moreno 700, Caballito, Buenos Aires, AR",
     mapQuery: "Av. José María Moreno 700, Caballito, Buenos Aires, Argentina",
     reviews: [
@@ -259,6 +298,10 @@ const STUDIOS: Record<string, Studio> = {
           "Buen balance entre equipo y precio. Recomendado para freelance.",
       },
     ],
+
+    photos: ["/studios/studio6.jpg"],
+    pricePerHour: 2800
+
   },
 
   // 9) Boedo
@@ -269,6 +312,7 @@ const STUDIOS: Record<string, Studio> = {
     description:
       "Setup práctico para beats, voces y guitarras. Excelente relación calidad/precio para sesiones rápidas.",
     amenities: ["Mic Rode NT1", "Pads Akai", "Cabina seca", "Wi-Fi alta velocidad"],
+
     address: "Av. San Juan 3500, Boedo, Buenos Aires, AR",
     mapQuery: "Av. San Juan 3500, Boedo, Buenos Aires, Argentina",
     reviews: [
@@ -289,6 +333,10 @@ const STUDIOS: Record<string, Studio> = {
           "NT1 rendidor y cabina bien seca. Entregamos demo en el día.",
       },
     ],
+
+    photos: ["/studios/studio6.jpg"],
+    pricePerHour: 2200
+
   },
 
   // 10) Chacarita
@@ -299,6 +347,7 @@ const STUDIOS: Record<string, Studio> = {
     description:
       "Estudio moderno dentro de polo audiovisual. Cadena de señal cuidada y sala de ensayo anexa.",
     amenities: ["Compresores 1176", "DI Radial", "Sala anexa", "Estacionamiento"],
+
     address: "Av. Corrientes 6200, Chacarita, Buenos Aires, AR",
     mapQuery: "Av. Corrientes 6200, Chacarita, Buenos Aires, Argentina",
     reviews: [
@@ -319,6 +368,10 @@ const STUDIOS: Record<string, Studio> = {
           "Ubicado cómodo y con estacionamiento. Ensayo anexo sumó mucho.",
       },
     ],
+
+    photos: ["/studios/studio6.jpg"],
+    pricePerHour: 3000
+
   },
 };
 
