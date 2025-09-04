@@ -3,6 +3,7 @@
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { ReactNode } from "react";
+import { FaBuilding, FaCloudUploadAlt} from "react-icons/fa";
 
 const brand = {
   primary: "#015E88",
@@ -109,15 +110,24 @@ const StudioSchema = Yup.object().shape({
 
 export default function StudioConnectStudioForm() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-10 px-4">
-      <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-8">
-        <h2
-          className="text-xl font-bold text-center mb-6"
-          style={{ color: brand.primary }}
-        >
-          Registro de Estudio
-        </h2>
-
+   <div>
+     <div className="bg-sky-800 text-white py-10 px-4 text-center">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex justify-center mb-4">
+            <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center">
+               <FaBuilding  size={30} className="text-sky-700" />
+            </div>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-semibold">
+            Registra tu estudio
+          </h1>
+          <p className="mt-2 text-sm md:text-base text-gray-200">
+           Únete a nuestra red de estudios de grabación profesionales y conéctate con músicos de todo el mundo.
+          </p>
+        </div>
+      </div>
+     <div className="min-h-screen flex items-center justify-center bg-gray-100 py-10 px-4">
+      <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6">
         <Formik
           initialValues={{
             ownerName: "",
@@ -214,13 +224,13 @@ export default function StudioConnectStudioForm() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="tarifaHora" required>
-                    Tarifa por hora 💲
+                    Tarifa por hora $
                   </Label>
                   <Input name="tarifaHora" type="number" placeholder="0" />
                 </div>
                 <div>
                   <Label htmlFor="tarifaDia" required>
-                    Tarifa diaria 💲
+                    Tarifa diaria $
                   </Label>
                   <Input name="tarifaDia" type="number" placeholder="0" />
                 </div>
@@ -230,13 +240,13 @@ export default function StudioConnectStudioForm() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="openHour" required>
-                    Hora apertura 🕒
+                    Hora apertura
                   </Label>
                   <Input name="openHour" type="time" />
                 </div>
                 <div>
                   <Label htmlFor="closeHour" required>
-                    Hora cierre 🕒
+                    Hora cierre
                   </Label>
                   <Input name="closeHour" type="time" />
                 </div>
@@ -274,7 +284,8 @@ export default function StudioConnectStudioForm() {
                   }
                 />
                 <label htmlFor="registroComercial" className="text-sm text-gray-600 cursor-pointer">
-                  📄 Suelta tu PDF aquí o haz clic para subir
+                  <FaCloudUploadAlt size={50} className="ml-66"/>
+                   Suelta tu PDF aquí o haz clic para subir
                 </label>
                 <HelpError name="registroComercial" />
               </div>
@@ -293,7 +304,7 @@ export default function StudioConnectStudioForm() {
                   className="w-full py-2 px-4 rounded-lg text-white font-medium shadow-md hover:opacity-90"
                   style={{ backgroundColor: brand.primary }}
                 >
-                  Registrar estudio/sala
+                  Registrar tu estudio
                 </button>
               </div>
             </Form>
@@ -301,5 +312,6 @@ export default function StudioConnectStudioForm() {
         </Formik>
       </div>
     </div>
+   </div>
   );
 }
