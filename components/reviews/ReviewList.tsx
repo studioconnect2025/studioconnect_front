@@ -15,7 +15,7 @@ export function ReviewList() {
         </p>
       </header>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch">
+    <div className="grid  grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch">
   {REVIEWS.map((r, idx) => (
     <ReviewCard key={idx} review={r} />
   ))}

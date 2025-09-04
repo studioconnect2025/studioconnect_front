@@ -1,4 +1,5 @@
-import { MoveRight } from "lucide-react";
+import {  MoveRight } from "lucide-react";
+import Link from "next/link";
 
 export const BannerText = () => {
   return (
@@ -29,9 +30,11 @@ export const BannerText = () => {
         <button className="flex justify-center items-center gap-2 bg-white text-black p-3 rounded-md w-full sm:w-auto">
           Explorar estudios <MoveRight className="w-5 h-5" />
         </button>
-        <button className="flex justify-center items-center gap-2 text-white p-3 border-2 border-white rounded-md w-full sm:w-auto">
-          Registrar mi estudio <MoveRight className="w-5 h-5" />
-        </button>
+        <Link href="/StudioForm">
+      <button className="flex justify-center items-center gap-2 text-white p-3 border-2 cursor-pointer border-white rounded-md w-full sm:w-auto">
+        Registrar mi estudio <MoveRight className="w-5 h-5" />
+      </button>
+    </Link>
       </div>
     </div>
   );
