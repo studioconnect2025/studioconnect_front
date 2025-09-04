@@ -5,6 +5,7 @@ import { BannerText } from "@/components/banners/BannerText";
 import ClientUserLocationMap from "@/components/LocationMap/ClientUserLocationMap";
 import { ReviewList } from "@/components/reviews/ReviewList";
 import { FeaturedStudiosList } from "@/components/studio/FeatureStudioList";
+import WhyChooseStudioConnect from "@/components/WhyChooseStudioConnect/WhyChooseStudioConnect";
 
 export default function Home() {
   return (
@@ -43,12 +44,18 @@ export default function Home() {
           <ClientUserLocationMap />
         </div>
       </div>
+      {/* Sección Estudios destacados */}
       <div className="bg-gray-100 flex flex-col items-center p-4 sm:p-6 -mt-6" >
         <div className="w-full max-w-6xl  ">
            <FeaturedStudiosList limit={3} />
         </div>
       </div>
-            <div className="bg-gray-100 flex flex-col items-center p-4 sm:p-6 -mt-6" >
+      {/*Seccion porque elegir studioconnect */}
+      <div>
+        <WhyChooseStudioConnect />
+      </div>
+      {/* Sección de Reseñas */}
+      <div className="bg-gray-100 flex flex-col items-center p-4 sm:p-6 -mt-6" >
         <div className="w-full max-w-6xl  ">
            <ReviewList />
         </div>
