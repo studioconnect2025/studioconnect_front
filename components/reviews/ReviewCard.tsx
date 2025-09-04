@@ -6,7 +6,7 @@ import type { Review } from "@/mocks/review";
 
 export function ReviewCard({ review }: { review: Review }) {
   return (
-    <div className="h-full rounded-xl border bg-white shadow-sm p-5 flex flex-col">
+    <div className="h-full hover:shadow-2xl rounded-xl border bg-white shadow-sm p-5 flex flex-col">
       {/* estrellas */}
       <div className="mb-3 flex gap-1 text-yellow-500">
         {[...Array(5)].map((_, i) => (

@@ -28,7 +28,7 @@ export const Header = () => {
               <li>
                 <Link
                   href="#"
-                  className="block py-2 pr-4 pl-3 text-white rounded bg-primary-700 lg:bg-transparent lg:text-primary-700 lg:p-0 dark:text-white"
+                  className="block py-2 pr-4 pl-3 text-white hover:text-gray-400 rounded bg-primary-700 lg:bg-transparent lg:text-primary-700 lg:p-0 dark:text-white"
                   aria-current="page"
                 >
                   Únete como músico
@@ -37,7 +37,7 @@ export const Header = () => {
               <li>
                 <Link
                   href="/StudioForm"
-                  className="block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
+                  className="block py-2 pr-4 pl-3 text-white hover:text-gray-400 rounded bg-primary-700 lg:bg-transparent lg:text-primary-700 lg:p-0 dark:text-white"
                 >
                   Únete como anfitrión
                 </Link>
@@ -47,8 +47,8 @@ export const Header = () => {
 
           {/* Botones login/signup */}
           <div className="hidden lg:flex items-center lg:order-2">
-            <Link href="/login" className="text-white p-2 mr-5">Iniciar sesión</Link>
-            <Link href="#" className="text-white bg-[#015C85] rounded-lg p-2">Registrarse</Link>
+            <Link href="/login" className="text-white hover:bg-sky-800 p-2 mr-5 rounded-lg">Iniciar sesión</Link>
+            <Link href="/joinStudioConnect" className="text-white hover:bg-sky-800 rounded-lg p-2">Registrarse</Link>
           </div>
 
           {/* Vista móvil */}
@@ -115,7 +115,7 @@ export const Header = () => {
             </li>
             <li>
               <Link
-                href="#"
+                href="/joinStudioConnect"
                 className="block py-2 px-3 rounded bg-[#015C85] text-white"
               >
                 Registrarse
