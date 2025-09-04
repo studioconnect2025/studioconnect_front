@@ -2,10 +2,30 @@ import Gallery from "@/components/studio/Gallery";
 import { getStudioMockById, type Studio, getStudioPhotos } from "@/mocks/studios";
 import { getRoomsMockByStudioId, type Room } from "@/mocks/rooms";
 
+function Stars({ value }: { value: number }) {
+  const filled = Math.round(value);
+  return (
+    <div className="flex" aria-label={`Puntaje ${value} de 5`}>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <span key={i} className="text-[#f5b50a] text-base leading-none">
+          {i < filled ? "★" : "☆"}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function formatMonthYear(iso: string) {
+  return new Date(iso).toLocaleDateString("es-AR", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
 export default async function StudioDetailsPage(
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
+  const { id } = params;
 
   // Datos mock dinámicos
   const studio: Studio = getStudioMockById(id);
@@ -15,20 +35,23 @@ export default async function StudioDetailsPage(
   return (
     <main className="min-h-screen bg-[#F9FAFB] text-[#0B0F12]">
       <div className="mx-auto max-w-[1216px] px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:[grid-template-columns:800px_384px] gap-8">
+        {/* Grid según Figma: 800px / 384px con gap 24px */}
+        <div className="grid grid-cols-1 lg:[grid-template-columns:800px_384px] gap-6">
+
+          {/* Columna izquierda: secciones 1–5 */}
           <div className="space-y-6">
 
             {/* Sección 1 — Galería (dinámica) */}
-            <section className="rounded-lg border border-[#E5E7EB] bg-white p-4">
+            <section className="rounded-2xl border border-[#E5E7EB] bg-white p-4">
               <Gallery photos={photos} altBase={studio.name} />
             </section>
 
             {/* Sección 2 — Tarjeta del estudio (header) dinámica */}
-            <section className="rounded-lg border border-[#E5E7EB] bg-gradient-to-b from-[#036D9D] to-[#0B0F12] p-4 text-white">
+            <section className="rounded-2xl border border-[#E5E7EB] bg-gradient-to-b from-[#036D9D] to-[#0B0F12] p-4 text-white">
               {/* fila superior: título + acciones */}
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-[18px] font-semibold leading-tight">{studio.name}</h2>
+                  <h2 className="text-[18px] leading-6 font-semibold">{studio.name}</h2>
                   <p className="mt-1 text-xs text-white/85">
                     ⭐ {studio.rating} · {studio.location}
                   </p>
@@ -64,7 +87,7 @@ export default async function StudioDetailsPage(
                 {studio.amenities.map((a) => (
                   <span
                     key={a}
-                    className="rounded-md border border-white/15 bg-white/10 px-2 py-1 text-[11px]"
+                    className="rounded-md border border-white/15 bg-white/10 px-2 py-[3px] text-[11px]"
                   >
                     {a}
                   </span>
@@ -72,34 +95,51 @@ export default async function StudioDetailsPage(
               </div>
             </section>
 
-            {/* Sección 3 — Salas disponibles (dinámica) */}
-            <section className="rounded-lg border border-[#E5E7EB] bg-white p-4">
-              <h2 className="text-[18px] font-semibold">Salas disponibles</h2>
+            {/* Sección 3 — Salas disponibles (dinámica con degradé, como Figma) */}
+            <section className="rounded-2xl border border-white/20 bg-gradient-to-b from-[#036D9D] to-[#0B0F12] p-4 text-white">
+              <h2 className="text-[18px] leading-6 font-semibold">Salas disponibles</h2>
 
               <div className="mt-3 space-y-3">
                 {rooms.map((room) => (
-                  <div key={room.id} className="rounded-md border border-[#E5E7EB] p-3">
+                  <div
+                    key={room.id}
+                    className="rounded-xl border border-white/15 bg-white/5 p-3"
+                  >
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <h3 className="text-sm font-medium">{room.title}</h3>
-                        <p className="mt-1 text-xs text-[#0B0F12]/70">
+                        <h3 className="text-sm font-medium text-white">{room.title}</h3>
+                        <p className="mt-1 text-xs text-white/80">
                           {room.capacity ? `Capacidad: ${room.capacity} · ` : ""}
                           {room.features?.slice(0, 3).join(" · ")}
                         </p>
+
+                        {/* chips internos basados en features */}
+                        {room.features?.length ? (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {room.features.slice(0, 3).map((t: string) => (
+                              <span
+                                key={t}
+                                className="rounded-md border border-white/15 bg-white/10 px-2 py-[3px] text-[11px] text-white/90"
+                              >
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
                       </div>
 
                       <div className="text-right">
-                        <div className="text-sm font-semibold">
+                        <div className="text-sm font-semibold text-white">
                           ${" "}
                           {room.priceHour.toLocaleString("es-AR")}
                           {" "}
-                          <span className="text-xs font-normal text-[#0B0F12]/70">/ hora</span>
+                          <span className="text-xs font-normal text-white/70">/ hora</span>
                         </div>
                         <div className="mt-2 flex items-center gap-2">
-                          <button className="rounded-md border border-[#E5E7EB] bg-white px-3 py-1.5 text-xs hover:bg-gray-50">
+                          <button className="rounded-md border border-white/20 bg-white/10 px-3 py-1.5 text-xs text-white hover:bg-white/15">
                             Ver detalles
                           </button>
-                          <button className="rounded-md bg-[#0B0F12] px-3 py-1.5 text-xs text-white hover:opacity-90">
+                          <button className="rounded-md bg-white px-3 py-1.5 text-xs text-[#0B0F12] hover:opacity-90">
                             Reservar
                           </button>
                         </div>
@@ -110,33 +150,163 @@ export default async function StudioDetailsPage(
               </div>
             </section>
 
-            {/* Sección 4 — Ubicación (mapa 800 × 418) */}
-            <section className="rounded-lg border border-[#E5E7EB] bg-white p-4">
-              <h2 className="text-lg font-semibold">Ubicación</h2>
-              <div className="mt-2 mx-auto w-full lg:max-w-[800px]">
-                <div className="h-[418px] w-full rounded-lg bg-[#F3F4F6]" />
+            {/* Sección 4 — Ubicación (gradiente + caja blanca para el mapa) */}
+            <section className="rounded-2xl border border-white/20 bg-gradient-to-b from-[#036D9D] to-[#0B0F12] p-4 text-white">
+              <h2 className="text-[18px] leading-6 font-semibold">Ubicación</h2>
+
+              <div className="mt-3 mx-auto w-full lg:max-w-[800px]">
+                {/* Caja blanca interna para el mapa según Figma */}
+                <div
+                  className="relative w-full rounded-2xl overflow-hidden bg-white"
+                  style={{ aspectRatio: "800 / 418", minHeight: 418 }}
+                >
+                  <iframe
+                    title={`Ubicación de ${studio.name}`}
+                    src={`https://www.google.com/maps?q=${encodeURIComponent(
+                      studio.mapQuery ?? studio.location ?? ""
+                    )}&output=embed`}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="absolute inset-0 h-full w-full border-0"
+                  />
+                </div>
               </div>
-              <p className="mt-2 text-sm text-[#0B0F12]/70">
-                {studio.location}
+
+              {/* Dirección textual en blanco con leve transparencia */}
+              <p className="mt-3 text-sm text-white/80">
+                {studio.address ?? studio.location}
               </p>
             </section>
 
-            {/* Sección 5 — Reseñas (placeholder) */}
-            <section className="h-[300px] rounded-lg border border-[#E5E7EB] bg-white p-4">
-              <div className="h-full w-full opacity-70">Reseñas (placeholder)</div>
-            </section>
-          </div>
+            {/* Sección 5 — Reseñas */}
+            <section className="rounded-2xl border border-[#E5E7EB] bg-white p-4">
+              <h2 className="text-[18px] leading-6 font-semibold">
+                Reseñas ({studio.reviews?.length ?? 0})
+              </h2>
 
-          {/* Sección 6 — Panel lateral (384px) */}
+              <ul className="mt-3 space-y-3">
+                {(studio.reviews ?? []).slice(0, 2).map((rev: any) => (
+                  <li key={rev.id} className="rounded-xl border border-[#E5E7EB] bg-white p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-full bg-black/10" />
+                        <div>
+                          <p className="text-sm font-medium">{rev.author}</p>
+                          <p className="text-xs text-black/50">{formatMonthYear(rev.date)}</p>
+                        </div>
+                      </div>
+                      <Stars value={rev.rating} />
+                    </div>
+                    <p className="mt-2 text-sm text-black/80">{rev.comment}</p>
+                  </li>
+                ))}
+              </ul>
+
+              {(studio.reviews?.length ?? 0) > 2 && (
+                <button className="mt-3 text-sm underline">Mostrar todas las reseñas</button>
+              )}
+            </section>
+
+          </div>{/* ← cierra columna izquierda */}
+
+          {/* Columna derecha: Panel lateral (384px) */}
           <aside>
-            <div className="sticky top-20">
-              <div className="min-h-[320px] rounded-lg border border-[#E5E7EB] bg-white p-4">
-                Sidebar reserva (placeholder)
-              </div>
+            <div className="sticky top-20 space-y-4">
+              {/* Card: Reserva */}
+              <section className="rounded-2xl border border-[#E5E7EB] bg-white p-4">
+                <div className="flex items-baseline justify-between">
+                  <p className="text-[18px] font-semibold">$ 400.000<span className="text-sm font-normal"> /4hs</span></p>
+                  <span className="text-xs text-[#0B0F12]/60">Mínimo 2 horas</span>
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  {/* Fecha */}
+                  <div>
+                    <label className="mb-1 block text-sm text-[#0B0F12]/80">Fecha</label>
+                    <input
+                      type="text"
+                      placeholder="mm/dd/yyyy"
+                      className="w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm outline-none focus:border-[#036D9D]"
+                    />
+                  </div>
+
+                  {/* Horas */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="mb-1 block text-sm text-[#0B0F12]/80">Hora de inicio</label>
+                      <select className="w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm outline-none focus:border-[#036D9D]">
+                        <option>9:00 AM</option>
+                        <option>10:00 AM</option>
+                        <option>11:00 AM</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-sm text-[#0B0F12]/80">Hora de salida</label>
+                      <select className="w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm outline-none focus:border-[#036D9D]">
+                        <option>11:00 AM</option>
+                        <option>12:00 PM</option>
+                        <option>1:00 PM</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Sala */}
+                  <div>
+                    <label className="mb-1 block text-sm text-[#0B0F12]/80">Salas disponibles</label>
+                    <select className="w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm outline-none focus:border-[#036D9D]">
+                      {rooms.map((r) => (
+                        <option key={r.id}>{r.title}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Personas */}
+                  <div>
+                    <label className="mb-1 block text-sm text-[#0B0F12]/80">Número de personas</label>
+                    <select className="w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm outline-none focus:border-[#036D9D]">
+                      <option>1</option><option>2</option><option>3</option><option>4</option>
+                    </select>
+                  </div>
+
+                  {/* Breakdown (estático como en Figma) */}
+                  <div className="mt-2 space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[#0B0F12]/70">$200.000 × 2 hs</span>
+                      <span>$200.000</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[#0B0F12]/70">Tarifa de servicio</span>
+                      <span>$3.000</span>
+                    </div>
+                    <div className="h-px bg-[#E5E7EB]" />
+                    <div className="flex items-center justify-between font-semibold">
+                      <span>Total</span>
+                      <span>$203.000</span>
+                    </div>
+                  </div>
+
+                  <button className="mt-3 w-full rounded-md bg-[#0B0F12] px-4 py-2 text-sm font-medium text-white hover:opacity-90">
+                    Reservar ahora
+                  </button>
+                </div>
+              </section>
+
+              {/* Card: Política de cancelación */}
+              <section className="rounded-2xl border border-[#E5E7EB] bg-white p-4">
+                <h3 className="text-sm font-medium text-[#0B0F12]">Política de Cancelación</h3>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-[#0B0F12]/80">
+                  <li>Cancelación gratuita hasta 24h antes</li>
+                  <li>50% de reembolso entre 24h–12h antes</li>
+                  <li>Sin reembolso con menos de 12h</li>
+                  <li>Reprogramación gratuita una vez</li>
+                </ul>
+              </section>
             </div>
           </aside>
-        </div>
-      </div>
+
+
+        </div>{/* grid */}
+      </div>{/* container */}
     </main>
   );
 }
