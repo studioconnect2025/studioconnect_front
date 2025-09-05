@@ -3,15 +3,15 @@ import { Search, MapPin } from 'lucide-react';
 export const BannerSearch = () => {
   return (
     <div className="text-black p-4 sm:p-6 w-full max-w-6xl mx-auto">
-      <h2 className="text-2xl sm:text-3xl md:text-4xl text-center font-medium">
+      <h2 className="text-2xl sm:text-3xl md:text-3xl text-center font-medium">
         Encuentra tu estudio ideal
       </h2>
       <h3 className="text-sm sm:text-base md:text-lg text-center mb-6 mt-2 sm:mt-4">
         Busca y filtra estudios por ubicación, equipamiento y disponibilidad.
       </h3>
-      <div className="bg-white flex flex-col sm:flex-row flex-wrap justify-center items-start p-4 sm:p-6 mt-6 sm:mt-10 mb-10 rounded-md shadow-md gap-4 sm:gap-8">
+      <div className="bg-white flex flex-col sm:flex-row flex-wrap justify-center items-start p-4 sm:p-6  rounded-2xl shadow-md gap-4 sm:gap-8">
         {/* Location */}
-        <div className="flex flex-col w-full sm:w-62">
+        <div className="flex flex-col w-full sm:w-62 ">
           <label htmlFor="location" className="mb-2 font-medium">Locación</label>
           <div className="relative">
             <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />

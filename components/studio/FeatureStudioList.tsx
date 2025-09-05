@@ -6,9 +6,9 @@ export function FeaturedStudiosList({ limit = 3 }: { limit?: number }) {
   const items = Object.entries(STUDIOS).slice(0, limit); 
 
   return (
-    <section className="w-full max-w-6xl mx-auto px-4">
+    <section className="w-full max-w-6xl mx-auto px-4 py-4 mb-6 ">
       <header className="text-center mb-6">
-        <h2 className="text-black text-2xl sm:text-3xl md:text-4xl text-center font-medium">Estudios destacados</h2>
+        <h2 className="text-black text-2xl sm:text-3xl md:text-3xl text-center font-medium">Estudios destacados</h2>
         <p className="text-black text-sm sm:text-base md:text-lg text-center mb-6 mt-2 sm:mt-4">Descubrí los mejor valorados de tu zona</p>
       </header>
 

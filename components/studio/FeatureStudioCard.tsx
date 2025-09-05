@@ -12,7 +12,7 @@ export function FeaturedStudioCard({ id, studio }: Props) {
   const hasPrice = typeof (studio as any).pricePerHour === "number";
 
   return (
-    <div className="rounded-xl border bg-white shadow-sm overflow-hidden flex flex-col">
+    <div className="rounded-xl hover:shadow-2xl border cursor-pointer bg-white shadow-sm overflow-hidden flex flex-col">
       <div className="relative h-40 w-full bg-gray-100">
         <Image
           src={cover}
