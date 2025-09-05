@@ -1,5 +1,6 @@
 import { FaMusic, FaBuilding} from "react-icons/fa";
 import { PiHandHeartFill } from "react-icons/pi";
+import Link from "next/link";
 
 export default function JoinStudioConnect() {
   return (
@@ -59,9 +60,11 @@ export default function JoinStudioConnect() {
             <li>✔ Procesamiento de pagos</li>
             <li>✔ Panel de análisis</li>
           </ul>
+          <Link href="/studio-form">
           <button className="bg-sky-800 text-white px-6 py-2 cursor-pointer rounded-lg hover:bg-black transition mt-8">
             Regístrate como propietario de estudio
           </button>
+          </Link>
         </div>
       </div>
     </div>
