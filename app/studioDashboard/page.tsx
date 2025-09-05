@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FaCalendarAlt, FaDollarSign, FaStar, FaBuilding } from "react-icons/fa";
-
+import { Modal } from "@/components/modal/modal"; 
 import type { Room } from "@/mocks/rooms";
 import { getRoomsMockByStudioId } from "@/mocks/rooms";
 import {
@@ -17,13 +17,16 @@ import {
   type Message,
 } from "@/mocks/dashboard";
 
-export default function StudioDashboard() {
+export default function RoomDashboard() {
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [recentReservations, setRecentReservations] = useState<Reservation[]>([]);
   const [upcomingReservations, setUpcomingReservations] = useState<UpcomingReservation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [selectedReservation, setSelectedReservation] = useState<(UpcomingReservation & Partial<Reservation>) | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [statusChanged, setStatusChanged] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -50,15 +53,52 @@ export default function StudioDashboard() {
     fetchData();
   }, []);
 
+  const openModal = (reservation: Reservation | UpcomingReservation) => {
+    const unifiedReservation: UpcomingReservation & Partial<Reservation> = {
+      id: reservation.id,
+      title: "title" in reservation ? reservation.title : reservation.room,
+      client: reservation.client,
+      room: "room" in reservation ? reservation.room : "sala desconocida",
+      date: reservation.date,
+      start: "start" in reservation ? reservation.start : "10:00",
+      end: "end" in reservation ? reservation.end : "11:00",
+      status: reservation.status,
+      amount: "amount" in reservation ? reservation.amount : undefined,
+      hours: "hours" in reservation ? reservation.hours : undefined,
+    };
+    setSelectedReservation(unifiedReservation);
+    setIsModalOpen(true);
+    setStatusChanged(null);
+  };
+
+  const closeModal = () => {
+    setSelectedReservation(null);
+    setIsModalOpen(false);
+    setStatusChanged(null);
+  };
+
+  const updateReservationStatus = (id: string, newStatus: "Confirmado" | "Pendiente") => {
+    setUpcomingReservations((prev) =>
+      prev.map((res) => (res.id === id ? { ...res, status: newStatus } : res))
+    );
+
+    if (selectedReservation?.id === id) {
+      setSelectedReservation({ ...selectedReservation, status: newStatus });
+    }
+
+    setStatusChanged(newStatus);
+    setTimeout(() => setStatusChanged(null), 3000);
+  };
+
   return (
     <div className="bg-white w-full min-h-screen">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <header className="pt-8">
           <h1 className="text-3xl text-black font-bold">
-            Panel de control del propietario del estudio
+            Panel de control del propietario de las salas
           </h1>
-          <p className="text-gray-500">Gestiona tus estudios y reservas</p>
+          <p className="text-gray-500">Gestiona tus salas y reservas</p>
         </header>
 
         {/* Métricas */}
@@ -82,7 +122,7 @@ export default function StudioDashboard() {
           ))}
         </div>
 
-        {/* Reservas recientes + Salas + Mensajes */}
+        {/* Reservas recientes, Salas y Mensajes */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
           {/* Reservas recientes */}
           <div className="bg-sky-800 text-white p-4 rounded-xl shadow-2xl">
@@ -90,12 +130,13 @@ export default function StudioDashboard() {
             {recentReservations.map((res) => (
               <div
                 key={res.id}
-                className="flex justify-between border-b border-white/20 pb-2 mb-2 last:border-0"
+                onClick={() => openModal(res)}
+                className="flex justify-between border-b border-white/20 pb-2 mb-2 last:border-0 cursor-pointer hover:bg-sky-700/50 transition"
               >
                 <div>
                   <p className="font-semibold">{res.client}</p>
                   <p className="text-sm">
-                    {res.studio} • {res.hours} horas
+                    {res.room} • {res.hours} horas
                   </p>
                 </div>
                 <div className="text-right">
@@ -109,12 +150,12 @@ export default function StudioDashboard() {
           {/* Salas */}
           <div className="bg-sky-800 text-white p-4 rounded-xl shadow-2xl">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold">Salas del estudio</h3>
+              <h3 className="text-lg font-bold">Salas</h3>
               <Link
                 href="/studioRooms"
                 className="text-xs bg-white text-sky-700 px-3 py-1 rounded-md font-medium hover:bg-gray-100 transition"
               >
-                Ver todas
+                Gestionar
               </Link>
             </div>
             {loading ? (
@@ -151,8 +192,7 @@ export default function StudioDashboard() {
             {messages.map((msg) => (
               <div key={msg.id} className="mb-3 last:mb-0">
                 <p className="font-semibold">
-                  {msg.author}{" "}
-                  <span className="text-xs text-gray-400">{msg.timeAgo}</span>
+                  {msg.author} <span className="text-xs text-gray-400">{msg.timeAgo}</span>
                 </p>
                 <p className="text-sm">{msg.text}</p>
               </div>
@@ -170,7 +210,11 @@ export default function StudioDashboard() {
           </div>
           <div className="space-y-4">
             {upcomingReservations.map((res) => (
-              <div key={res.id} className="flex gap-4 bg-white rounded-xl items-center p-2">
+              <div
+                key={res.id}
+                onClick={() => openModal(res)}
+                className="flex gap-4 bg-white rounded-xl items-center p-2 cursor-pointer hover:shadow-md transition"
+              >
                 <div className="bg-gray-200 text-gray-500 text-center px-3 py-2 rounded-xl">
                   <p className="font-bold">{new Date(res.date).getDate()}</p>
                   <p className="text-xs uppercase">
@@ -180,7 +224,7 @@ export default function StudioDashboard() {
                 <div className="flex-1">
                   <p className="font-semibold text-gray-700">{res.title}</p>
                   <p className="text-sm text-gray-500">
-                    {res.client} + {res.studio}
+                    {res.client} + {res.room}
                   </p>
                   <p className="text-xs text-gray-400">
                     {res.start} - {res.end}
@@ -199,6 +243,79 @@ export default function StudioDashboard() {
             ))}
           </div>
         </div>
+
+        {/* Modal con opciones */}
+        <Modal isOpen={isModalOpen} onClose={closeModal}>
+          {selectedReservation && (
+            <div className="space-y-6 text-gray-700 p-6">
+              <h2 className="text-2xl bg-sky-700 py-2 text-white rounded-2xl text-center font-bold ">
+                {selectedReservation.title}
+              </h2>
+              <div className="text-center">
+                <p><span className="font-semibold">Cliente:</span> {selectedReservation.client}</p>
+                <p><span className="font-semibold">Sala:</span> {selectedReservation.room}</p>
+                {selectedReservation.amount !== undefined && (
+                  <p><span className="font-semibold">Monto:</span> ${selectedReservation.amount.toLocaleString()}</p>
+                )}
+                {selectedReservation.hours !== undefined && (
+                  <p><span className="font-semibold">Horas:</span> {selectedReservation.hours}</p>
+                )}
+                <p><span className="font-semibold">Fecha:</span> {new Date(selectedReservation.date).toLocaleDateString("es-AR")}</p>
+                <p><span className="font-semibold">Horario:</span> {selectedReservation.start} - {selectedReservation.end}</p>
+                <p>
+                  <span className="font-semibold">Estado:</span>{" "}
+                  <span
+                    className={`px-2 py-1 rounded-md text-xs ${
+                      selectedReservation.status === "Confirmado"
+                        ? "bg-green-100 text-green-600"
+                        : "bg-yellow-100 text-yellow-600"
+                    }`}
+                  >
+                    {selectedReservation.status}
+                  </span>
+                  {statusChanged && (
+                    <span className="ml-2">
+                      {statusChanged === "Confirmado"}
+                    </span>
+                  )}
+                </p>
+              </div>
+
+              <div className="mt-6 border-t pt-4">
+                <h3 className="text-lg font-semibold">Contactar al cliente</h3>
+                <p className="text-sm text-gray-500 mb-3">
+                  Si surge un problema puedes contactar directamente al cliente.{" "}
+                  <span className="text-red-600 font-medium">
+                    Actualmente no se realizan devoluciones por cancelación.
+                  </span>
+                </p>
+                <div className="flex gap-3">
+                  <a
+                    className="px-4 cursor-pointer py-2 rounded-lg bg-black text-white hover:bg-sky-700 transition"
+                  >
+                    Contactar con el músico
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-6 border-t mt-4">
+                <button
+                  onClick={() =>
+                    updateReservationStatus(
+                      selectedReservation.id,
+                      selectedReservation.status === "Confirmado" ? "Pendiente" : "Confirmado"
+                    )
+                  }
+                  className="px-4 py-2 rounded-lg cursor-pointer bg-black text-white hover:bg-sky-700 transition"
+                >
+                  {selectedReservation.status === "Confirmado"
+                    ? "Marcar como Pendiente"
+                    : "Confirmar reserva"}
+                </button>
+              </div>
+            </div>
+          )}
+        </Modal>
       </div>
     </div>
   );
