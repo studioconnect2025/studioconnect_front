@@ -116,7 +116,7 @@ export const Header = () => {
                             <>
                                 <li>
                                     <Link
-                                        href="/profile"
+                                        href="/profileOwner"
                                         className="w-full py-2 px-3 flex rounded hover:bg-gray-800"
                                     >
                                       <FaUser size={24} className="mr-3"/> Mi perfil
