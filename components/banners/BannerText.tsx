@@ -31,7 +31,7 @@ export const BannerText = () => {
           Explorar estudios <MoveRight className="w-5 h-5" />
         </button>
         <Link
-      href="/StudioForm" // ⚡️ acá ponés la ruta de tu página de registro
+      href="/StudioForm" 
       className="flex justify-center items-center gap-2 text-white p-3 border-2 border-white rounded-md w-full sm:w-auto hover:bg-white hover:text-black transition"
     >
       Registrar mi estudio <MoveRight className="w-5 h-5" />
