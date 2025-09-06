@@ -3,6 +3,8 @@ import { persist } from "zustand/middleware";
 import { AuthService } from "@/services/auth.service";
 import { parseJwt } from "@/utils/jwt";
 import type { User, LoginPayload } from "@/types/Auth";
+import { http } from "@/lib/Http"; 
+
 
 type AuthState = {
   user: User | null;
@@ -63,9 +65,10 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
       async logout() {
         try {
-          await AuthService.logout(); // si no existe, no pasa nada
+          await AuthService.logout(); 
         } finally {
           localStorage.removeItem("accessToken");
+          delete (http as any).defaults?.headers?.common?.Authorization;
           set({ user: null, accessToken: null, isAuthenticated: false });
         }
       },
