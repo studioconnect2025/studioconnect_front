@@ -2,10 +2,9 @@
 
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { FaBuilding, FaCloudUploadAlt } from "react-icons/fa";
 import { Link } from "lucide-react";
-import { useState } from "react";
 import ModalTerminos from "@/components/legal/ModalTerminos";
 import TextoTerminos from "@/components/legal/TextoTerminos";
 
@@ -91,22 +90,20 @@ const Checkbox = ({
 // VALIDACION CON YUP!
 
 const StudioSchema = Yup.object().shape({
-  ownerName: Yup.string().required("Requerido"),
-  ownerLastName: Yup.string().required("Requerido"),
+  firstName: Yup.string().required("Requerido"),
+  lastName: Yup.string().required("Requerido"),
   email: Yup.string().email("Email inválido").required("Requerido"),
-  phone: Yup.string().required("Requerido"),
+  password: Yup.string()
+      .required("Requerido")
+      .min(8, "Debe tener al menos 8 caracteres")
+      .matches(/[A-Z]/, "Debe contener al menos una mayúscula")
+      .matches(/[!@#$%^&*(),.?":{}|<>]/, "Debe contener un caracter especial"),
+  phoneNumber: Yup.string().required("Requerido"),
   studioName: Yup.string().required("Requerido"),
   address: Yup.string().required("Requerido"),
   city: Yup.string().required("Requerido"),
+  province: Yup.string().required("Requerido"),
   description: Yup.string().required("Requerido"),
-  tarifaHora: Yup.number()
-    .typeError("Debe ser un número")
-    .required("Requerido"),
-  tarifaDia: Yup.number().typeError("Debe ser un número").required("Requerido"),
-  registroComercial: Yup.mixed().required("Debes subir un archivo"),
-  openHour: Yup.string().required("Requerido"),
-  closeHour: Yup.string().required("Requerido"),
-  terms: Yup.boolean().oneOf([true], "Debes aceptar los términos"),
 });
 
 // Formulario con FOMIK
@@ -135,13 +132,15 @@ export default function StudioConnectStudioForm() {
         <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6">
           <Formik
             initialValues={{
-              ownerName: "",
-              ownerLastName: "",
+              firstName: "",
+              lastName: "",
               email: "",
-              phone: "",
+              password: "",
+              phoneNumber: "",
               studioName: "",
               address: "",
               city: "",
+              province: "",
               description: "",
               tarifaHora: "",
               tarifaDia: "",
@@ -163,16 +162,16 @@ export default function StudioConnectStudioForm() {
                 <SectionTitle>Información del Propietario</SectionTitle>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="ownerName" required>
+                    <Label htmlFor="firstName" required>
                       Nombre
                     </Label>
-                    <Input name="ownerName" placeholder="Juan" />
+                    <Input name="firstName" placeholder="Juan" />
                   </div>
                   <div>
-                    <Label htmlFor="ownerLastName" required>
+                    <Label htmlFor="lastName" required>
                       Apellido
                     </Label>
-                    <Input name="ownerLastName" placeholder="Pérez" />
+                    <Input name="lastName" placeholder="Pérez" />
                   </div>
                 </div>
                 <div>
@@ -186,10 +185,20 @@ export default function StudioConnectStudioForm() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone" required>
+                  <Label htmlFor="password" required>
+                    Contraseña
+                  </Label>
+                  <Input
+                    name="password"
+                    type="password"
+                    placeholder="********"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phoneNumber" required>
                     Teléfono
                   </Label>
-                  <Input name="phone" placeholder="+54 11 1234 5678" />
+                  <Input name="phoneNumber" placeholder="+54 11 1234 5678" />
                 </div>
 
                 <SectionTitle>Información del Estudio</SectionTitle>
@@ -205,14 +214,21 @@ export default function StudioConnectStudioForm() {
                   </Label>
                   <Input name="address" placeholder="Av. Siempre Viva 123" />
                 </div>
+                
+                <div>
+                  <Label htmlFor="province" required>
+                    Provincia
+                  </Label>
+                  <Input name="province" placeholder="Buenos Aires" />
+                </div>
                 <div>
                   <Label htmlFor="city" required>
                     Ciudad
                   </Label>
-                  <Input name="city" placeholder="Buenos Aires" />
+                  <Input name="city" placeholder="Capital Federal" />
                 </div>
 
-                {/* Agregue cuadro de Descripción */}
+
                 <div>
                   <Label htmlFor="description" required>
                     Descripción del estudio
@@ -227,134 +243,7 @@ export default function StudioConnectStudioForm() {
                   />
                   <HelpError name="description" />
                 </div>
-
-                {/* Agregue Tarifas */}
-                <SectionTitle>Tarifas</SectionTitle>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="tarifaHora" required>
-                      Tarifa por hora $
-                    </Label>
-                    <Input name="tarifaHora" type="number" placeholder="0" />
-                  </div>
-                  <div>
-                    <Label htmlFor="tarifaDia" required>
-                      Tarifa diaria $
-                    </Label>
-                    <Input name="tarifaDia" type="number" placeholder="0" />
-                  </div>
-                </div>
-
-                <SectionTitle>Disponibilidad</SectionTitle>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="openHour" required>
-                      Hora apertura
-                    </Label>
-                    <Input name="openHour" type="time" />
-                  </div>
-                  <div>
-                    <Label htmlFor="closeHour" required>
-                      Hora cierre
-                    </Label>
-                    <Input name="closeHour" type="time" />
-                  </div>
-                </div>
-
-                <SectionTitle>Servicios</SectionTitle>
-                <div className="flex flex-wrap gap-4">
-                  <Checkbox
-                    name="services"
-                    value="sala ensayo"
-                    label="Sala de ensayo"
-                  />
-                  <Checkbox
-                    name="services"
-                    value="sala grabacion"
-                    label="Sala de grabación"
-                  />
-                  <Checkbox
-                    name="services"
-                    value="sala estar"
-                    label="Sala de estar"
-                  />
-                  <Checkbox
-                    name="services"
-                    value="cafeteria"
-                    label="Cafetería"
-                  />
-                  <Checkbox
-                    name="services"
-                    value="estacionamiento"
-                    label="Estacionamiento"
-                  />
-                </div>
-
-                <SectionTitle>Equipamiento</SectionTitle>
-                <div className="flex flex-wrap gap-4">
-                  <Checkbox name="equipment" value="bateria" label="Batería" />
-                  <Checkbox
-                    name="equipment"
-                    value="guitarra"
-                    label="Guitarra"
-                  />
-                  <Checkbox name="equipment" value="bajo" label="Bajo" />
-                  <Checkbox
-                    name="equipment"
-                    value="microfonos"
-                    label="Micrófonos"
-                  />
-                  <Checkbox name="equipment" value="consola" label="Consola" />
-                </div>
-
-                {/* Agregue el cuadro upload p/ Registro comercial */}
-                <SectionTitle>Registro Comercial</SectionTitle>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-50">
-                  <input
-                    id="registroComercial"
-                    name="registroComercial"
-                    type="file"
-                    accept="application/pdf"
-                    className="hidden"
-                    onChange={(event) =>
-                      setFieldValue(
-                        "registroComercial",
-                        event.currentTarget.files?.[0]
-                      )
-                    }
-                  />
-                  <label
-                    htmlFor="registroComercial"
-                    className="text-sm text-gray-600 cursor-pointer"
-                  >
-                    <FaCloudUploadAlt size={50} className="ml-66" />
-                    Suelta tu PDF aquí o haz clic para subir
-                  </label>
-                  <HelpError name="registroComercial" />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Field type="checkbox" name="terms" className="h-4 w-4" />
-                  <span className="text-sm text-gray-700">
-                    Acepto los{" "}
-                    <button
-                      type="button"
-                      onClick={() => setOpenModal(true)}
-                      className="text-sky-700 underline hover:text-sky-900"
-                    >
-                      términos y condiciones
-                    </button>
-                  </span>
-                </div>
-                <HelpError name="terms" />
-
-                {/* Modal de Términos */}
-                <ModalTerminos
-                  isOpen={openModal}
-                  onClose={() => setOpenModal(false)}
-                >
-                  <TextoTerminos />
-                </ModalTerminos>
+                
 
                 <div className="pt-4">
                   <button

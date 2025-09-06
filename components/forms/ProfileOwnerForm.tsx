@@ -3,6 +3,9 @@
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { ReactNode, useState } from "react";
+import { FaBuilding, FaCloudUploadAlt } from "react-icons/fa";
+import ModalTerminos from "@/components/legal/ModalTerminos";
+import TextoTerminos from "@/components/legal/TextoTerminos";
 
 const brand = {
   primary: "#015E88",
@@ -72,6 +75,21 @@ const Input = ({
   </div>
 );
 
+const Checkbox = ({
+  name,
+  value,
+  label,
+}: {
+  name: string;
+  value: string;
+  label: string;
+}) => (
+  <label className="flex items-center gap-2">
+    <Field type="checkbox" name={name} value={value} className="h-4 w-4" />
+    <span className="text-sm text-gray-700">{label}</span>
+  </label>
+);
+
 const ProfileOwnerSchema = Yup.object().shape({
   firstName: Yup.string().required("Requerido"),
   lastName: Yup.string().required("Requerido"),
@@ -90,6 +108,14 @@ const ProfileOwnerSchema = Yup.object().shape({
   closeWeek: Yup.string().required("Requerido"),
   openWeekend: Yup.string().required("Requerido"),
   closeWeekend: Yup.string().required("Requerido"),
+  tarifaHora: Yup.number()
+    .typeError("Debe ser un número")
+    .required("Requerido"),
+  tarifaDia: Yup.number().typeError("Debe ser un número").required("Requerido"),
+  registroComercial: Yup.mixed().required("Debes subir un archivo"),
+  openHour: Yup.string().required("Requerido"),
+  closeHour: Yup.string().required("Requerido"),
+  terms: Yup.boolean().oneOf([true], "Debes aceptar los términos"),
 });
 
 const specializationsList = [
@@ -118,15 +144,21 @@ type FormValues = {
   closeWeek: string;
   openWeekend: string;
   closeWeekend: string;
+  tarifaHora: string;
+  tarifaDia: string;
+  registroComercial: string;
+  openHour: string;
+  closeHour: string;
+  terms: boolean;
+  services: string[];
+  equipment: string[];
 };
 
 export default function ProfileOwnerForm() {
   const [profilePic, setProfilePic] = useState<string | null>(null);
-
-  // almacenamiento temporal en memoria
   const [tempStore, setTempStore] = useState<FormValues | null>(null);
-
   const [successMessage, setSuccessMessage] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -159,6 +191,14 @@ export default function ProfileOwnerForm() {
     closeWeek: "",
     openWeekend: "",
     closeWeekend: "",
+    tarifaHora: "",
+    tarifaDia: "",
+    registroComercial: "",
+    openHour: "",
+    closeHour: "",
+    services: [],
+    equipment: [],
+    terms: false,
   };
 
   return (
@@ -191,14 +231,11 @@ export default function ProfileOwnerForm() {
           >
             {({ values, setFieldValue, isSubmitting, isValid, dirty, errors, touched }) => (
               <Form className="space-y-6">
-                {/* Mensaje de éxito */}
                 {successMessage && (
                   <div className="p-3 text-green-800 bg-green-100 border border-green-300 rounded-lg text-center">
                     ✅ REGISTRO CON ÉXITO
                   </div>
                 )}
-
-                {/* Mensaje de error si faltan datos */}
                 {Object.keys(errors).length > 0 && Object.keys(touched).length > 0 && (
                   <div className="p-3 text-red-800 bg-red-100 border border-red-300 rounded-lg text-center">
                     ⚠️ Debes completar todos los datos requeridos.
@@ -324,6 +361,90 @@ export default function ProfileOwnerForm() {
                   ))}
                   <button type="button" className="px-3 py-1 rounded-full text-sm border bg-gray-50">+ Add</button>
                 </div>
+
+                <SectionTitle>Tarifas</SectionTitle>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                    <Label htmlFor="tarifaHora" required>Tarifa por hora $</Label>
+                                    <Input name="tarifaHora" type="number" placeholder="0" />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="tarifaDia" required>Tarifa diaria $</Label>
+                                    <Input name="tarifaDia" type="number" placeholder="0" />
+                                  </div>
+                                </div>
+                
+                                {/* 🚀 NUEVO: Disponibilidad */}
+                                <SectionTitle>Disponibilidad</SectionTitle>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                    <Label htmlFor="openHour" required>Hora apertura</Label>
+                                    <Input name="openHour" type="time" />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="closeHour" required>Hora cierre</Label>
+                                    <Input name="closeHour" type="time" />
+                                  </div>
+                                </div>
+                
+                                {/* 🚀 NUEVO: Servicios */}
+                                <SectionTitle>Servicios</SectionTitle>
+                                <div className="flex flex-wrap gap-4">
+                                  <Checkbox name="services" value="sala ensayo" label="Sala de ensayo" />
+                                  <Checkbox name="services" value="sala grabacion" label="Sala de grabación" />
+                                  <Checkbox name="services" value="sala estar" label="Sala de estar" />
+                                  <Checkbox name="services" value="cafeteria" label="Cafetería" />
+                                  <Checkbox name="services" value="estacionamiento" label="Estacionamiento" />
+                                </div>
+                
+                                {/* 🚀 NUEVO: Equipamiento */}
+                                <SectionTitle>Equipamiento</SectionTitle>
+                                <div className="flex flex-wrap gap-4">
+                                  <Checkbox name="equipment" value="bateria" label="Batería" />
+                                  <Checkbox name="equipment" value="guitarra" label="Guitarra" />
+                                  <Checkbox name="equipment" value="bajo" label="Bajo" />
+                                  <Checkbox name="equipment" value="microfonos" label="Micrófonos" />
+                                  <Checkbox name="equipment" value="consola" label="Consola" />
+                                </div>
+                
+                                {/* 🚀 NUEVO: Registro Comercial + Términos */}
+                                <SectionTitle>Registro Comercial</SectionTitle>
+                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-50">
+                                  <input
+                                    id="registroComercial"
+                                    name="registroComercial"
+                                    type="file"
+                                    accept="application/pdf"
+                                    className="hidden"
+                                    onChange={(event) =>
+                                      setFieldValue("registroComercial", event.currentTarget.files?.[0])
+                                    }
+                                  />
+                                  <label htmlFor="registroComercial" className="text-sm text-gray-600 cursor-pointer">
+                                    <FaCloudUploadAlt size={50} className="mx-auto mb-2" />
+                                    Suelta tu PDF aquí o haz clic para subir
+                                  </label>
+                                  <HelpError name="registroComercial" />
+                                </div>
+                
+                                <div className="flex items-center gap-2">
+                                  <Field type="checkbox" name="terms" className="h-4 w-4" />
+                                  <span className="text-sm text-gray-700">
+                                    Acepto los{" "}
+                                    <button
+                                      type="button"
+                                      onClick={() => setOpenModal(true)}
+                                      className="text-sky-700 underline hover:text-sky-900"
+                                    >
+                                      términos y condiciones
+                                    </button>
+                                  </span>
+                                </div>
+                                <HelpError name="terms" />
+                
+                                <ModalTerminos isOpen={openModal} onClose={() => setOpenModal(false)}>
+                                  <TextoTerminos />
+                                </ModalTerminos>                
 
                 <SectionTitle>Configuración empresarial</SectionTitle>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
