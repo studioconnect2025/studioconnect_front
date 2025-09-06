@@ -1,8 +1,11 @@
-
-import {  MoveRight } from "lucide-react";
+"use client"
+import { MoveRight } from "lucide-react";
 import Link from "next/link";
+import { useIsAuth } from "@/stores/AuthStore"; 
 
 export const BannerText = () => {
+  const isLoggedIn = useIsAuth(); //estado de login
+
   return (
     <div className="relative p-4 sm:p-6 md:p-8 lg:p-10">
       {/* Notas musicales PNG */}
@@ -32,13 +35,15 @@ export const BannerText = () => {
           Explorar estudios <MoveRight className="w-5 h-5" />
         </button>
 
-        <Link
-      href="/StudioForm" 
-      className="flex justify-center items-center gap-2 text-white p-3 border-2 border-white rounded-md w-full sm:w-auto hover:bg-white hover:text-black transition"
-    >
-      Registrar mi estudio <MoveRight className="w-5 h-5" />
-
-    </Link>
+        {/* Solo mostrar si NO está logueado */}
+        {!isLoggedIn && (
+          <Link
+            href="/StudioForm"
+            className="flex justify-center items-center gap-2 text-white p-3 border-2 border-white rounded-md w-full sm:w-auto hover:bg-white hover:text-black transition"
+          >
+            Registrar mi estudio <MoveRight className="w-5 h-5" />
+          </Link>
+        )}
       </div>
     </div>
   );
