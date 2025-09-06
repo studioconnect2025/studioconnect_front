@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { http } from "@/lib/Http";
-import type { User, LoginPayload, LoginResponse } from "@/types/Auth";
+import { AuthService } from "@/services/auth.service";
+import { parseJwt } from "@/utils/jwt";
+import type { User, LoginPayload } from "@/types/Auth";
 
 type AuthState = {
   user: User | null;
@@ -13,7 +14,7 @@ type AuthState = {
 
 type AuthActions = {
   login: (payload: LoginPayload) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   setUser: (u: User | null) => void;
   clearError: () => void;
 };
@@ -27,29 +28,46 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       loading: false,
       error: null,
 
-   
       async login(payload) {
         set({ loading: true, error: null });
-        try {
-          const { data } = await http.post<LoginResponse>("/auth/login", payload);
-          localStorage.setItem("accessToken", data.accessToken);
+        try { 
+          const res = await AuthService.login(payload); 
+          localStorage.setItem("accessToken", res.accessToken);
+          const claims = parseJwt<{ sub?: string; email?: string; role?: string }>(res.accessToken);
+          const finalUser: User | null = claims
+            ? ({
+                id: claims.sub ?? "",
+                email: claims.email ?? "",
+                role: claims.role,
+                name: (claims.email?.split("@")[0] as string) ?? "",
+              } as User)
+            : null;
+
           set({
-            user: data.user,
-            accessToken: data.accessToken,
+            user: finalUser,
+            accessToken: res.accessToken,
             isAuthenticated: true,
             loading: false,
           });
         } catch (e: any) {
+          localStorage.removeItem("accessToken");
           set({
-            error: e?.response?.data?.message || "No se pudo iniciar sesión",
+            user: null,
+            accessToken: null,
+            isAuthenticated: false,
+            error: e?.message || "No se pudo iniciar sesión",
             loading: false,
           });
         }
       },
 
-      logout() {
-        localStorage.removeItem("accessToken");
-        set({ user: null, accessToken: null, isAuthenticated: false });
+      async logout() {
+        try {
+          await AuthService.logout(); // si no existe, no pasa nada
+        } finally {
+          localStorage.removeItem("accessToken");
+          set({ user: null, accessToken: null, isAuthenticated: false });
+        }
       },
 
       setUser(u) {
@@ -61,18 +79,18 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       },
     }),
     {
-      name: "auth", 
-      partialize: (state) => ({
-        user: state.user,
-        accessToken: state.accessToken,
-        isAuthenticated: state.isAuthenticated,
+      name: "auth",
+      partialize: (s) => ({
+        user: s.user,
+        accessToken: s.accessToken,
+        isAuthenticated: s.isAuthenticated,
       }),
     }
   )
 );
 
 
-export const useIsAuth = () => useAuthStore((s) => s.isAuthenticated);
-export const useAuthUser = () => useAuthStore((s) => s.user);
 export const useAuthLoading = () => useAuthStore((s) => s.loading);
 export const useAuthError = () => useAuthStore((s) => s.error);
+export const useIsAuth = () => useAuthStore((s) => s.isAuthenticated);
+export const useAuthUser = () => useAuthStore((s) => s.user);
