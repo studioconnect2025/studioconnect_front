@@ -2,23 +2,28 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useAuthStore } from "@/stores/AuthStore"; //  import del store
+import { useAuthStore } from "@/stores/AuthStore"; 
+import { useRouter } from "next/navigation"; 
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [successMsg, setSuccessMsg] = useState(""); 
 
-  const login = useAuthStore((s) => s.login); // Obtiene la acción login
+  const login = useAuthStore((s) => s.login); 
+  const router = useRouter(); 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login({ email, password }); // Llama al servicio de login vía store
+    await login({ email, password }); 
 
-    console.log("Auth state:", useAuthStore.getState());
-
-    // acá se puede hacer una redirección si necesitamos
+    const state = useAuthStore.getState(); 
+    if (state.isAuthenticated) {          
+      setSuccessMsg("✅ Login exitoso");  
+      setTimeout(() => router.push("/"), 1000); 
+    }
   };
 
   return (
@@ -29,6 +34,11 @@ export default function LoginPage() {
         </div>
 
         <div className="rounded-b-xl bg-white shadow-md p-6">
+          {/* Mensaje de éxito */}
+          {successMsg && (
+            <p className="mb-3 text-center text-green-600 text-sm">{successMsg}</p>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
