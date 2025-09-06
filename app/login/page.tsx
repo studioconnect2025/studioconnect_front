@@ -2,29 +2,53 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useAuthStore } from "@/stores/AuthStore"; 
-import { useRouter } from "next/navigation"; 
+import { useAuthStore, useAuthError } from "@/stores/AuthStore";
+import { useRouter } from "next/navigation";
+import { validateEmail, validatePassword } from "@/utils/validators/login";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [successMsg, setSuccessMsg] = useState(""); 
+  const [successMsg, setSuccessMsg] = useState("");
+  const [touchedEmail, setTouchedEmail] = useState(false);
+  const [touchedPassword, setTouchedPassword] = useState(false);
 
-  const login = useAuthStore((s) => s.login); 
-  const router = useRouter(); 
+  const login = useAuthStore((s) => s.login);
+  const clearError = useAuthStore((s) => s.clearError);
+  const error = useAuthError();
+  const router = useRouter();
+
+  // Validaciones de campos
+  const emailErr = validateEmail(email);
+  const passErr = validatePassword(password);
+  const isValid = !emailErr && !passErr;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login({ email, password }); 
+    if (!isValid) {
+      setTouchedEmail(true);
+      setTouchedPassword(true);
+      return;
+    }
+    await login({ email, password });
 
-    const state = useAuthStore.getState(); 
-    if (state.isAuthenticated) {          
-      setSuccessMsg("✅ Login exitoso");  
-      setTimeout(() => router.push("/"), 1000); 
+    const state = useAuthStore.getState();
+    if (state.isAuthenticated) {
+      setSuccessMsg("✅ Login exitoso");
+      setTimeout(() => router.push("/"), 1000);
     }
   };
+
+  const emailAria =
+    touchedEmail && emailErr
+      ? { "aria-invalid": true as const, "aria-describedby": "email-error" }
+      : {};
+  const passwordAria =
+    touchedPassword && passErr
+      ? { "aria-invalid": true as const, "aria-describedby": "password-error" }
+      : {};
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
@@ -34,9 +58,18 @@ export default function LoginPage() {
         </div>
 
         <div className="rounded-b-xl bg-white shadow-md p-6">
+          {/* Mensaje de error */}
+          {error && (
+            <p className="mb-3 text-center text-red-600 text-sm" role="alert" aria-live="polite">
+              {error}
+            </p>
+          )}
+
           {/* Mensaje de éxito */}
           {successMsg && (
-            <p className="mb-3 text-center text-green-600 text-sm">{successMsg}</p>
+            <p className="mb-3 text-center text-green-600 text-sm" aria-live="polite">
+              {successMsg}
+            </p>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -49,10 +82,17 @@ export default function LoginPage() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) clearError();
+                  }}
+                  onBlur={() => setTouchedEmail(true)}
                   placeholder="Introduce tu correo electrónico"
                   required
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 pr-10 shadow-sm focus:border-sky-600 focus:ring-sky-600 sm:text-sm"
+                  {...emailAria}
+                  className={`block w-full rounded-md border px-3 py-2 pr-10 shadow-sm text-black focus:border-sky-600 focus:ring-sky-600 sm:text-sm ${
+                    touchedEmail && emailErr ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
                 <svg
                   aria-hidden="true"
@@ -69,6 +109,11 @@ export default function LoginPage() {
                   />
                 </svg>
               </div>
+              {touchedEmail && emailErr && (
+                <p id="email-error" className="mt-1 text-xs text-red-600">
+                  {emailErr}
+                </p>
+              )}
             </div>
 
             <div>
@@ -80,12 +125,19 @@ export default function LoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (error) clearError();
+                  }}
+                  onBlur={() => setTouchedPassword(true)}
                   placeholder="Introduce tu contraseña"
                   required
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 pr-10 shadow-sm focus:border-sky-600 focus:ring-sky-600 sm:text-sm"
+                  {...passwordAria}
+                  className={`block w-full rounded-md border px-3 py-2 pr-10 shadow-sm text-black focus:border-sky-600 focus:ring-sky-600 sm:text-sm ${
+                    touchedPassword && passErr ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
-                
+
                 <button
                   type="button"
                   aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
@@ -93,7 +145,6 @@ export default function LoginPage() {
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-sky-600"
                 >
                   {showPassword ? (
-                    
                     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
                       <path
@@ -103,7 +154,6 @@ export default function LoginPage() {
                       />
                     </svg>
                   ) : (
-                    
                     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M2 12s3.5-7.5 10-7.5S22 12 22 12s-3.5 7.5-10 7.5S2 12 2 12z" />
                       <circle cx="12" cy="12" r="3" />
@@ -111,6 +161,11 @@ export default function LoginPage() {
                   )}
                 </button>
               </div>
+              {touchedPassword && passErr && (
+                <p id="password-error" className="mt-1 text-xs text-red-600">
+                  {passErr}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-between">
@@ -118,7 +173,10 @@ export default function LoginPage() {
                 <input
                   type="checkbox"
                   checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
+                  onChange={(e) => {
+                    setRemember(e.target.checked);
+                    if (error) clearError();
+                  }}
                   className="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-600"
                 />
                 <span className="text-sm text-gray-600">Recordarme</span>
@@ -131,7 +189,11 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="w-full py-2 px-4 rounded-md bg-sky-700 text-white hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-700"
+              disabled={!isValid}
+              aria-disabled={!isValid}
+              className={`w-full py-2 px-4 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-700 ${
+                isValid ? "bg-sky-700 hover:bg-sky-800" : "bg-sky-300 cursor-not-allowed"
+              }`}
             >
               Iniciar sesión
             </button>
@@ -145,14 +207,18 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <button
-              type="button"
-              disabled
-              className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-md border border-gray-300 bg-gray-50 text-gray-500"
-            >
-              <img src="/google-icon.svg" alt="Google" className="h-5 w-5" />
-              Sign in with Google
-            </button>
+           <button
+  type="button"
+  onClick={() => {
+    const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+    const redirect = `${window.location.origin}/auth/sso`;
+    window.location.href = `${api}/auth/google/login?redirect_uri=${encodeURIComponent(redirect)}`;
+  }}
+  className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
+>
+  <img src="/google-icon.svg" alt="Google" className="h-5 w-5" />
+  Continuar con Google
+</button>
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-600">
