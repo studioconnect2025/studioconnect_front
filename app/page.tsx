@@ -1,4 +1,4 @@
-// app/page.tsx
+"use client"; 
 import { BannerImg } from "@/components/banners/BannerImg";
 import { BannerSearch } from "@/components/banners/BannerSearch";
 import { BannerText } from "@/components/banners/BannerText";
@@ -6,8 +6,12 @@ import ClientUserLocationMap from "@/components/LocationMap/ClientUserLocationMa
 import { ReviewList } from "@/components/reviews/ReviewList";
 import { FeaturedStudiosList } from "@/components/studio/FeatureStudioList";
 import WhyChooseStudioConnect from "@/components/WhyChooseStudioConnect/WhyChooseStudioConnect";
+import { OwnerToolbar } from "@/components/ownerToolBar/ownerToolBar"; 
+import { useIsAuth } from "@/stores/AuthStore"; 
 
 export default function Home() {
+  const isLoggedIn = useIsAuth();
+
   return (
     <div>
       {/* Banner principal */}
@@ -18,7 +22,6 @@ export default function Home() {
         }}
       >
         <div className="flex flex-col md:flex-row w-full max-w-6xl justify-between items-center gap-8">
-          
           {/* Texto */}
           <div className="w-full md:w-1/2 flex items-center justify-center">
             <BannerText />
@@ -31,10 +34,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Banner de búsqueda */}
+      {/* Si está logueado -> OwnerToolbar, sino -> BannerSearch */}
       <div className="bg-gray-100 flex flex-col items-center p-4 sm:p-6">
         <div className="w-full max-w-6xl">
-          <BannerSearch />
+          {isLoggedIn ? <OwnerToolbar /> : <BannerSearch />}
         </div>
       </div>
 
@@ -44,20 +47,23 @@ export default function Home() {
           <ClientUserLocationMap />
         </div>
       </div>
+
       {/* Sección Estudios destacados */}
-      <div className="bg-gray-100 flex flex-col items-center p-4 sm:p-6 -mt-6" >
-        <div className="w-full max-w-6xl  ">
-           <FeaturedStudiosList limit={3} />
+      <div className="bg-gray-100 flex flex-col items-center p-4 sm:p-6 -mt-6">
+        <div className="w-full max-w-6xl">
+          <FeaturedStudiosList limit={3} />
         </div>
       </div>
-      {/*Seccion porque elegir studioconnect */}
+
+      {/* Sección por qué elegir StudioConnect */}
       <div>
         <WhyChooseStudioConnect />
       </div>
+
       {/* Sección de Reseñas */}
-      <div className="bg-gray-100 flex flex-col items-center p-4 sm:p-6 -mt-6" >
-        <div className="w-full max-w-6xl  ">
-           <ReviewList />
+      <div className="bg-gray-100 flex flex-col items-center p-4 sm:p-6 -mt-6">
+        <div className="w-full max-w-6xl">
+          <ReviewList />
         </div>
       </div>
     </div>

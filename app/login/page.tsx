@@ -21,7 +21,7 @@ export default function LoginPage() {
 
     const state = useAuthStore.getState(); 
     if (state.isAuthenticated) {          
-      setSuccessMsg("✅ Login exitoso");  
+      setSuccessMsg("Login exitoso");  
       setTimeout(() => router.push("/"), 1000); 
     }
   };
@@ -131,7 +131,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="w-full py-2 px-4 rounded-md bg-sky-700 text-white hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-700"
+              className="w-full py-2 px-4 rounded-md bg-sky-700 cursor-pointer text-white hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-700"
             >
               Iniciar sesión
             </button>
@@ -148,7 +148,7 @@ export default function LoginPage() {
             <button
               type="button"
               disabled
-              className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-md border border-gray-300 bg-gray-50 text-gray-500"
+              className="w-full flex items-center justify-center cursor-pointer gap-2 py-2 px-4 rounded-md border border-gray-300 bg-gray-50 text-gray-500"
             >
               <img src="/google-icon.svg" alt="Google" className="h-5 w-5" />
               Sign in with Google
@@ -157,7 +157,7 @@ export default function LoginPage() {
 
           <p className="mt-6 text-center text-sm text-gray-600">
             ¿No tienes cuenta?{" "}
-            <Link href="/register" className="text-sky-700 hover:underline">
+            <Link href="/joinStudioConnect" className="text-sky-700 hover:underline">
               Regístrate
             </Link>
           </p>
