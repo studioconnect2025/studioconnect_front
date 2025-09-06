@@ -1,0 +1,51 @@
+import { http } from "@/lib/Http";
+import { ApiError, toApiError } from "@/utils/ApiError";
+import type { LoginPayload, LoginResponse, MeResponse } from "@/types/Auth";
+
+function normalizeLoginResponse(raw: any): { accessToken: string; user?: any } {
+  const accessToken =
+    raw?.accessToken ??
+    raw?.token ??
+    raw?.access_token ??        
+    raw?.data?.accessToken ??
+    raw?.data?.token ??
+    raw?.data?.access_token;
+
+  const user =
+    raw?.user ??
+    raw?.data?.user ??
+    raw?.payload?.user;
+
+  if (!accessToken) {
+    throw new ApiError("Formato de respuesta de login inesperado", undefined, raw);
+  }
+  return { accessToken, user };
+}
+
+export const AuthService = {
+  async login(payload: LoginPayload): Promise<{ accessToken: string; user?: any }> {
+    try {
+      const { data } = await http.post("/auth/login", payload);
+      return normalizeLoginResponse(data);
+    } catch (e) {
+      throw toApiError(e);
+    }
+  },
+
+  async me(): Promise<MeResponse> {
+    try {
+      const { data } = await http.get<MeResponse>("/auth/me");
+      return data;
+    } catch (e) {
+      throw toApiError(e);
+    }
+  },
+
+  async logout(): Promise<void> {
+    try {
+      await http.post("/auth/logout");
+    } catch (e) {
+      throw toApiError(e);
+    }
+  },
+};

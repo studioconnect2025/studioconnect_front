@@ -11,7 +11,7 @@ export const Header = () => {
     const toggleMenu = () => setIsOpen(!isOpen);
     const closeMenu = () => setIsOpen(false);
 
-    const isLoggedIn = true; // Cambiar a false para probar deslogueado
+    const isLoggedIn = false; // Cambiar a false para probar deslogueado
 
     return (
         <header>

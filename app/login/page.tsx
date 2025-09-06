@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useAuthStore } from "@/stores/AuthStore"; //  import del store
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -9,10 +10,15 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const login = useAuthStore((s) => s.login); // Obtiene la acción login
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: reemplazar por fetch/axios al backend
-    console.log({ email, password, remember });
+    await login({ email, password }); // Llama al servicio de login vía store
+
+    console.log("Auth state:", useAuthStore.getState());
+
+    // acá se puede hacer una redirección si necesitamos
   };
 
   return (
@@ -69,7 +75,7 @@ export default function LoginPage() {
                   required
                   className="block w-full rounded-md border border-gray-300 px-3 py-2 pr-10 shadow-sm focus:border-sky-600 focus:ring-sky-600 sm:text-sm"
                 />
-                {/* ojo (toggle) */}
+                
                 <button
                   type="button"
                   aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
@@ -77,7 +83,7 @@ export default function LoginPage() {
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-sky-600"
                 >
                   {showPassword ? (
-                    // eye-off
+                    
                     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
                       <path
@@ -87,7 +93,7 @@ export default function LoginPage() {
                       />
                     </svg>
                   ) : (
-                    // eye
+                    
                     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M2 12s3.5-7.5 10-7.5S22 12 22 12s-3.5 7.5-10 7.5S2 12 2 12z" />
                       <circle cx="12" cy="12" r="3" />
