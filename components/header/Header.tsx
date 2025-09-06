@@ -6,11 +6,13 @@ import { FaUser } from "react-icons/fa";
 import { MdAppRegistration, MdOutlineDashboardCustomize } from "react-icons/md";
 import { TbLogin } from "react-icons/tb";
 import { useIsAuth, useAuthUser, useAuthStore } from "@/stores/AuthStore";
+import { useRouter } from "next/navigation";
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
+  const router = useRouter(); 
 
   //estados de zustand
   const isLoggedIn = useIsAuth();
@@ -57,7 +59,10 @@ export const Header = () => {
                 <span className="text-white">Hola {user?.name}</span>
                 <button
                   className="text-white hover:bg-sky-800 p-2 rounded-lg"
-                  onClick={logout}
+                  onClick={async () => {
+                    await logout();
+                    router.push("/"); 
+                  }}
                 >
                   Cerrar sesión
                 </button>
@@ -129,7 +134,7 @@ export const Header = () => {
                     <FaUser size={24} className="mr-3" /> Mi perfil
                   </Link>
                 </li>
-                 <li>
+                <li>
                   <Link
                     href="/studioRegister"
                     className="w-full py-2 px-3 flex rounded hover:bg-gray-800"
@@ -148,7 +153,10 @@ export const Header = () => {
                 </li>
                 <li>
                   <button
-                    onClick={logout}
+                    onClick={async () => {
+                      await logout();
+                      router.push("/"); 
+                    }}
                     className="w-full flex text-left py-2 px-3 rounded hover:bg-gray-800"
                   >
                     <TbLogin size={24} className="mr-3" />

@@ -41,26 +41,7 @@ export const AuthService = {
     }
   },
 
- async logout(): Promise<void> {
-  try {
-    await http.post("/auth/logout", null, { withCredentials: true });
-  } catch (e: any) {
-    const status = e?.response?.status;
-
- 
-    if (status === 401 || status === 403 || status === 404) return;
-
-    
-    if (status === 405) {
-      try {
-        await http.get("/auth/logout", { withCredentials: true });
-        return;
-      } catch {
-       
-      }
-    }
-
-    throw toApiError(e);
-  }
+async logout(): Promise<void> {
+    return;
 }
 };
