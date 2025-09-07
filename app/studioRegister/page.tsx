@@ -1,14 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import { FaCloudUploadAlt } from "react-icons/fa";
+import { FaCloudUploadAlt, FaStore } from "react-icons/fa";
 
-// Componentes UI
-const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-  <h2 className="text-lg font-semibold mt-6 mb-2 text-black">{children}</h2>
-);
+const brand = {
+    primary: "#015E88",
+    light: "#F5F7FA",
+};
+
+export function SectionTitle({ children }: { children: ReactNode }) {
+    return (
+        <h3 className="text-sm md:text-base font-semibold text-gray-700 mb-3 mt-6">
+            {children}
+        </h3>
+    );
+}
 
 const Label = ({ children, htmlFor, required }: any) => (
   <label htmlFor={htmlFor} className="block mb-1 font-medium text-black">
@@ -148,15 +156,32 @@ export default function RegisterPage() {
       {({ values, setFieldValue, errors, touched }) => (
         <Form className=" min-h-screen flex items-center justify-center bg-gray-100 py-10 px-4">
           <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6">
+            <div className="bg-sky-800 text-white py-10 px-4 text-center">
+                            <div className="max-w-2xl mx-auto">
+                                <div className="flex justify-center mb-4">
+                                    <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center">
+                                        <FaStore size={30} className="text-sky-700" />
+                                    </div>
+                                </div>
+                                <h1 className="text-2xl md:text-3xl font-semibold">
+                                    Registro de estudio
+                                </h1>
+                                <p className="mt-2 text-sm md:text-base text-gray-200">
+                                    Únete a nuestra red de estudios de grabación
+                                    profesionales y conéctate con músicos de todo el mundo.
+                                </p>
+                            </div>
+                        </div>
             {/* Información del estudio */}
           <SectionTitle>Información del estudio</SectionTitle>
+           <div>
           <Label htmlFor="studioName" required>
-            Nombre de estudio/sala
+           Nombre de estudio/sala
           </Label>
           <Input name="studioName" placeholder="SoundWaves Recording Studio" />
           <HelpError name="studioName" errors={errors} touched={touched} />
-
-          <Label htmlFor="commercialId" required>
+            </div>
+                   <Label htmlFor="commercialId" required>
             Número de registro comercial
           </Label>
           <Input name="commercialId" placeholder="REG-123456" />
