@@ -33,15 +33,15 @@ export const Header = () => {
                 <li>
                   <Link
                     href="#"
-                    className="block py-2 px-3 text-white hover:text-gray-400"
+                    className="block py-2 px-3 cursor-pointer text-white hover:text-gray-400"
                   >
                     Únete como músico
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="/StudioForm"
-                    className="block py-2 px-3 text-white hover:text-gray-400"
+                    href="/studioForm"
+                    className="block py-2 px-3 cursor-pointer text-white hover:text-gray-400"
                   >
                     Únete como anfitrión
                   </Link>
@@ -56,13 +56,13 @@ export const Header = () => {
               <>
                 <span className="text-white">Hola {user?.name}</span>
                 <button
-                  className="text-white hover:bg-sky-800 p-2 rounded-lg"
+                  className="text-white cursor-pointer hover:bg-sky-800 p-2 rounded-lg"
                   onClick={logout}
                 >
                   Cerrar sesión
                 </button>
                 <button
-                  className="text-white hover:bg-sky-800 p-2 rounded-lg"
+                  className="text-white cursor-pointer hover:bg-sky-800 p-2 rounded-lg"
                   onClick={toggleMenu}
                 >
                   Menú
@@ -168,7 +168,7 @@ export const Header = () => {
                 </li>
                 <li>
                   <Link
-                    href="/StudioForm"
+                    href="/studioForm"
                     className="block py-2 px-3 text-white rounded hover:bg-gray-800"
                   >
                     Únete como anfitrión
