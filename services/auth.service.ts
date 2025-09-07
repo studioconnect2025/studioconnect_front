@@ -42,6 +42,18 @@ export const AuthService = {
   },
 
 async logout(): Promise<void> {
-    return;
+  try {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+
+    await http.post("/auth/logout", null, {
+      withCredentials: true, 
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
+  } catch (e: any) {
+    const status = e?.response?.status;
+    if (status === 401 || status === 403 || status === 404 || status === 405) return;
+    throw toApiError(e);
+  }
 }
 };
