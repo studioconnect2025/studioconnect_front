@@ -37,7 +37,7 @@ export default function LoginPage() {
     const state = useAuthStore.getState();
     if (state.isAuthenticated) {
       setSuccessMsg("✅ Login exitoso");
-      setTimeout(() => router.push("/"), 1000);
+      setTimeout(() => router.push("/studioDashboard"), 1000);
     }
   };
 
