@@ -127,11 +127,6 @@ const StudioSchema = Yup.object().shape({
         .oneOf([Yup.ref("password")], "Las contraseñas deben coincidir")
         .required("Requerido"),
     phoneNumber: Yup.string().required("Requerido"),
-    studioName: Yup.string().required("Requerido"),
-    address: Yup.string().required("Requerido"),
-    city: Yup.string().required("Requerido"),
-    province: Yup.string().required("Requerido"),
-    description: Yup.string().required("Requerido"),
 });
 
 export default function StudioConnectStudioForm() {
@@ -164,11 +159,6 @@ export default function StudioConnectStudioForm() {
                             password: "",
                             confirmPassword: "",
                             phoneNumber: "",
-                            studioName: "",
-                            address: "",
-                            city: "",
-                            province: "",
-                            description: "",
                         }}
                         validationSchema={StudioSchema}
                         onSubmit={async (values, { setSubmitting, resetForm }) => {
@@ -182,16 +172,18 @@ export default function StudioConnectStudioForm() {
                                         password: values.password,
                                     },
                                     studioInfo: {
-                                        name: values.studioName,
-                                        city: values.city,
-                                        province: values.province,
-                                        address: values.address,
-                                        description: values.description,
+                                        name: "Pendiente",
+                                        city: "Pendiente",
+                                        province: "Pendiente",
+                                        address: "Pendiente 123",
+                                        description: "Registro de owner sin datos de estudio por ahora.",
                                     },
                                 };
                                 const res = await registerStudioOwner(payload);
                                 alert(res.message || "Registro completado");
                                 resetForm();
+                                window.location.href = "/login";
+
                             } catch (err: any) {
                                 alert(err?.response?.data?.message ?? "Error al registrar");
                             } finally {
@@ -253,51 +245,6 @@ export default function StudioConnectStudioForm() {
                                         Teléfono
                                     </Label>
                                     <Input name="phoneNumber" placeholder="+54 11 1234 5678" />
-                                </div>
-
-                                <SectionTitle>Información del Estudio</SectionTitle>
-
-                                <div>
-                                    <Label htmlFor="studioName" required>
-                                        Nombre del estudio
-                                    </Label>
-                                    <Input name="studioName" placeholder="Studio Connect" />
-                                </div>
-
-                                <div>
-                                    <Label htmlFor="address" required>
-                                        Dirección
-                                    </Label>
-                                    <Input name="address" placeholder="Av. Siempre Viva 123" />
-                                </div>
-
-                                <div>
-                                    <Label htmlFor="province" required>
-                                        Provincia
-                                    </Label>
-                                    <Input name="province" placeholder="Buenos Aires" />
-                                </div>
-
-                                <div>
-                                    <Label htmlFor="city" required>
-                                        Ciudad
-                                    </Label>
-                                    <Input name="city" placeholder="Capital Federal" />
-                                </div>
-
-                                <div>
-                                    <Label htmlFor="description" required>
-                                        Descripción del estudio
-                                    </Label>
-                                    <Field
-                                        as="textarea"
-                                        id="description"
-                                        name="description"
-                                        placeholder="Contanos sobre tu sala o estudio..."
-                                        rows={4}
-                                        className="w-full border border-gray-300 rounded-lg bg-white px-3 py-2 text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    />
-                                    <HelpError name="description" />
                                 </div>
 
                                 <div className="pt-4">
