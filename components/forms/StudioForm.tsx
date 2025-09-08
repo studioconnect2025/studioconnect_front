@@ -3,7 +3,8 @@
 import React, { ReactNode, useState } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { FaCloudUploadAlt, FaStore } from "react-icons/fa";
+import { FaBuilding, FaCloudUploadAlt, FaStore } from "react-icons/fa";
+import { registerStudioOwner } from "@/services/register.services";
 
 const brand = {
     primary: "#015E88",
@@ -135,7 +136,8 @@ export default function StudioConnectStudioForm() {
                 <div className="max-w-2xl mx-auto">
                     <div className="flex justify-center mb-4">
                         <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center">
-                            <FaBuilding size={30} className="text-sky-700" />
+                            <FaBuilding
+                             size={30} className="text-sky-700" />
                         </div>
                     </div>
                     <h1 className="text-2xl md:text-3xl font-semibold">
