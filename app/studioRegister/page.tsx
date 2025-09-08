@@ -1,89 +1,96 @@
 "use client";
 
-import { ReactNode, useState } from "react";
-import { Formik, Form, Field } from "formik";
+import React, { ReactNode, useState } from "react";
+import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { FaCloudUploadAlt, FaStore } from "react-icons/fa";
+// Importo el modal y el texto desde tus componentes reales
+import ModalTerminos from "@/components/legal/ModalTerminos";
+import TextoTerminos from "@/components/legal/TextoTerminos";
 
 const brand = {
-    primary: "#015E88",
-    light: "#F5F7FA",
+  primary: "#015E88",
+  light: "#F5F7FA",
 };
 
 export function SectionTitle({ children }: { children: ReactNode }) {
-    return (
-        <h3 className="text-sm md:text-base font-semibold text-gray-700 mb-3 mt-6">
-            {children}
-        </h3>
-    );
+  return (
+    <h3 className="text-sm md:text-base font-semibold text-gray-700 mb-3 mt-6">
+      {children}
+    </h3>
+  );
 }
 
-const Label = ({ children, htmlFor, required }: any) => (
-  <label htmlFor={htmlFor} className="block mb-1 font-medium text-black">
-    {children} {required && <span className="text-red-500">*</span>}
-  </label>
-);
+function Label({
+  htmlFor,
+  children,
+  required,
+}: {
+  htmlFor: string;
+  children: ReactNode;
+  required?: boolean;
+}) {
+  return (
+    <label
+      htmlFor={htmlFor}
+      className="block text-sm font-medium text-gray-700 mb-1"
+    >
+      {children}
+      {required && <span className="text-red-500 ml-1">*</span>}
+    </label>
+  );
+}
 
-const Input = (props: any) => (
-  <input
-    {...props}
-    className="w-full border rounded-lg px-3 py-2 text-sm text-black bg-white"
+function HelpError({ name }: { name: string }) {
+  return (
+    <ErrorMessage name={name} component="div" className="text-xs text-red-600 mt-1" />
+  );
+}
+
+// Input con integración a Formik
+const Input = ({ name, type = "text", placeholder }: { name: string; type?: string; placeholder?: string }) => (
+  <Field
+    id={name}
+    name={name}
+    type={type}
+    placeholder={placeholder}
+    className="w-full border border-gray-300 rounded-lg bg-white px-3 py-2 text-sm text-gray-800 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
   />
 );
 
-const HelpError = ({ name, errors, touched }: any) => (
-  <Field name={name}>
-    {() =>
-      errors?.[name] && touched?.[name] ? (
-        <div className="text-red-500 text-sm">{errors[name]}</div>
-      ) : null
-    }
-  </Field>
-);
-
+// Checkbox
 const Checkbox = ({ name, value, label }: any) => (
-  <label className="flex items-center gap-2 text-black">
-    <Field type="checkbox" name={name} value={value} />
-    {label}
+  <label className="flex items-center gap-2 text-gray-800">
+    <Field type="checkbox" name={name} value={value} className="h-4 w-4" />
+    <span className="text-sm">{label}</span>
   </label>
 );
 
-const ModalTerminos = ({ isOpen, onClose, children }: any) =>
-  isOpen ? (
-    <div className="fixed inset-0 bg-black/30 flex justify-center items-center">
-      <div className="bg-white p-6 rounded-lg w-1/2 text-black">
-        {children}
-        <button
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          onClick={onClose}
-        >
-          Cerrar
-        </button>
-      </div>
-    </div>
-  ) : null;
+// Nota: ya no definimos ModalTerminos ni TextoTerminos aquí — los importamos desde tus componentes.
 
-const TextoTerminos = () => <p>Aquí van los términos y condiciones...</p>;
+// Yup Schema
+const numberTransform = (schema: any) =>
+  schema.transform((value: any, originalValue: any) => {
+    if (originalValue === "" || originalValue === null || originalValue === undefined) return undefined;
+    const parsed = Number(originalValue);
+    return Number.isNaN(parsed) ? originalValue : parsed;
+  });
 
-// Yup Schema completo
 const ProfileOwnerSchema = Yup.object().shape({
   studioName: Yup.string().required("Requerido"),
   commercialId: Yup.string().required("Requerido"),
   years: Yup.string().required("Requerido"),
   studioType: Yup.string().required("Requerido"),
-  specializations: Yup.array().min(
-    1,
-    "Selecciona al menos una especialización"
-  ),
-  tarifaHora: Yup.number().typeError("Debe ser un número").required("Requerido"),
-  tarifaDia: Yup.number().typeError("Debe ser un número").required("Requerido"),
+  specializations: Yup.array().min(1, "Selecciona al menos una especialización"),
+  tarifaHora: numberTransform(Yup.number()).typeError("Debe ser un número").required("Requerido"),
+  tarifaDia: numberTransform(Yup.number()).typeError("Debe ser un número").required("Requerido"),
   openHour: Yup.string().required("Requerido"),
   closeHour: Yup.string().required("Requerido"),
   services: Yup.array(),
   equipment: Yup.array(),
   registroComercial: Yup.mixed().required("Debes subir un archivo"),
   terms: Yup.boolean().oneOf([true], "Debes aceptar los términos"),
-  hourlyRate: Yup.number().typeError("Debe ser un número").required("Requerido"),
+  hourlyRate: numberTransform(Yup.number()).typeError("Debe ser un número").required("Requerido"),
   minDuration: Yup.string().required("Requerido"),
   preBooking: Yup.string().required("Requerido"),
   cancellation: Yup.string().required("Requerido"),
@@ -91,10 +98,7 @@ const ProfileOwnerSchema = Yup.object().shape({
   closeWeek: Yup.string().required("Requerido"),
   openWeekend: Yup.string().required("Requerido"),
   closeWeekend: Yup.string().required("Requerido"),
-  images: Yup.array()
-    .min(1, "Debes subir al menos 1 imagen")
-    .max(5, "Máximo 5 imágenes")
-    .required("Requerido"),
+  images: Yup.array().min(1, "Debes subir al menos 1 imagen").max(5, "Máximo 5 imágenes").required("Requerido"),
 });
 
 export default function RegisterPage() {
@@ -125,13 +129,7 @@ export default function RegisterPage() {
     images: [] as File[],
   };
 
-  const specializationsList = [
-    "Grabación",
-    "Mezcla",
-    "Mastering",
-    "Producción",
-    "Composición",
-  ];
+  const specializationsList = ["Grabación", "Mezcla", "Mastering", "Producción", "Composición"];
   const servicesList = [
     { value: "sala ensayo", label: "Sala de ensayo" },
     { value: "sala grabacion", label: "Sala de grabación" },
@@ -147,334 +145,235 @@ export default function RegisterPage() {
     { value: "consola", label: "Consola" },
   ];
 
+  const handleSubmit = async (values: any, { setSubmitting }: any) => {
+    try {
+      const formData = new FormData();
+      formData.append("studioName", values.studioName || "");
+      formData.append("commercialId", values.commercialId || "");
+      formData.append("years", values.years || "");
+      formData.append("studioType", values.studioType || "");
+      formData.append("tarifaHora", String(values.tarifaHora || ""));
+      formData.append("tarifaDia", String(values.tarifaDia || ""));
+      formData.append("openHour", values.openHour || "");
+      formData.append("closeHour", values.closeHour || "");
+      formData.append("hourlyRate", String(values.hourlyRate || ""));
+      formData.append("minDuration", values.minDuration || "");
+      formData.append("preBooking", values.preBooking || "");
+      formData.append("cancellation", values.cancellation || "");
+      formData.append("openWeek", values.openWeek || "");
+      formData.append("closeWeek", values.closeWeek || "");
+      formData.append("openWeekend", values.openWeekend || "");
+      formData.append("closeWeekend", values.closeWeekend || "");
+      formData.append("terms", values.terms ? "true" : "false");
+      (values.specializations || []).forEach((s: any) => formData.append("specializations[]", s));
+      (values.services || []).forEach((s: any) => formData.append("services[]", s));
+      (values.equipment || []).forEach((e: any) => formData.append("equipment[]", e));
+      if (values.registroComercial) formData.append("registroComercial", values.registroComercial);
+      (values.images || []).forEach((file: File) => formData.append("images", file));
+
+      const res = await fetch("/api/studios", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Server error:", text);
+        alert("Error al registrar estudio");
+      } else {
+        const data = await res.json();
+        console.log("Registro correcto:", data);
+        alert("Estudio registrado correctamente");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error al registrar estudio");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={ProfileOwnerSchema}
-      onSubmit={(values) => console.log(values)}
-    >
-      {({ values, setFieldValue, errors, touched }) => (
-        <Form className=" min-h-screen flex items-center justify-center bg-gray-100 py-10 px-4">
-          <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6">
-            <div className="bg-sky-800 text-white py-10 px-4 text-center">
-                            <div className="max-w-2xl mx-auto">
-                                <div className="flex justify-center mb-4">
-                                    <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center">
-                                        <FaStore size={30} className="text-sky-700" />
-                                    </div>
-                                </div>
-                                <h1 className="text-2xl md:text-3xl font-semibold">
-                                    Registro de estudio
-                                </h1>
-                                <p className="mt-2 text-sm md:text-base text-gray-200">
-                                    Únete a nuestra red de estudios de grabación
-                                    profesionales y conéctate con músicos de todo el mundo.
-                                </p>
-                            </div>
-                        </div>
-            {/* Información del estudio */}
-          <SectionTitle>Información del estudio</SectionTitle>
-           <div>
-          <Label htmlFor="studioName" required>
-           Nombre de estudio/sala
-          </Label>
-          <Input name="studioName" placeholder="SoundWaves Recording Studio" />
-          <HelpError name="studioName" errors={errors} touched={touched} />
-            </div>
-                   <Label htmlFor="commercialId" required>
-            Número de registro comercial
-          </Label>
-          <Input name="commercialId" placeholder="REG-123456" />
-          <HelpError name="commercialId" errors={errors} touched={touched} />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="years" required>
-                Años en el negocio
-              </Label>
-              <Field
-                as="select"
-                name="years"
-                className="w-full border rounded-lg px-3 py-2 text-sm text-black bg-white"
-              >
-                <option value="">Seleccione...</option>
-                <option value="1-5 años">1-5 años</option>
-                <option value="5-10 años">5-10 años</option>
-                <option value="10-15 años">10-15 años</option>
-                <option value="15+ años">15+ años</option>
-              </Field>
-              <HelpError name="years" errors={errors} touched={touched} />
-            </div>
-            <div>
-              <Label htmlFor="studioType" required>
-                Tipo de estudio
-              </Label>
-              <Field
-                as="select"
-                name="studioType"
-                className="w-full border rounded-lg px-3 py-2 text-sm text-black bg-white"
-              >
-                <option value="">Seleccione...</option>
-                <option value="Profesional">Estudio profesional</option>
-                <option value="Home Studio">Home Studio</option>
-                <option value="Rehearsal">Sala de ensayo</option>
-              </Field>
-              <HelpError name="studioType" errors={errors} touched={touched} />
+    <div>
+      <div className="bg-sky-800 text-white py-10 px-4 text-center">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex justify-center mb-4">
+            <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center">
+              <FaStore size={30} className="text-sky-700" />
             </div>
           </div>
-
-          {/* Especializaciones */}
-          <Label>Especializaciones</Label>
-          <div className="flex flex-wrap gap-2">
-            {specializationsList.map((spec) => (
-              <button
-                key={spec}
-                type="button"
-                onClick={() => {
-                  const newSpecs = values.specializations.includes(spec)
-                    ? values.specializations.filter((s) => s !== spec)
-                    : [...values.specializations, spec];
-                  setFieldValue("specializations", newSpecs);
-                }}
-                className={`px-3 py-1 rounded-full text-sm border ${
-                  values.specializations.includes(spec)
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-black border-gray-400"
-                }`}
-              >
-                {spec}
-              </button>
-            ))}
-          </div>
-          <HelpError name="specializations" errors={errors} touched={touched} />
-
-          {/* Fotos del estudio */}
-          <SectionTitle>Fotos del estudio</SectionTitle>
-          <p className="text-sm text-black mb-2">
-            Sube mínimo 1 y máximo 5 fotos
+          <h1 className="text-2xl md:text-3xl font-semibold">Registro de estudio</h1>
+          <p className="mt-2 text-sm md:text-base text-gray-200">
+            Únete a nuestra red de estudios de grabación profesionales y conéctate con músicos de todo el mundo.
           </p>
-          <div className="flex flex-col gap-2">
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={(event) => {
-                const files = event.currentTarget.files;
-                if (files) {
-                  const newFiles = Array.from(files).slice(0, 5);
-                  setFieldValue("images", newFiles);
-                }
-              }}
-              className="border p-2 rounded text-black bg-white"
-            />
-            <div className="flex gap-2 flex-wrap mt-2">
-              {values.images &&
-                values.images.map((file: File, index: number) => (
-                  <img
-                    key={index}
-                    src={URL.createObjectURL(file)}
-                    alt={`preview-${index}`}
-                    className="w-24 h-24 object-cover rounded"
+        </div>
+      </div>
+
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 py-10 px-4">
+        <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6">
+          <Formik initialValues={initialValues} validationSchema={ProfileOwnerSchema} onSubmit={handleSubmit}>
+            {({ values, setFieldValue, isSubmitting }) => (
+              <Form className="space-y-6">
+                <SectionTitle>Información del estudio</SectionTitle>
+
+                <div>
+                  <Label htmlFor="studioName" required>Nombre de estudio/sala</Label>
+                  <Input name="studioName" placeholder="SoundWaves Recording Studio" />
+                  <HelpError name="studioName" />
+                </div>
+
+                <div>
+                  <Label htmlFor="commercialId" required>Número de registro comercial</Label>
+                  <Input name="commercialId" placeholder="REG-123456" />
+                  <HelpError name="commercialId" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="years" required>
+                  Años en el negocio
+                </Label>
+                <Field as="select" name="years" className="w-full border rounded-lg px-3 py-2 text-sm text-black bg-white">
+                  <option value="">Seleccione...</option>
+                  <option value="1-5 años">1-5 años</option>
+                  <option value="5-10 años">5-10 años</option>
+                  <option value="10-15 años">10-15 años</option>
+                  <option value="15+ años">15+ años</option>
+                </Field>
+                <HelpError name="years" />
+              </div>
+
+              <div>
+                <Label htmlFor="studioType" required>
+                  Tipo de estudio
+                </Label>
+                <Field as="select" name="studioType" className="w-full border rounded-lg px-3 py-2 text-sm text-black bg-white">
+                  <option value="">Seleccione...</option>
+                  <option value="Profesional">Estudio profesional</option>
+                  <option value="Home Studio">Home Studio</option>
+                  <option value="Rehearsal">Sala de ensayo</option>
+                </Field>
+                <HelpError name="studioType" />
+              </div>
+            </div>
+
+            {/* Especializaciones */}
+            <Label>Especializaciones</Label>
+            <div className="flex flex-wrap gap-2">
+              {specializationsList.map((spec) => (
+                <button
+                  key={spec}
+                  type="button"
+                  onClick={() => {
+                    const newSpecs = values.specializations.includes(spec)
+                      ? values.specializations.filter((s: any) => s !== spec)
+                      : [...values.specializations, spec];
+                    setFieldValue("specializations", newSpecs);
+                  }}
+                  className={`px-3 py-1 rounded-full text-sm border ${
+                    values.specializations.includes(spec) ? "bg-blue-600 text-white" : "bg-white text-black border-gray-400"
+                  }`}
+                >
+                  {spec}
+                </button>
+              ))}
+            </div>
+            <HelpError name="specializations" />
+
+            {/* Fotos del estudio */}
+            <SectionTitle>Fotos del estudio</SectionTitle>
+            <p className="text-sm text-black mb-2">Sube mínimo 1 y máximo 5 fotos</p>
+            <div className="flex flex-col gap-2">
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={(event) => {
+                  const files = event.currentTarget.files;
+                  if (files) {
+                    const newFiles = Array.from(files).slice(0, 5);
+                    setFieldValue("images", newFiles);
+                  }
+                }}
+                className="border p-2 rounded text-black bg-white"
+              />
+
+              <div className="flex gap-2 flex-wrap mt-2">
+                {values.images &&
+                  values.images.map((file: File, index: number) => (
+                    <img key={index} src={URL.createObjectURL(file)} alt={`preview-${index}`} className="w-24 h-24 object-cover rounded" />
+                  ))}
+              </div>
+              <HelpError name="images" />
+            </div>
+
+                {/* Servicios */}
+                <SectionTitle>Servicios</SectionTitle>
+                <div className="flex flex-wrap gap-4">
+                  {servicesList.map((s) => (
+                    <Checkbox key={s.value} name="services" value={s.value} label={s.label} />
+                  ))}
+                </div>
+
+                {/* Equipamiento */}
+                <SectionTitle>Equipamiento</SectionTitle>
+                <div className="flex flex-wrap gap-4">
+                  {equipmentList.map((eq) => (
+                    <Checkbox key={eq.value} name="equipment" value={eq.value} label={eq.label} />
+                  ))}
+                </div>
+
+                
+                {/* Registro Comercial */}
+                <SectionTitle>Registro Comercial</SectionTitle>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-50">
+                  <input
+                    id="registroComercial"
+                    name="registroComercial"
+                    type="file"
+                    accept="application/pdf"
+                    className="hidden"
+                    onChange={(event) => setFieldValue("registroComercial", event.currentTarget.files?.[0])}
                   />
-                ))}
-            </div>
-            <HelpError name="images" errors={errors} touched={touched} />
-          </div>
-
-          {/* Tarifas */}
-          <SectionTitle>Tarifas</SectionTitle>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="tarifaHora" required>
-                Tarifa por hora $
-              </Label>
-              <Input name="tarifaHora" type="number" placeholder="0" />
-              <HelpError name="tarifaHora" errors={errors} touched={touched} />
-            </div>
-            <div>
-              <Label htmlFor="tarifaDia" required>
-                Tarifa diaria $
-              </Label>
-              <Input name="tarifaDia" type="number" placeholder="0" />
-              <HelpError name="tarifaDia" errors={errors} touched={touched} />
-            </div>
-          </div>
-
-          {/* Disponibilidad */}
-          <SectionTitle>Disponibilidad</SectionTitle>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="openHour" required>
-                Hora apertura
-              </Label>
-              <Input name="openHour" type="time" />
-              <HelpError name="openHour" errors={errors} touched={touched} />
-            </div>
-            <div>
-              <Label htmlFor="closeHour" required>
-                Hora cierre
-              </Label>
-              <Input name="closeHour" type="time" />
-              <HelpError name="closeHour" errors={errors} touched={touched} />
-            </div>
-          </div>
-
-          {/* Servicios */}
-          <SectionTitle>Servicios</SectionTitle>
-          <div className="flex flex-wrap gap-4">
-            {servicesList.map((s) => (
-              <Checkbox key={s.value} name="services" value={s.value} label={s.label} />
-            ))}
-          </div>
-
-          {/* Equipamiento */}
-          <SectionTitle>Equipamiento</SectionTitle>
-          <div className="flex flex-wrap gap-4">
-            {equipmentList.map((eq) => (
-              <Checkbox key={eq.value} name="equipment" value={eq.value} label={eq.label} />
-            ))}
-          </div>
-
-          {/* Registro Comercial */}
-          <SectionTitle>Registro Comercial</SectionTitle>
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-50">
-            <input
-              id="registroComercial"
-              name="registroComercial"
-              type="file"
-              accept="application/pdf"
-              className="hidden"
-              onChange={(event) =>
-                setFieldValue("registroComercial", event.currentTarget.files?.[0])
-              }
-            />
-            <label htmlFor="registroComercial" className="text-black cursor-pointer">
-              <FaCloudUploadAlt size={50} className="mx-auto mb-2" />
-              Suelta tu PDF aquí o haz clic para subir
-            </label>
-            <HelpError name="registroComercial" errors={errors} touched={touched} />
-          </div>
-
-          {/* Términos */}
-          <div className="flex items-center gap-2 mt-2">
-            <Field type="checkbox" name="terms" className="h-4 w-4" />
-            <span className="text-black text-sm">
-              Acepto los{" "}
-              <button
-                type="button"
-                onClick={() => setOpenModal(true)}
-                className="text-sky-700 underline hover:text-sky-900"
-              >
-                términos y condiciones
-              </button>
-            </span>
-          </div>
-          <HelpError name="terms" errors={errors} touched={touched} />
-
-          {/* Configuración empresarial */}
-          <SectionTitle>Configuración empresarial</SectionTitle>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="hourlyRate" required>
-                Tarifa por hora predeterminada
-              </Label>
-              <Input name="hourlyRate" placeholder="$15000" />
-              <HelpError name="hourlyRate" errors={errors} touched={touched} />
-            </div>
-            <div>
-              <Label htmlFor="minDuration" required>
-                Duración mínima de reserva
-              </Label>
-              <Field
-                as="select"
-                name="minDuration"
-                className="w-full border rounded-lg px-3 py-2 text-sm text-black bg-white"
-              >
-                <option value="">Seleccione...</option>
-                <option value="1 hora">1 hora</option>
-                <option value="2 horas">2 horas</option>
-                <option value="3 horas">3 horas</option>
-              </Field>
-              <HelpError name="minDuration" errors={errors} touched={touched} />
-            </div>
-            <div>
-              <Label htmlFor="preBooking" required>
-                Se requiere reserva previa
-              </Label>
-              <Field
-                as="select"
-                name="preBooking"
-                className="w-full border rounded-lg px-3 py-2 text-sm text-black bg-white"
-              >
-                <option value="24 horas">24 horas</option>
-                <option value="48 horas">48 horas</option>
-              </Field>
-              <HelpError name="preBooking" errors={errors} touched={touched} />
-            </div>
-            <div>
-              <Label htmlFor="cancellation" required>
-                Política de cancelación
-              </Label>
-              <Field
-                as="select"
-                name="cancellation"
-                className="w-full border rounded-lg px-3 py-2 text-sm text-black bg-white"
-              >
-                <option value="Aviso de 24 horas">Aviso de 24 horas</option>
-                <option value="Aviso de 48 horas">Aviso de 48 horas</option>
-              </Field>
-              <HelpError name="cancellation" errors={errors} touched={touched} />
-            </div>
-          </div>
-
-          {/* Horarios semana y fin de semana */}
-          <SectionTitle>Horas de funcionamiento</SectionTitle>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label>Lunes - Viernes</Label>
-              <div className="flex items-center gap-3">
-                <div className="flex-1">
-                  <Input name="openWeek" type="time" />
-                  <HelpError name="openWeek" errors={errors} touched={touched} />
+                  <label htmlFor="registroComercial" className="text-gray-800 cursor-pointer">
+                    <FaCloudUploadAlt size={50} className="mx-auto mb-2" />
+                    Suelta tu PDF aquí o haz clic para subir
+                  </label>
+                  <HelpError name="registroComercial" />
                 </div>
-                <span className="text-black">-</span>
-                <div className="flex-1">
-                  <Input name="closeWeek" type="time" />
-                  <HelpError name="closeWeek" errors={errors} touched={touched} />
-                </div>
-              </div>
-            </div>
 
-            <div>
-              <Label>Sábado - Domingo</Label>
-              <div className="flex items-center gap-3">
-                <div className="flex-1">
-                  <Input name="openWeekend" type="time" />
-                  <HelpError name="openWeekend" errors={errors} touched={touched} />
+                {/* Términos */}
+                <div className="flex items-center gap-2 mt-2">
+                  <Field type="checkbox" name="terms" className="h-4 w-4" />
+                  <span className="text-gray-800 text-sm">
+                    Acepto los {" "}
+                    <button type="button" onClick={() => setOpenModal(true)} className="text-sky-700 underline hover:text-sky-900">
+                      términos y condiciones
+                    </button>
+                  </span>
                 </div>
-                <span className="text-black">-</span>
-                <div className="flex-1">
-                  <Input name="closeWeekend" type="time" />
-                  <HelpError name="closeWeekend" errors={errors} touched={touched} />
+                <HelpError name="terms" />
+
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full py-2 px-4 rounded-lg text-white font-medium shadow-md hover:opacity-90"
+                    style={{ backgroundColor: brand.primary }}
+                  >
+                    {isSubmitting ? "Registrando..." : "Registrar mi estudio"}
+                  </button>
                 </div>
-              </div>
-            </div>
-          </div>
+              </Form>
+            )}
+          </Formik>
+        </div>
+      </div>
 
-          {/* Botón submit */}
-          <button
-            type="submit"
-            className="px-4 py-2 bg-sky-800 cursor-pointer text-white rounded-md hover:bg-black mt-6"
-          >
-            Registrar mi estudio
-          </button>
-
-          <ModalTerminos isOpen={openModal} onClose={() => setOpenModal(false)}>
-            <TextoTerminos />
-          </ModalTerminos>
-          </div>
-        </Form>
-      )}
-    </Formik>
+      {/* Modal */}
+      <ModalTerminos isOpen={openModal} onClose={() => setOpenModal(false)}>
+        <TextoTerminos />
+      </ModalTerminos>
+    </div>
   );
 }
