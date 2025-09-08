@@ -44,7 +44,7 @@ export const Header = () => {
                 <li>
                   <Link
                     href="/studioForm"
-                    className="block py-2 px-3 cursor-pointer  text-white hover:text-gray-400"
+                    className="block py-2 px-3 cursor-pointer text-white hover:text-gray-400"
                   >
                     Únete como anfitrión
                   </Link>
@@ -186,7 +186,7 @@ export const Header = () => {
                 </li>
                 <li>
                   <Link
-                    href="/StudioForm"
+                    href="/studioForm"
                     className="block py-2 px-3 text-white rounded hover:bg-gray-800"
                   >
                     Únete como anfitrión
