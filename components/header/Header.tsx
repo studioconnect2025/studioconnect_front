@@ -7,6 +7,7 @@ import { MdAppRegistration, MdOutlineDashboardCustomize } from "react-icons/md";
 import { TbLogin } from "react-icons/tb";
 import { useIsAuth, useAuthUser, useAuthStore } from "@/stores/AuthStore";
 import { useRouter } from "next/navigation";
+import { CgStudio } from "react-icons/cg";
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,7 +36,7 @@ export const Header = () => {
                 <li>
                   <Link
                     href="#"
-                    className="block py-2 px-3 text-white hover:text-gray-400"
+                    className="block py-2 px-3 cursor-pointer text-white hover:text-gray-400"
                   >
                     Únete como músico
                   </Link>
@@ -43,7 +44,7 @@ export const Header = () => {
                 <li>
                   <Link
                     href="/StudioForm"
-                    className="block py-2 px-3 text-white hover:text-gray-400"
+                    className="block py-2 px-3 cursor-pointer  text-white hover:text-gray-400"
                   >
                     Únete como anfitrión
                   </Link>
@@ -58,7 +59,7 @@ export const Header = () => {
               <>
                 <span className="text-white">Hola {user?.name}</span>
                 <button
-                  className="text-white hover:bg-sky-800 p-2 rounded-lg"
+                  className="text-white hover:bg-sky-800 cursor-pointer p-2 rounded-lg"
                   onClick={async () => {
                     await logout();
                     router.push("/"); 
@@ -67,7 +68,7 @@ export const Header = () => {
                   Cerrar sesión
                 </button>
                 <button
-                  className="text-white hover:bg-sky-800 p-2 rounded-lg"
+                  className="text-white cursor-pointer hover:bg-sky-800 p-2 rounded-lg"
                   onClick={toggleMenu}
                 >
                   Menú
@@ -77,7 +78,7 @@ export const Header = () => {
               <>
                 <Link
                   href="/login"
-                  className="text-white hover:bg-sky-800 p-2 mr-5 rounded-lg"
+                  className="text-white hover:bg-sky-800 cursor-pointer p-2 mr-5 rounded-lg"
                 >
                   Iniciar sesión
                 </Link>
@@ -151,13 +152,22 @@ export const Header = () => {
                     Dashboard
                   </Link>
                 </li>
+                  <li>
+                  <Link
+                    href="/studioRooms"
+                    className="flex w-full py-2 px-3 rounded hover:bg-gray-800"
+                  >
+                    <CgStudio size={24} className="mr-3" />
+                    Mis salas
+                  </Link>
+                </li>
                 <li>
                   <button
                     onClick={async () => {
                       await logout();
                       router.push("/"); 
                     }}
-                    className="w-full flex text-left py-2 px-3 rounded hover:bg-gray-800"
+                    className="w-full flex text-left cursor-pointer py-2 px-3 rounded hover:bg-gray-800"
                   >
                     <TbLogin size={24} className="mr-3" />
                     Cerrar sesión

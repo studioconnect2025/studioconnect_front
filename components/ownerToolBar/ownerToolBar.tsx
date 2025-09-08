@@ -6,9 +6,9 @@ import { MdDashboard } from "react-icons/md";
 export const OwnerToolbar = () => {
   const tools = [
     {
-      title: "Mi estudio",
+      title: "Mis salas",
       icon: <FaBuilding size={28} />,
-      href: "/profileOwner",
+      href: "/studioRooms",
       color: "bg-sky-800",
     },
     {
