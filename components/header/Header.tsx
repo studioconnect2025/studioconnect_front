@@ -43,7 +43,7 @@ export const Header = () => {
                 </li>
                 <li>
                   <Link
-                    href="/StudioForm"
+                    href="/studioForm"
                     className="block py-2 px-3 cursor-pointer  text-white hover:text-gray-400"
                   >
                     Únete como anfitrión
