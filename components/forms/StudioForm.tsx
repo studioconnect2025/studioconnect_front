@@ -1,10 +1,9 @@
 "use client";
 
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import React, { ReactNode, useState } from "react";
+import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { ReactNode, useState } from "react";
-import { FaBuilding } from "react-icons/fa";
-import { registerStudioOwner } from "@/services/register.services";
+import { FaCloudUploadAlt, FaStore } from "react-icons/fa";
 
 const brand = {
     primary: "#015E88",

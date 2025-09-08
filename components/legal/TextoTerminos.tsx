@@ -1,6 +1,6 @@
 export default function TextoTerminos() {
   return (
-    <div className="space-y-4 text-sm text-gray-700">
+    <div className="space-y-4 text-sm text-gray-900">
       <p>
         Estos Términos y Condiciones regulan el uso de la plataforma
         <strong> Studio Connect</strong> para el registro, promoción y
