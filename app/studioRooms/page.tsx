@@ -36,7 +36,7 @@ const RoomsGrid: FC<RoomsGridProps> = ({ studioId }) => {
                 <div className="flex justify-start md:justify-end">
                     <button
                         onClick={() => setIsOpen(true)}
-                        className="inline-flex items-center gap-2 bg-black px-3 py-2 rounded-lg shadow hover:bg-gray-900 transition text-sm text-white"
+                        className="inline-flex items-center gap-2 bg-black px-3 cursor-pointer py-2 rounded-lg shadow hover:bg-gray-900 transition text-sm text-white"
                     >
                         <span className="text-lg">＋</span> Agregar nueva sala
                     </button>
@@ -103,7 +103,7 @@ const RoomsGrid: FC<RoomsGridProps> = ({ studioId }) => {
 
             {/* Modal con el formulario */}
             <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-                <CrearSala />
+                <CrearSala onClose={() => setIsOpen(false)} />
             </Modal>
         </section>
     );

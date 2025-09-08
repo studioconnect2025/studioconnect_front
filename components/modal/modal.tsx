@@ -18,7 +18,7 @@ export const Modal = ({ isOpen, onClose, children }: ModalProps) => {
         {/* Botón cerrar */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100 transition"
+          className="absolute top-3 right-3 p-2 cursor-pointer rounded-full hover:bg-gray-100 transition"
         >
           <X className="w-6 h-6 text-sky-700" />
         </button>
