@@ -17,7 +17,7 @@ type SectionTitleProps = {
 
 export function SectionTitle({ children }: SectionTitleProps) {
   return (
-    <div className=" rounded-lg ">
+    <div className="rounded-lg">
       <h2 className="text-xl font-bold text-gray-700">{children}</h2>
     </div>
   );
@@ -26,11 +26,9 @@ export function SectionTitle({ children }: SectionTitleProps) {
 function Label({
   htmlFor,
   children,
-  required,
 }: {
   htmlFor?: string;
   children: ReactNode;
-  required?: boolean;
 }) {
   return (
     <label
@@ -38,7 +36,6 @@ function Label({
       className="block text-sm font-medium text-gray-700 mb-1"
     >
       {children}
-      {required && <span className="text-red-500 ml-1">*</span>}
     </label>
   );
 }
@@ -74,60 +71,17 @@ const Input = ({
   </div>
 );
 
-const Checkbox = ({
-  name,
-  value,
-  label,
-}: {
-  name: string;
-  value: string;
-  label: string;
-}) => (
-  <label className="flex items-center gap-2">
-    <Field type="checkbox" name={name} value={value} className="h-4 w-4" />
-    <span className="text-sm text-gray-700">{label}</span>
-  </label>
-);
-
-const ProfileOwnerSchema = Yup.object().shape({
-  firstName: Yup.string().required("Requerido"),
-  lastName: Yup.string().required("Requerido"),
-  email: Yup.string().email("Email inválido").required("Requerido"),
-  phone: Yup.string().required("Requerido"),
-  bio: Yup.string().required("Requerido"),
-  studioName: Yup.string().required("Requerido"),
-  commercialId: Yup.string().required("Requerido"),
-  years: Yup.string().required("Requerido"),
-  studioType: Yup.string().required("Requerido"),
-  hourlyRate: Yup.number()
-    .typeError("Debe ser un número")
-    .required("Requerido"),
-  minDuration: Yup.string().required("Requerido"),
-  preBooking: Yup.string().required("Requerido"),
-  cancellation: Yup.string().required("Requerido"),
-  openWeek: Yup.string().required("Requerido"),
-  closeWeek: Yup.string().required("Requerido"),
-  openWeekend: Yup.string().required("Requerido"),
-  closeWeekend: Yup.string().required("Requerido"),
-  tarifaHora: Yup.number()
-    .typeError("Debe ser un número")
-    .required("Requerido"),
-  tarifaDia: Yup.number().typeError("Debe ser un número").required("Requerido"),
-  registroComercial: Yup.mixed().required("Debes subir un archivo"),
-  openHour: Yup.string().required("Requerido"),
-  closeHour: Yup.string().required("Requerido"),
-  terms: Yup.boolean().oneOf([true], "Debes aceptar los términos"),
-});
-
-const specializationsList = ["Grabacion", "Mezcla", "Mastering", "Produccion"];
+const ProfileOwnerSchema = Yup.object().shape({});
 
 type FormValues = {
   id: string;
   firstName: string;
   lastName: string;
-  email: string;
   phone: string;
   bio: string;
+  direccion: string;
+  pais: string;
+  localidad: string;
   studioName: string;
   commercialId: string;
   years: string;
@@ -153,9 +107,7 @@ type FormValues = {
 
 export default function ProfileOwnerForm() {
   const [profilePic, setProfilePic] = useState<string | null>(null);
-  const [tempStore, setTempStore] = useState<FormValues | null>(null);
   const [successMessage, setSuccessMessage] = useState(false);
-  const [openModal, setOpenModal] = useState(false);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -163,18 +115,15 @@ export default function ProfileOwnerForm() {
     }
   };
 
-  const handleAction = (action: string) => {
-    console.log(`Acción ejecutada: ${action}`);
-    alert(`Acción ejecutada: ${action}`);
-  };
-
   const initialValues: FormValues = {
     id: "",
     firstName: "",
     lastName: "",
-    email: "",
     phone: "",
     bio: "",
+    direccion: "",
+    pais: "",
+    localidad: "",
     studioName: "",
     commercialId: "",
     years: "",
@@ -206,8 +155,7 @@ export default function ProfileOwnerForm() {
             Perfil del propietario del estudio
           </h1>
           <p className="mt-2 text-sm md:text-base text-gray-200">
-            Administra la información de tu estudio y la configuración de tu
-            negocio
+            EDICIÓN DE PERFIL
           </p>
         </div>
       </div>
@@ -218,44 +166,30 @@ export default function ProfileOwnerForm() {
             initialValues={initialValues}
             validationSchema={ProfileOwnerSchema}
             onSubmit={async (values, { resetForm }) => {
-  try {
-    const updated = await OwnerService.updateMyStudio(values.id!, {
-  ...values,
-  hourlyRate: values.hourlyRate ? Number(values.hourlyRate) : undefined,
-});
-    console.log("Perfil actualizado:", updated);
-    setSuccessMessage(true);
-    resetForm();
-    setTimeout(() => setSuccessMessage(false), 4000);
-  } catch (error) {
-    console.error("Error al guardar:", error);
-  }
-}}
+              try {
+                const updated = await OwnerService.updateMyStudio(values.id!, {
+                  ...values,
+                  hourlyRate: values.hourlyRate ? Number(values.hourlyRate) : undefined,
+                });
+                console.log("Perfil actualizado:", updated);
+                setSuccessMessage(true);
+                resetForm();
+                setTimeout(() => setSuccessMessage(false), 4000);
+              } catch (error) {
+                console.error("Error al guardar:", error);
+              }
+            }}
           >
-            {({
-              values,
-              setFieldValue,
-              isSubmitting,
-              isValid,
-              dirty,
-              errors,
-              touched,
-            }) => (
+            {({ values, isSubmitting, isValid, dirty }) => (
               <Form className="space-y-6">
                 {successMessage && (
                   <div className="p-3 text-green-800 bg-green-100 border border-green-300 rounded-lg text-center">
                     REGISTRO CON ÉXITO
                   </div>
                 )}
-                {Object.keys(errors).length > 0 &&
-                  Object.keys(touched).length > 0 && (
-                    <div className="p-3 text-red-800 bg-red-100 border border-red-300 rounded-lg text-center">
-                      Debes completar todos los datos requeridos.
-                    </div>
-                  )}
 
                 <SectionTitle>Información básica</SectionTitle>
-                <div className=" items-center gap-4 mb-4">
+                <div className="items-center gap-4 mb-4">
                   <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mb-4 ml-3">
                     {profilePic ? (
                       <img
@@ -272,50 +206,46 @@ export default function ProfileOwnerForm() {
                   <div>
                     <label
                       className="w-full py-2 px-4 rounded-lg text-white font-medium shadow-md hover:opacity-90 cursor-pointer"
-                      style={{
-                        backgroundColor: brand.primary,
-                      }}
+                      style={{ backgroundColor: brand.primary }}
                     >
                       Cambiar foto
-                      <input
-                        type="file"
-                        className="hidden"
-                        onChange={handlePhotoUpload}
-                      />
+                      <input type="file" className="hidden" onChange={handlePhotoUpload} />
                     </label>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="firstName" required>
-                      Nombre
-                    </Label>
+                    <Label htmlFor="firstName">Nombre</Label>
                     <Input name="firstName" placeholder="Sarah" />
                   </div>
                   <div>
-                    <Label htmlFor="lastName" required>
-                      Apellido
-                    </Label>
+                    <Label htmlFor="lastName">Apellido</Label>
                     <Input name="lastName" placeholder="Mitchell" />
                   </div>
                 </div>
-                <Label htmlFor="email" required>
-                  Email
-                </Label>
-                <Input
-                  name="email"
-                  type="email"
-                  placeholder="correo@ejemplo.com"
-                />
-                <Label htmlFor="phone" required>
-                  Teléfono
-                </Label>
+
+                <Label htmlFor="phone">Teléfono</Label>
                 <Input name="phone" placeholder="+54 11 1234 5678" />
+
                 <div>
-                  <Label htmlFor="bio" required>
-                    Biografía empresarial
-                  </Label>
+                  <Label htmlFor="direccion">Dirección</Label>
+                  <Input name="direccion" placeholder="Av. Siempre Viva 123" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="pais">País</Label>
+                    <Input name="pais" placeholder="Argentina" />
+                  </div>
+                  <div>
+                    <Label htmlFor="localidad">Localidad</Label>
+                    <Input name="localidad" placeholder="Miramar" />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="bio">Biografía empresarial</Label>
                   <Field
                     as="textarea"
                     id="bio"
@@ -327,87 +257,8 @@ export default function ProfileOwnerForm() {
                   <HelpError name="bio" />
                 </div>
 
-                <div className="flex flex-col">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      console.log("Editar Perfil (valores actuales):", values)
-                    }
-                    className="py-2 px-2 rounded-lg text-white font-medium shadow-md hover:opacity-90 cursor-pointer w-max self-end"
-                    style={{
-                      backgroundColor: brand.primary,
-                    }}
-                  >
-                    Editar Perfil
-                  </button>
-                </div>
-
-                <SectionTitle>Seguridad de la cuenta</SectionTitle>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center border-b pb-2">
-                    <span className="text-gray-500">Contraseña</span>
-                    <p className="text-sm text-gray-400">
-                      Última actualización hace 2 meses
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => handleAction("Cambiar contraseña")}
-                      className="px-3 py-1 rounded bg-blue-500 text-white"
-                    >
-                      Cambiar la contraseña
-                    </button>
-                  </div>
-                  <div className="flex justify-between items-center border-b pb-2">
-                    <span className="text-gray-500">
-                      Autenticación de dos factores
-                    </span>
-                    <p className="text-sm text-gray-400">
-                      Asegure su cuenta comercial
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleAction("Autenticación de dos factores")
-                      }
-                      className="px-3 py-1 rounded bg-blue-500 text-white"
-                    >
-                      Permitir
-                    </button>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-500">
-                      Actividad de inicio de sesión
-                    </span>
-                    <p className="text-sm text-gray-400">
-                      Monitorear el acceso a la cuenta
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => handleAction("Ver actividad")}
-                      className="px-3 py-1 rounded bg-blue-500 text-white"
-                    >
-                      Ver actividad
-                    </button>
-                  </div>
-                </div>
-
                 <SectionTitle>Zona de peligro</SectionTitle>
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center border-b pb-2">
-                    <span className="text-gray-700">
-                      Desactivar el listado de estudios
-                    </span>
-                    <p className="text-blue-500">
-                      Ocultar temporalmente su estudio de las búsquedas
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => handleAction("Desactivar listado")}
-                      className="px-3 py-1 rounded bg-gray-600 text-white"
-                    >
-                      Desactivar
-                    </button>
-                  </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-700">Borrar cuenta</span>
                     <p className="text-blue-500">
@@ -415,7 +266,6 @@ export default function ProfileOwnerForm() {
                     </p>
                     <button
                       type="button"
-                      onClick={() => handleAction("Borrar cuenta")}
                       className="px-3 py-1 rounded bg-red-600 text-white"
                     >
                       Borrar cuenta
@@ -430,9 +280,7 @@ export default function ProfileOwnerForm() {
                     className={`w-full py-2 px-4 rounded-lg text-white font-medium shadow-md hover:opacity-90 ${
                       !isValid || !dirty ? "opacity-50 cursor-not-allowed" : ""
                     }`}
-                    style={{
-                      backgroundColor: brand.primary,
-                    }}
+                    style={{ backgroundColor: brand.primary }}
                   >
                     Guardar perfil
                   </button>
