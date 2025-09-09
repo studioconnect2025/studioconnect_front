@@ -2,31 +2,49 @@ import { http } from "@/lib/Http";
 import { ApiError, toApiError } from "@/utils/ApiError";
 import type { LoginPayload, LoginResponse, MeResponse } from "@/types/Auth";
 
-function normalizeLoginResponse(raw: any): { accessToken: string; user?: any } {
-  const accessToken =
+function extractRawToken(raw: any):
+  | string
+  | undefined {
+  return (
     raw?.accessToken ??
     raw?.token ??
-    raw?.access_token ??        
+    raw?.access_token ??
     raw?.data?.accessToken ??
     raw?.data?.token ??
-    raw?.data?.access_token;
+    raw?.data?.access_token
+  );
+}
 
+function normalizeBearer(token: string): string {
+  return String(token).replace(/^Bearer\s+/i, "");
+}
+
+function normalizeLoginResponse(raw: any): { accessToken: string; user?: any } {
+  const maybeToken = extractRawToken(raw);
   const user =
     raw?.user ??
     raw?.data?.user ??
     raw?.payload?.user;
 
-  if (!accessToken) {
+  if (!maybeToken) {
     throw new ApiError("Formato de respuesta de login inesperado", undefined, raw);
   }
+
+  const accessToken = normalizeBearer(maybeToken);
   return { accessToken, user };
 }
 
 export const AuthService = {
   async login(payload: LoginPayload): Promise<{ accessToken: string; user?: any }> {
     try {
-      const { data } = await http.post("/auth/login", payload);
-      return normalizeLoginResponse(data);
+      const { data } = await http.post<LoginResponse>("/auth/login", payload);
+      const { accessToken, user } = normalizeLoginResponse(data);
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("accessToken", accessToken); // <-- misma key que usa el interceptor
+      }
+
+      return { accessToken, user };
     } catch (e) {
       throw toApiError(e);
     }
@@ -47,7 +65,11 @@ export const AuthService = {
         typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
       await http.post("/auth/logout", null, {
-        withCredentials: true, 
+
+
+
+        withCredentials: true,
+
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
     } catch (e: any) {
@@ -55,6 +77,7 @@ export const AuthService = {
       if (status === 401 || status === 403 || status === 404 || status === 405) return;
       throw toApiError(e);
     }
+
   },
 
   async forgotPassword(email: string): Promise<void> {
@@ -80,5 +103,7 @@ export const AuthService = {
     } catch (e) {
       return { valid: false };
     }
+
+
   }
 };
