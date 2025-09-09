@@ -41,19 +41,44 @@ export const AuthService = {
     }
   },
 
-async logout(): Promise<void> {
-  try {
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+  async logout(): Promise<void> {
+    try {
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
-    await http.post("/auth/logout", null, {
-      withCredentials: true, 
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    });
-  } catch (e: any) {
-    const status = e?.response?.status;
-    if (status === 401 || status === 403 || status === 404 || status === 405) return;
-    throw toApiError(e);
+      await http.post("/auth/logout", null, {
+        withCredentials: true, 
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+    } catch (e: any) {
+      const status = e?.response?.status;
+      if (status === 401 || status === 403 || status === 404 || status === 405) return;
+      throw toApiError(e);
+    }
+  },
+
+  async forgotPassword(email: string): Promise<void> {
+    try {
+      await http.post("/auth/password-reset/forgot", { email });
+    } catch (e) {
+      throw toApiError(e);
+    }
+  },
+
+  async resetPassword(payload: { token: string; password: string }): Promise<void> {
+    try {
+      await http.post("/auth/password-reset/reset", payload);
+    } catch (e) {
+      throw toApiError(e);
+    }
+  },
+
+  async validateResetToken(token: string): Promise<{ valid: boolean }> {
+    try {
+      const { data } = await http.get(`/auth/password-reset/validate-token?token=${token}`);
+      return data;
+    } catch (e) {
+      return { valid: false };
+    }
   }
-}
 };
