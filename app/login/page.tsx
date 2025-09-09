@@ -69,7 +69,10 @@ export default function LoginPage() {
           )}
 
           {successMsg && (
-            <p className="mb-3 text-center text-green-600 text-sm" aria-live="polite">
+            <p
+              className="mb-3 text-center text-green-600 text-sm"
+              aria-live="polite"
+            >
               {successMsg}
             </p>
           )}
@@ -77,7 +80,10 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email
               </label>
               <div className="relative mt-1">
@@ -94,7 +100,9 @@ export default function LoginPage() {
                   required
                   {...emailAria}
                   className={`block w-full rounded-md border px-3 py-2 shadow-sm text-black focus:border-sky-600 focus:ring-sky-600 sm:text-sm ${
-                    touchedEmail && emailErr ? "border-red-500" : "border-gray-300"
+                    touchedEmail && emailErr
+                      ? "border-red-500"
+                      : "border-gray-300"
                   }`}
                 />
               </div>
@@ -127,13 +135,17 @@ export default function LoginPage() {
                   required
                   {...passwordAria}
                   className={`block w-full rounded-md border px-3 py-2 shadow-sm text-black focus:border-sky-600 focus:ring-sky-600 sm:text-sm ${
-                    touchedPassword && passErr ? "border-red-500" : "border-gray-300"
+                    touchedPassword && passErr
+                      ? "border-red-500"
+                      : "border-gray-300"
                   }`}
                 />
 
                 <button
                   type="button"
-                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  aria-label={
+                    showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                  }
                   onClick={() => setShowPassword((s) => !s)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-sky-600"
                 >
@@ -159,7 +171,10 @@ export default function LoginPage() {
                 <span className="text-sm text-gray-600">Recordarme</span>
               </label>
 
-              <Link href="/forgot-password" className="text-sm text-sky-700 hover:underline">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-sky-700 hover:underline"
+              >
                 ¿Olvidaste tu contraseña?
               </Link>
             </div>
@@ -170,7 +185,9 @@ export default function LoginPage() {
               disabled={!isValid}
               aria-disabled={!isValid}
               className={`w-full py-2 px-4 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-700 ${
-                isValid ? "bg-sky-700 hover:bg-sky-800" : "bg-sky-300 cursor-not-allowed"
+                isValid
+                  ? "bg-sky-700 hover:bg-sky-800"
+                  : "bg-sky-300 cursor-not-allowed"
               }`}
             >
               Iniciar sesión
@@ -192,9 +209,13 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => {
-                const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+                const api = (
+                  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+                ).replace(/\/$/, "");
                 const redirect = `${window.location.origin}/auth/sso`;
-                window.location.href = `${api}/auth/google/login?redirect_uri=${encodeURIComponent(redirect)}`;
+                window.location.href = `${api}/auth/google/login?redirect_uri=${encodeURIComponent(
+                  redirect
+                )}`;
               }}
               className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
             >
@@ -205,7 +226,10 @@ export default function LoginPage() {
 
           <p className="mt-6 text-center text-sm text-gray-600">
             ¿No tienes cuenta?{" "}
-            <Link href="/joinStudioConnect" className="text-sky-700 hover:underline">
+            <Link
+              href="/joinStudioConnect"
+              className="text-sky-700 hover:underline"
+            >
               Regístrate
             </Link>
           </p>
