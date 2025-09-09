@@ -1,4 +1,3 @@
-// services/myStudio.services.ts
 import { http } from "@/lib/Http";
 
 export type Studio = {
@@ -27,7 +26,7 @@ export type Room = {
 
 type MyStudioRaw =
   | { studio: Studio }
-  | Studio; // algunos backends devuelven el objeto directo
+  | Studio; 
 
 export async function getMyStudio(): Promise<{ studio: Studio }> {
   // 1) Traigo el estudio del owner (sin /api)
