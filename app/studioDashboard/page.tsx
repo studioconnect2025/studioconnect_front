@@ -7,6 +7,7 @@ import {
     FaDollarSign,
     FaStar,
     FaBuilding,
+    FaStore,
 } from "react-icons/fa";
 import { Modal } from "@/components/modal/modal";
 import type { Room } from "@/mocks/rooms";
@@ -117,10 +118,11 @@ export default function RoomDashboard() {
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <header className="pt-8">
-                    <h1 className="text-3xl text-black font-bold">
+                    <div className="bg-sky-700 p-4 rounded-xl text-3xl text-white font-bold flex items-center justify-center">
+
                         Panel de control del propietario de las salas
-                    </h1>
-                    <p className="text-gray-500">
+                    </div>
+                    <p className="text-gray-500 mt-4 text-2xl font-bold flex items-center justify-center">
                         Gestiona tus salas y reservas
                     </p>
                 </header>

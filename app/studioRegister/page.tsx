@@ -4,9 +4,9 @@ import React, { ReactNode, useState } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { FaCloudUploadAlt, FaStore } from "react-icons/fa";
-// Importo el modal y el texto desde tus componentes reales
 import ModalTerminos from "@/components/legal/ModalTerminos";
 import TextoTerminos from "@/components/legal/TextoTerminos";
+import { useRouter } from "next/navigation";
 
 const brand = {
   primary: "#015E88",
@@ -66,8 +66,6 @@ const Checkbox = ({ name, value, label }: any) => (
   </label>
 );
 
-// Nota: ya no definimos ModalTerminos ni TextoTerminos aquí — los importamos desde tus componentes.
-
 // Yup Schema
 const numberTransform = (schema: any) =>
   schema.transform((value: any, originalValue: any) => {
@@ -103,6 +101,8 @@ const ProfileOwnerSchema = Yup.object().shape({
 
 export default function RegisterPage() {
   const [openModal, setOpenModal] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const router = useRouter();
 
   const initialValues = {
     studioName: "",
@@ -179,15 +179,18 @@ export default function RegisterPage() {
       if (!res.ok) {
         const text = await res.text();
         console.error("Server error:", text);
-        alert("Error al registrar estudio");
+        setMessage({ type: 'error', text: 'Error al registrar estudio. Por favor, inténtalo de nuevo.' });
       } else {
         const data = await res.json();
         console.log("Registro correcto:", data);
-        alert("Estudio registrado correctamente");
+        setMessage({ type: 'success', text: '¡Estudio registrado correctamente!' });
+        setTimeout(() => {
+          router.push('/studioDashboard');
+        }, 2000);
       }
     } catch (err) {
       console.error(err);
-      alert("Error al registrar estudio");
+      setMessage({ type: 'error', text: 'Error al registrar estudio. Por favor, inténtalo de nuevo.' });
     } finally {
       setSubmitting(false);
     }
@@ -211,6 +214,11 @@ export default function RegisterPage() {
 
       <div className="min-h-screen flex items-center justify-center bg-gray-100 py-10 px-4">
         <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6">
+          {message && (
+            <div className={`p-3 mb-4 rounded-lg text-sm text-center font-medium ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              {message.text}
+            </div>
+          )}
           <Formik initialValues={initialValues} validationSchema={ProfileOwnerSchema} onSubmit={handleSubmit}>
             {({ values, setFieldValue, isSubmitting }) => (
               <Form className="space-y-6">
@@ -229,83 +237,85 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="years" required>
-                  Años en el negocio
+                  <div>
+                    <Label htmlFor="commercialId" required>Años en el negocio</Label>
+                    <Field as="select" name="years" className="w-full border border-gray-300 rounded-lg bg-white px-3 py-2 text-sm text-gray-800 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="">Seleccione...</option>
+                      <option value="1-5 años">1-5 años</option>
+                      <option value="5-10 años">5-10 años</option>
+                      <option value="10-15 años">10-15 años</option>
+                      <option value="15+ años">15+ años</option>
+                    </Field>
+                    <HelpError name="years" />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="studioType" required>
+                      Tipo de estudio
+                    </Label>
+                    <Field as="select" name="studioType" className="w-full border border-gray-300 rounded-lg bg-white px-3 py-2 text-sm text-gray-800 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                      <option value="">Seleccione...</option>
+                      <option value="Profesional">Estudio profesional</option>
+                      <option value="Home Studio">Home Studio</option>
+                      <option value="Rehearsal">Sala de ensayo</option>
+                    </Field>
+                    <HelpError name="studioType" />
+                  </div>
+                </div>
+
+                {/* Especializaciones */}
+                <Label htmlFor="specializations" required>
+                      Especializaciones
                 </Label>
-                <Field as="select" name="years" className="w-full border rounded-lg px-3 py-2 text-sm text-black bg-white">
-                  <option value="">Seleccione...</option>
-                  <option value="1-5 años">1-5 años</option>
-                  <option value="5-10 años">5-10 años</option>
-                  <option value="10-15 años">10-15 años</option>
-                  <option value="15+ años">15+ años</option>
-                </Field>
-                <HelpError name="years" />
-              </div>
-
-              <div>
-                <Label htmlFor="studioType" required>
-                  Tipo de estudio
-                </Label>
-                <Field as="select" name="studioType" className="w-full border rounded-lg px-3 py-2 text-sm text-black bg-white">
-                  <option value="">Seleccione...</option>
-                  <option value="Profesional">Estudio profesional</option>
-                  <option value="Home Studio">Home Studio</option>
-                  <option value="Rehearsal">Sala de ensayo</option>
-                </Field>
-                <HelpError name="studioType" />
-              </div>
-            </div>
-
-            {/* Especializaciones */}
-            <Label>Especializaciones</Label>
-            <div className="flex flex-wrap gap-2">
-              {specializationsList.map((spec) => (
-                <button
-                  key={spec}
-                  type="button"
-                  onClick={() => {
-                    const newSpecs = values.specializations.includes(spec)
-                      ? values.specializations.filter((s: any) => s !== spec)
-                      : [...values.specializations, spec];
-                    setFieldValue("specializations", newSpecs);
-                  }}
-                  className={`px-3 py-1 rounded-full text-sm border ${
-                    values.specializations.includes(spec) ? "bg-blue-600 text-white" : "bg-white text-black border-gray-400"
-                  }`}
-                >
-                  {spec}
-                </button>
-              ))}
-            </div>
-            <HelpError name="specializations" />
-
-            {/* Fotos del estudio */}
-            <SectionTitle>Fotos del estudio</SectionTitle>
-            <p className="text-sm text-black mb-2">Sube mínimo 1 y máximo 5 fotos</p>
-            <div className="flex flex-col gap-2">
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={(event) => {
-                  const files = event.currentTarget.files;
-                  if (files) {
-                    const newFiles = Array.from(files).slice(0, 5);
-                    setFieldValue("images", newFiles);
-                  }
-                }}
-                className="border p-2 rounded text-black bg-white"
-              />
-
-              <div className="flex gap-2 flex-wrap mt-2">
-                {values.images &&
-                  values.images.map((file: File, index: number) => (
-                    <img key={index} src={URL.createObjectURL(file)} alt={`preview-${index}`} className="w-24 h-24 object-cover rounded" />
+                <div className="flex flex-wrap gap-2">
+                  {specializationsList.map((spec) => (
+                    <button
+                      key={spec}
+                      type="button"
+                      onClick={() => {
+                        const newSpecs = values.specializations.includes(spec)
+                          ? values.specializations.filter((s: any) => s !== spec)
+                          : [...values.specializations, spec];
+                        setFieldValue("specializations", newSpecs);
+                      }}
+                      className={`px-3 py-1 rounded-full text-sm border ${
+                        values.specializations.includes(spec) ? "bg-blue-600 text-white" : "bg-white text-black border-gray-400"
+                      }`}
+                    >
+                      {spec}
+                    </button>
                   ))}
-              </div>
-              <HelpError name="images" />
-            </div>
+                </div>
+                <HelpError name="specializations" />
+
+                {/* Fotos del estudio */}
+                <SectionTitle>Fotos del estudio</SectionTitle>
+                <Label htmlFor="specializations" required>
+                      Sube un maximo de 5 fotos
+                </Label>
+                <div >
+                  <input 
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={(event) => {
+                      const files = event.currentTarget.files;
+                      if (files) {
+                        const newFiles = Array.from(files).slice(0, 5);
+                        setFieldValue("images", newFiles);
+                      }
+                    }}
+                    className="w-full border border-gray-300 rounded-lg bg-white px-3 py-2 text-sm text-gray-800 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+
+                  <div className="flex gap-2 flex-wrap mt-2">
+                    {values.images &&
+                      values.images.map((file: File, index: number) => (
+                        <img key={index} src={URL.createObjectURL(file)} alt={`preview-${index}`} className="w-24 h-24 object-cover rounded" />
+                      ))}
+                  </div>
+                  <HelpError name="images" />
+                </div>
 
                 {/* Servicios */}
                 <SectionTitle>Servicios</SectionTitle>
