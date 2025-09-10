@@ -1,14 +1,15 @@
 "use client";
 import Link from "next/link";
-import {  FaEnvelope, FaCogs, FaBuilding } from "react-icons/fa";
+import {  FaEnvelope, FaBuilding } from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
+import { CgStudio } from "react-icons/cg";
 
 export const OwnerToolbar = () => {
   const tools = [
     {
-      title: "Mis salas",
+      title: "Mi estudio",
       icon: <FaBuilding size={28} />,
-      href: "/studioRooms",
+      href: "/myStudio",
       color: "bg-sky-800",
     },
     {
@@ -17,16 +18,16 @@ export const OwnerToolbar = () => {
       href: "/studioDashboard",
       color: "bg-sky-800",
     },
+      {
+      title: "Mis salas",
+      icon: <CgStudio size={28} />,
+      href: "/studioRooms",
+      color: "bg-sky-800",
+    },
     {
       title: "Mensajes",
       icon: <FaEnvelope size={28} />,
       href: "/messages",
-      color: "bg-sky-800",
-    },
-    {
-      title: "Configuración",
-      icon: <FaCogs size={28} />,
-      href: "/settings",
       color: "bg-sky-800",
     },
   ];
