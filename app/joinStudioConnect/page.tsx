@@ -60,7 +60,7 @@ export default function JoinStudioConnect() {
             <li>✔ Procesamiento de pagos</li>
             <li>✔ Panel de análisis</li>
           </ul>
-          <Link href="/studio-form">
+          <Link href="/useOwnerForm">
           <button className="bg-sky-800 text-white px-6 py-2 cursor-pointer rounded-lg hover:bg-black transition mt-8">
             Regístrate como propietario de estudio
           </button>

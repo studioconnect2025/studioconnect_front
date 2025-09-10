@@ -99,10 +99,10 @@ const CrearSala = ({ onClose }: CrearSalaProps) => {
                             };
 
                             // Crear sala usando roomsService
-                            const createdRoom = await roomsService.createRoom(
+                            const createdRoom = await roomsService.createRoom({
                                 studioId,
-                                roomPayload
-                            );
+                                roomData: roomPayload,
+                            });
                             console.log("Sala creada:", createdRoom);
                             alert("Sala creada exitosamente");
 
