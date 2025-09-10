@@ -53,7 +53,7 @@ export default function ResetPasswordPage() {
       await AuthService.resetPassword({ token: token || "", newPassword: password });
 
       setSuccessMsg("✅ Contraseña restablecida exitosamente");
-      setTimeout(() => router.push("/studioDashboard"), 1500);
+      setTimeout(() => router.push("/"), 1500);
     } catch (err: any) {
       setError(err?.message || "Error al restablecer contraseña");
     }
@@ -72,9 +72,9 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white p-6 rounded-xl shadow-md">
-        <h1 className="text-lg text-gray-800 font-bold mb-4">Restablecer contraseña</h1>
+    <div className="min-h-screen bg-blue-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-cyan-900 p-6 rounded-xl shadow-md">
+        <h1 className="text-lg text-blue-100 font-bold mb-4">Restablecer contraseña</h1>
 
         {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
         {successMsg && <p className="text-green-600 text-sm mb-2">{successMsg}</p>}
@@ -120,7 +120,7 @@ export default function ResetPasswordPage() {
 
           <button
             type="submit"
-            className="w-full py-2 px-4 rounded-md bg-sky-700 text-white hover:bg-sky-800"
+            className="w-full py-2 px-4 rounded-md bg-sky-50 text-black hover:bg-cyan-600"
           >
             Restablecer
           </button>
