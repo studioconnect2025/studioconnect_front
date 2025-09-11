@@ -1,4 +1,3 @@
-
 export const roomsService = {
   createRoom: async ({
     token,
@@ -22,8 +21,7 @@ export const roomsService = {
         throw new Error(errorText);
       }
 
-      const data = await response.json();
-      return data;
+      return await response.json();
     } catch (error) {
       console.error("Error creando la sala:", error);
       throw error;
@@ -104,7 +102,7 @@ export const roomsService = {
         throw new Error(errorText);
       }
 
-      return await response.json(); 
+      return await response.json();
     } catch (error) {
       console.error("Error eliminando la sala:", error);
       throw error;
@@ -145,7 +143,6 @@ export const roomsService = {
     }
   },
 
-    // Usar este para eliminar una imagen específica
   deleteRoomImage: async ({
     roomId,
     imageIndex,
@@ -181,10 +178,52 @@ export const roomsService = {
     }
   },
 
-  // Reusar getRooms para traer las salas del owner
   getMyRooms: async (token?: string) => {
     return await roomsService.getRooms(token);
   },
+
+  // ==================== Instrumentos ====================
+  addInstrument: async ({
+    roomId,
+    instrumentData,
+    token,
+  }: {
+    roomId: string;
+    instrumentData: {
+      name: string;
+      description: string;
+      price: number;
+      available: boolean;
+      categoryName: string;
+    };
+    token?: string;
+  }) => {
+    try {
+      const accessToken = token ?? localStorage.getItem("accessToken");
+      if (!accessToken) throw new Error("No hay token disponible");
+
+      const body = {
+        roomId,
+        ...instrumentData,
+      };
+      const response = await fetch(`http://localhost:3000/instruments/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Error al agregar instrumento");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error agregando instrumento:", error);
+      throw error;
+    }
+  },
 };
-
-

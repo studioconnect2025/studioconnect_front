@@ -5,6 +5,15 @@ export interface Availability {
     };
 }
 
+export interface Instrument {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    available: boolean;
+    categoryName: string;
+}
+
 export interface Room {
     id: string;
     name: string;
@@ -20,4 +29,5 @@ export interface Room {
     imageUrls?: string[] | null;
     imagePublicIds?: string[] | null;
     isActive?: boolean;
+    instruments?: Instrument[];
 }
