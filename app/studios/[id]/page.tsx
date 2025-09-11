@@ -22,10 +22,10 @@ function formatMonthYear(iso: string) {
   });
 }
 
-export default async function StudioDetailsPage(
-  { params }: { params: { id: string } }
-) {
-  const { id } = params;
+type Props = { params: { id: string } };
+
+export default async function StudioDetailsPage({ params }: Props) {
+  const { id } =  params;
 
   // Datos mock dinámicos
   const studio: Studio = getStudioMockById(id);
