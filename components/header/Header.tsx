@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
-import { FaUser } from "react-icons/fa";
+import { FaBuilding, FaUser } from "react-icons/fa";
 import { MdAppRegistration, MdOutlineDashboardCustomize } from "react-icons/md";
 import { TbLogin } from "react-icons/tb";
 import { useIsAuth, useAuthUser, useAuthStore } from "@/stores/AuthStore";
@@ -43,7 +43,7 @@ export const Header = () => {
                 </li>
                 <li>
                   <Link
-                    href="/studioForm"
+                    href="/useOwnerForm"
                     className="block py-2 px-3 cursor-pointer text-white hover:text-gray-400"
                   >
                     Únete como anfitrión
@@ -152,6 +152,15 @@ export const Header = () => {
                     Dashboard
                   </Link>
                 </li>
+                 <li>
+                  <Link
+                    href="/myStudio"
+                    className="flex w-full py-2 px-3 rounded hover:bg-gray-800"
+                  >
+                    <FaBuilding size={24} className="mr-3" />
+                    Mi estudio
+                  </Link>
+                </li>
                   <li>
                   <Link
                     href="/studioRooms"
@@ -186,7 +195,7 @@ export const Header = () => {
                 </li>
                 <li>
                   <Link
-                    href="/studioForm"
+                    href="/useOwnerForm"
                     className="block py-2 px-3 text-white rounded hover:bg-gray-800"
                   >
                     Únete como anfitrión
