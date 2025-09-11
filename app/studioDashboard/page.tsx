@@ -114,7 +114,7 @@ export default function RoomDashboard() {
     };
 
     return (
-        <div className="bg-white w-full min-h-screen">
+        <div className="bg-white w-full min-h-screen pb-10">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <header className="pt-8">

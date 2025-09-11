@@ -41,7 +41,7 @@ export const AuthService = {
       const { accessToken, user } = normalizeLoginResponse(data);
 
       if (typeof window !== "undefined") {
-        localStorage.setItem("accessToken", accessToken); // <-- misma key que usa el interceptor
+        localStorage.setItem("accessToken", accessToken); 
       }
 
       return { accessToken, user };
@@ -60,25 +60,31 @@ export const AuthService = {
   },
 
   async logout(): Promise<void> {
-    try {
-      const token =
-        typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
-      await http.post("/auth/logout", null, {
-
-
-
+  try {
+    await http.post(
+      "/auth/logout",
+      {}, // mejor que null
+      {
         withCredentials: true,
-
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
-    } catch (e: any) {
-      const status = e?.response?.status;
-      if (status === 401 || status === 403 || status === 404 || status === 405) return;
+      }
+    );
+  } catch (e: any) {
+    const status = e?.response?.status;
+  
+    if (![401, 403, 404, 405].includes(status)) {
       throw toApiError(e);
     }
-
-  },
+  } finally {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("accessToken");
+    }
+  
+  }
+},
 
   async forgotPassword(email: string): Promise<void> {
     try {
