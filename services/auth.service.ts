@@ -15,6 +15,8 @@ function extractRawToken(raw: any):
   );
 }
 
+type ResetPasswordPayload = { token: string; newPassword: string };
+
 function normalizeBearer(token: string): string {
   return String(token).replace(/^Bearer\s+/i, "");
 }
@@ -94,13 +96,13 @@ export const AuthService = {
     }
   },
 
-  async resetPassword(payload: { token: string; password: string }): Promise<void> {
-    try {
-      await http.post("/auth/password-reset/reset", payload);
-    } catch (e) {
-      throw toApiError(e);
-    }
-  },
+ async resetPassword({ token, newPassword }: ResetPasswordPayload): Promise<void> {
+  try {
+    await http.post("/auth/password-reset/reset", { token, newPassword });
+  } catch (e) {
+    throw toApiError(e);
+  }
+},
 
   async validateResetToken(token: string): Promise<{ valid: boolean }> {
     try {
