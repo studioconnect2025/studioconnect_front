@@ -1,23 +1,190 @@
-import axios from "axios";
-
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/";
 
 export const roomsService = {
-  async createRoom(data:{studioId: string, roomData: any}) {
+  createRoom: async ({
+    token,
+    roomData,
+  }: {
+    token: string;
+    roomData: any;
+  }) => {
     try {
-      const token = localStorage.getItem("auth"); 
-      if (!token) throw new Error("Usuario no logueado");
-
-      const response = await axios.post(`rooms/${data.studioId}`, data.roomData, {
-        baseURL: API,
+      const response = await fetch(`http://localhost:3000/rooms`, {
+        method: "POST",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify(roomData),
       });
-      return response.data;
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText);
+      }
+
+      const data = await response.json();
+      return data;
     } catch (error) {
       console.error("Error creando la sala:", error);
       throw error;
     }
   },
+
+  uploadRoomImages: async ({
+    token,
+    roomId,
+    imagesFormData,
+  }: {
+    token?: string;
+    roomId: string;
+    imagesFormData: FormData;
+  }) => {
+    try {
+      const accessToken = token ?? localStorage.getItem("accessToken");
+      if (!accessToken) throw new Error("No hay token disponible");
+
+      const response = await fetch(`http://localhost:3000/rooms/${roomId}/images`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: imagesFormData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error subiendo imágenes de la sala:", error);
+      throw error;
+    }
+  },
+
+  getRooms: async (token?: string) => {
+    try {
+      const accessToken = token ?? localStorage.getItem("accessToken");
+      if (!accessToken) throw new Error("No hay token disponible");
+
+      const response = await fetch(`http://localhost:3000/owners/me/studio/rooms`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error obteniendo salas:", error);
+      throw error;
+    }
+  },
+
+  deleteRoom: async ({ token, roomId }: { token?: string; roomId: string }) => {
+    try {
+      const accessToken = token ?? localStorage.getItem("accessToken");
+      if (!accessToken) throw new Error("No hay token disponible");
+
+      const response = await fetch(`http://localhost:3000/owners/me/studio/rooms/${roomId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText);
+      }
+
+      return await response.json(); 
+    } catch (error) {
+      console.error("Error eliminando la sala:", error);
+      throw error;
+    }
+  },
+
+  updateRoom: async ({
+    token,
+    roomId,
+    roomData,
+  }: {
+    token?: string;
+    roomId: string;
+    roomData: any;
+  }) => {
+    try {
+      const accessToken = token ?? localStorage.getItem("accessToken");
+      if (!accessToken) throw new Error("No hay token disponible");
+
+      const response = await fetch(`http://localhost:3000/owners/me/studio/rooms/${roomId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(roomData),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error actualizando la sala:", error);
+      throw error;
+    }
+  },
+
+    // Usar este para eliminar una imagen específica
+  deleteRoomImage: async ({
+    roomId,
+    imageIndex,
+    token,
+  }: {
+    roomId: string;
+    imageIndex: number;
+    token?: string;
+  }) => {
+    try {
+      const accessToken = token ?? localStorage.getItem("accessToken");
+      if (!accessToken) throw new Error("No hay token disponible");
+
+      const response = await fetch(
+        `http://localhost:3000/rooms/${roomId}/images/${imageIndex}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error eliminando la imagen de la sala:", error);
+      throw error;
+    }
+  },
+
+  // Reusar getRooms para traer las salas del owner
+  getMyRooms: async (token?: string) => {
+    return await roomsService.getRooms(token);
+  },
 };
+
+
