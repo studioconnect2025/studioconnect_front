@@ -7,11 +7,9 @@ import {
     FaDollarSign,
     FaStar,
     FaBuilding,
-    FaStore,
 } from "react-icons/fa";
 import { Modal } from "@/components/modal/modal";
-import type { Room } from "@/mocks/rooms";
-import { getRoomsMockByStudioId } from "@/mocks/rooms";
+import type { Room } from "@/types/Rooms"; 
 import {
     getMetrics,
     getRecentReservations,
@@ -22,6 +20,32 @@ import {
     type UpcomingReservation,
     type Message,
 } from "@/mocks/dashboard";
+
+// Función real para traer salas del backend
+async function getRooms(token?: string): Promise<Room[]> {
+    try {
+        const accessToken = token ?? localStorage.getItem("accessToken");
+        if (!accessToken) throw new Error("No hay token disponible");
+
+        const response = await fetch(
+            `http://localhost:3000/owners/me/studio/rooms`,
+            {
+                method: "GET",
+                headers: { Authorization: `Bearer ${accessToken}` },
+            }
+        );
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error obteniendo salas:", error);
+        return [];
+    }
+}
 
 export default function RoomDashboard() {
     const [loading, setLoading] = useState(true);
@@ -49,8 +73,9 @@ export default function RoomDashboard() {
                     getRecentReservations(),
                     getUpcomingReservations(),
                     getMessages(),
-                    getRoomsMockByStudioId("harmony"),
+                    getRooms(), 
                 ]);
+
                 setMetrics(m);
                 setRecentReservations(r);
                 setUpcomingReservations(u);
@@ -119,7 +144,6 @@ export default function RoomDashboard() {
                 {/* Header */}
                 <header className="pt-8">
                     <div className="bg-sky-700 p-4 rounded-xl text-3xl text-white font-bold flex items-center justify-center">
-
                         Panel de control del propietario de las salas
                     </div>
                     <p className="text-gray-500 mt-4 text-2xl font-bold flex items-center justify-center">
@@ -192,7 +216,6 @@ export default function RoomDashboard() {
                             </div>
                         ))}
                     </div>
-
                     {/* Salas */}
                     <div className="bg-sky-800 text-white p-4 rounded-xl shadow-2xl">
                         <div className="flex justify-between items-center mb-4">
@@ -206,23 +229,27 @@ export default function RoomDashboard() {
                         </div>
                         {loading ? (
                             <p className="text-gray-300">Cargando salas...</p>
+                        ) : rooms.length === 0 ? (
+                            <p className="text-gray-300">
+                                No hay salas creadas.
+                            </p>
                         ) : (
-                            rooms.map((room) => (
+                            rooms.slice(0, 3).map((room) => (
                                 <div
                                     key={room.id}
                                     className="bg-white text-gray-700 p-3 rounded-md flex justify-between items-center mb-2"
                                 >
                                     <div>
                                         <p className="font-semibold">
-                                            {room.title}
+                                            {room.name}
                                         </p>
                                         <p className="text-sm">
-                                            {room.capacity} personas • $
-                                            {room.priceHour}/hora
+                                            ${room.pricePerHour}/{room.capacity}
+                                            hs
                                         </p>
                                     </div>
                                     <span className="text-green-600 text-sm">
-                                        Activo
+                                        {room.isActive ? "Activo" : "Inactivo"}
                                     </span>
                                 </div>
                             ))
@@ -309,7 +336,7 @@ export default function RoomDashboard() {
                 <Modal isOpen={isModalOpen} onClose={closeModal}>
                     {selectedReservation && (
                         <div className="space-y-6 text-gray-700 p-6">
-                            <h2 className="text-2xl bg-sky-700 py-2 text-white rounded-2xl text-center font-bold ">
+                            <h2 className="text-2xl bg-sky-700 py-2 text-white rounded-2xl text-center font-bold">
                                 {selectedReservation.title}
                             </h2>
                             <div className="text-center">
