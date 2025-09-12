@@ -66,7 +66,7 @@ export const roomsService = {
       const accessToken = token ?? localStorage.getItem("accessToken");
       if (!accessToken) throw new Error("No hay token disponible");
 
-      const response = await fetch(`http://localhost:3000/owners/me/studio/rooms`, {
+      const response = await fetch(`http://localhost:3000/rooms/my-rooms`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -193,7 +193,7 @@ export const roomsService = {
       name: string;
       description: string;
       price: number;
-      available: boolean;
+      available: boolean; 
       categoryName: string;
     };
     token?: string;

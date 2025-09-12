@@ -5,8 +5,13 @@ import Link from "next/link";
 import { useAuthStore, useAuthError } from "@/stores/AuthStore";
 import { useRouter } from "next/navigation";
 import { validateEmail, validatePassword } from "@/utils/validators/login";
+import { HiEye, HiEyeOff } from "react-icons/hi";
 
-export default function LoginPage() {
+interface LoginPageProps {
+  onClose?: () => void; // <--- agregamos la prop opcional
+}
+
+export default function LoginPage({ onClose }: LoginPageProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
@@ -36,8 +41,11 @@ export default function LoginPage() {
 
     const state = useAuthStore.getState();
     if (state.isAuthenticated) {
-      setSuccessMsg("✅ Login exitoso");
-      setTimeout(() => router.push("/studioDashboard"), 1000);
+      setSuccessMsg("Login exitoso");
+      setTimeout(() => {
+        router.push("/");
+        onClose?.(); 
+      }, 1000);
     }
   };
 
@@ -51,8 +59,8 @@ export default function LoginPage() {
       : {};
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className=" bg-white flex  items-center justify-center px-4">
+      <div className="w-full">
         <div className="rounded-t-xl bg-black text-white text-center py-3">
           <h1 className="text-lg font-bold">Inicio de sesión</h1>
         </div>
@@ -140,16 +148,13 @@ export default function LoginPage() {
                       : "border-gray-300"
                   }`}
                 />
-
                 <button
                   type="button"
-                  aria-label={
-                    showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
-                  }
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                   onClick={() => setShowPassword((s) => !s)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-sky-600"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 hover:text-gray-700 cursor-pointer"
                 >
-                  {showPassword ? "🙈" : "👁️"}
+                   {showPassword ? <HiEyeOff size={25} /> : <HiEye size={25} />}
                 </button>
               </div>
               {touchedPassword && passErr && (
@@ -209,13 +214,9 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => {
-                const api = (
-                  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
-                ).replace(/\/$/, "");
+                const api = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000").replace(/\/$/, "");
                 const redirect = `${window.location.origin}/auth/sso`;
-                window.location.href = `${api}/auth/google/login?redirect_uri=${encodeURIComponent(
-                  redirect
-                )}`;
+                window.location.href = `${api}/auth/google/login?redirect_uri=${encodeURIComponent(redirect)}`;
               }}
               className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
             >

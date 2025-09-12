@@ -13,8 +13,8 @@ interface ModalProps {
 export const Modal = ({ isOpen, onClose, children }: ModalProps) => {
   if (!isOpen) return null;
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="relative bg-white rounded-2xl shadow-lg w-full max-w-4xl max-h-[70vh] overflow-y-auto p-6">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50">
+      <div className="relative bg-white rounded-2xl shadow-lg w-full max-w-lg max-h-[100vh] overflow-y-auto p-10">
         {/* Botón cerrar */}
         <button
           onClick={onClose}
