@@ -1,21 +1,29 @@
 "use client";
+
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { FaBuilding, FaUser } from "react-icons/fa";
 import { MdAppRegistration, MdOutlineDashboardCustomize } from "react-icons/md";
 import { TbLogin } from "react-icons/tb";
+import { CgStudio } from "react-icons/cg";
 import { useIsAuth, useAuthUser, useAuthStore } from "@/stores/AuthStore";
 import { useRouter } from "next/navigation";
-import { CgStudio } from "react-icons/cg";
+import { Modal } from "@/components/modal/modal"; 
+import LoginPage from "@/components/login/login";
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
-  const router = useRouter(); 
+  const openLoginModal = () => setLoginModalOpen(true);
+  const closeLoginModal = () => setLoginModalOpen(false);
 
-  //estados de zustand
+  const router = useRouter();
+
+  // estados de auth
   const isLoggedIn = useIsAuth();
   const user = useAuthUser();
   const logout = useAuthStore((s) => s.logout);
@@ -62,7 +70,7 @@ export const Header = () => {
                   className="text-white hover:bg-sky-800 cursor-pointer p-2 rounded-lg"
                   onClick={async () => {
                     await logout();
-                    router.push("/"); 
+                    router.push("/");
                   }}
                 >
                   Cerrar sesión
@@ -76,12 +84,12 @@ export const Header = () => {
               </>
             ) : (
               <>
-                <Link
-                  href="/login"
+                <button
+                  onClick={openLoginModal}
                   className="text-white hover:bg-sky-800 cursor-pointer p-2 mr-5 rounded-lg"
                 >
                   Iniciar sesión
-                </Link>
+                </button>
                 <Link
                   href="/joinStudioConnect"
                   className="text-white hover:bg-sky-800 rounded-lg p-2"
@@ -112,7 +120,6 @@ export const Header = () => {
       >
         <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 lg:hidden"></div>
 
-        {/* Panel lateral */}
         <div
           className={`absolute top-0 left-0 lg:right-0 lg:left-auto h-full bg-black text-white transform transition-transform duration-300
             ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-full"}
@@ -152,7 +159,7 @@ export const Header = () => {
                     Dashboard
                   </Link>
                 </li>
-                 <li>
+                <li>
                   <Link
                     href="/myStudio"
                     className="flex w-full py-2 px-3 rounded hover:bg-gray-800"
@@ -161,7 +168,7 @@ export const Header = () => {
                     Mi estudio
                   </Link>
                 </li>
-                  <li>
+                <li>
                   <Link
                     href="/studioRooms"
                     className="flex w-full py-2 px-3 rounded hover:bg-gray-800"
@@ -174,7 +181,7 @@ export const Header = () => {
                   <button
                     onClick={async () => {
                       await logout();
-                      router.push("/"); 
+                      router.push("/");
                     }}
                     className="w-full flex text-left cursor-pointer py-2 px-3 rounded hover:bg-gray-800"
                   >
@@ -189,6 +196,10 @@ export const Header = () => {
                   <Link
                     href="#"
                     className="block py-2 px-3 text-white rounded hover:bg-gray-800"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      openLoginModal();
+                    }}
                   >
                     Únete como músico
                   </Link>
@@ -202,12 +213,12 @@ export const Header = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/login"
-                    className="block py-2 px-3 text-white rounded hover:bg-gray-800"
+                  <button
+                    className="block py-2 px-3 text-white rounded hover:bg-gray-800 w-full text-left"
+                    onClick={openLoginModal}
                   >
                     Iniciar sesión
-                  </Link>
+                  </button>
                 </li>
                 <li>
                   <Link
@@ -222,6 +233,11 @@ export const Header = () => {
           </ul>
         </div>
       </div>
+
+      {/* Modal de login */}
+      <Modal isOpen={loginModalOpen} onClose={closeLoginModal}>
+        <LoginPage onClose={closeLoginModal} />
+      </Modal>
     </header>
   );
 };
