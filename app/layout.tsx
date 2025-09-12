@@ -5,6 +5,8 @@ import { Header } from "@/components/header/Header";
 import { Footer } from "@/components/footer/Footer";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { StripeProvider } from "@/components/providers/StripeProvider";
+
 
 const inter = Inter({
     variable: "--font-inter",
@@ -28,8 +30,14 @@ export default function RootLayout({
             </head>
             <body className={`${inter.variable} antialiased`}>
                 <Header />
-                {children}
+
+                {/* 👇 Envolvemos toda la app con StripeProvider */}
+                <StripeProvider>
+                    {children}
+                </StripeProvider>
+
                 <Footer />
+
                 {/* ToastContainer global */}
                 <ToastContainer
                     position="top-center"
