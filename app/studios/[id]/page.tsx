@@ -26,13 +26,13 @@ type RouteParams = { id: string };
 
 export default async function StudioDetailsPage({
   params,
-}: { params: Promise<RouteParams> }) {
-  const { id } = await params;
+}: { params: RouteParams }) {
+  const { id } = params;
 
   // Datos mock dinámicos
   const studio: Studio = getStudioMockById(id);
   const rooms: Room[] = getRoomsMockByStudioId(id);
-  const photos: string[] = getStudioPhotos(id); // siempre te da hasta 5
+  const photos: string[] = getStudioPhotos(id);
 
   return (
     <main className="min-h-screen bg-[#F9FAFB] text-[#0B0F12]">
