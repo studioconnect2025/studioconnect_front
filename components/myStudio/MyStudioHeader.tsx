@@ -7,12 +7,10 @@ type Props = {
   locationText?: string;
 };
 
-export default function MyStudioHeader({ onEditStudio, locationText }: Props) {
-  // Estilo unificado: igual a los otros botones azules (bajos, elegantes)
+export default function MyStudioHeader({ onEditStudio, locationText = "" }: Props) {
   const btnBlue =
     "inline-flex items-center justify-center py-1.5 rounded-md px-4 text-sm font-medium " +
-    "text-white bg-[#03597E] hover:bg-[#024d6f] " + // azul de la app + hover
-    "shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40";
+    "text-white bg-[#03597E] hover:bg-[#02406f] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40";
 
   return (
     <div className="flex items-center justify-between rounded-xl bg-white p-4 text-gray-800">
@@ -21,7 +19,6 @@ export default function MyStudioHeader({ onEditStudio, locationText }: Props) {
       </div>
 
       <div className="ml-4 flex gap-4">
-        {/* Ambos con el MISMO estilo azul y la misma altura */}
         {onEditStudio ? (
           <button onClick={onEditStudio} className={btnBlue}>
             Editar datos del estudio
@@ -31,10 +28,7 @@ export default function MyStudioHeader({ onEditStudio, locationText }: Props) {
             Editar datos del estudio
           </Link>
         )}
-
-        <Link href="/studioRooms" className={btnBlue}>
-          Editar salas
-        </Link>
+        {/* Botón "Editar salas" eliminado del header (se renderiza abajo en MyStudioClient) */}
       </div>
     </div>
   );

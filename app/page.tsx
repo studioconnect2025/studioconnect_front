@@ -7,10 +7,11 @@ import { ReviewList } from "@/components/reviews/ReviewList";
 import { FeaturedStudiosList } from "@/components/studio/FeatureStudioList";
 import WhyChooseStudioConnect from "@/components/WhyChooseStudioConnect/WhyChooseStudioConnect";
 import { OwnerToolbar } from "@/components/ownerToolBar/ownerToolBar"; 
-import { useIsAuth } from "@/stores/AuthStore"; 
+import { useAuthUser, useIsAuth } from "@/stores/AuthStore"; 
 
 export default function Home() {
   const isLoggedIn = useIsAuth();
+  const user = useAuthUser();
 
   return (
     <div>
@@ -34,10 +35,14 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Si está logueado -> OwnerToolbar, sino -> BannerSearch */}
+      {/* Si es dueño de estudio -> OwnerToolbar, si es musico -> BannerSearch */}
       <div className="bg-gray-100 flex flex-col items-center p-4 sm:p-6">
         <div className="w-full max-w-6xl">
-          {isLoggedIn ? <OwnerToolbar /> : <BannerSearch />}
+          {user?.role === "Dueño de Estudio" ? (
+            <OwnerToolbar />
+          ) : (
+            <BannerSearch />
+          )}
         </div>
       </div>
 

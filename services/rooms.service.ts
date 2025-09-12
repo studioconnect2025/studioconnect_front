@@ -1,3 +1,5 @@
+const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
+
 export const roomsService = {
   createRoom: async ({
     token,
@@ -7,7 +9,7 @@ export const roomsService = {
     roomData: any;
   }) => {
     try {
-      const response = await fetch(`http://localhost:3000/rooms`, {
+      const response = await fetch(`${API}/rooms`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -38,10 +40,11 @@ export const roomsService = {
     imagesFormData: FormData;
   }) => {
     try {
-      const accessToken = token ?? localStorage.getItem("accessToken");
+      const accessToken =
+        token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
       if (!accessToken) throw new Error("No hay token disponible");
 
-      const response = await fetch(`http://localhost:3000/rooms/${roomId}/images`, {
+      const response = await fetch(`${API}/rooms/${roomId}/images`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -63,10 +66,11 @@ export const roomsService = {
 
   getRooms: async (token?: string) => {
     try {
-      const accessToken = token ?? localStorage.getItem("accessToken");
+      const accessToken =
+        token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
       if (!accessToken) throw new Error("No hay token disponible");
 
-      const response = await fetch(`http://localhost:3000/rooms/my-rooms`, {
+      const response = await fetch(`${API}/rooms/my-rooms`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -87,10 +91,11 @@ export const roomsService = {
 
   deleteRoom: async ({ token, roomId }: { token?: string; roomId: string }) => {
     try {
-      const accessToken = token ?? localStorage.getItem("accessToken");
+      const accessToken =
+        token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
       if (!accessToken) throw new Error("No hay token disponible");
 
-      const response = await fetch(`http://localhost:3000/owners/me/studio/rooms/${roomId}`, {
+      const response = await fetch(`${API}/owners/me/studio/rooms/${roomId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -119,10 +124,11 @@ export const roomsService = {
     roomData: any;
   }) => {
     try {
-      const accessToken = token ?? localStorage.getItem("accessToken");
+      const accessToken =
+        token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
       if (!accessToken) throw new Error("No hay token disponible");
 
-      const response = await fetch(`http://localhost:3000/owners/me/studio/rooms/${roomId}`, {
+      const response = await fetch(`${API}/owners/me/studio/rooms/${roomId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -153,18 +159,16 @@ export const roomsService = {
     token?: string;
   }) => {
     try {
-      const accessToken = token ?? localStorage.getItem("accessToken");
+      const accessToken =
+        token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
       if (!accessToken) throw new Error("No hay token disponible");
 
-      const response = await fetch(
-        `http://localhost:3000/rooms/${roomId}/images/${imageIndex}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const response = await fetch(`${API}/rooms/${roomId}/images/${imageIndex}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -182,48 +186,72 @@ export const roomsService = {
     return await roomsService.getRooms(token);
   },
 
-  // ==================== Instrumentos ====================
+  getRoomsByStudioId: async ({
+    studioId,
+    token,
+  }: {
+    studioId: string;
+    token?: string;
+  }) => {
+    try {
+      const accessToken =
+        token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
+      const response = await fetch(`${API}/studios/${studioId}/rooms`, {
+        method: "GET",
+        headers: {
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText);
+      }
+
+      const data = await response.json();
+      return Array.isArray(data?.rooms) ? data.rooms : Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error("Error obteniendo salas del estudio:", error);
+      throw error;
+    }
+  },
+
+  // ✅ NUEVO: expuesto en el objeto
   addInstrument: async ({
     roomId,
     instrumentData,
     token,
   }: {
     roomId: string;
-    instrumentData: {
-      name: string;
-      description: string;
-      price: number;
-      available: boolean; 
-      categoryName: string;
-    };
+    instrumentData: any;
     token?: string;
   }) => {
     try {
-      const accessToken = token ?? localStorage.getItem("accessToken");
+      const accessToken =
+        token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
       if (!accessToken) throw new Error("No hay token disponible");
 
-      const body = {
-        roomId,
-        ...instrumentData,
-      };
-      const response = await fetch(`http://localhost:3000/instruments/create`, {
+      const res = await fetch(`${API}/rooms/${roomId}/instruments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify(instrumentData),
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Error al agregar instrumento");
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText);
       }
 
-      return await response.json();
+      return await res.json();
     } catch (error) {
       console.error("Error agregando instrumento:", error);
       throw error;
     }
   },
-};
+} as const;
+
+export const getStudioRooms = async (studioId: string, token?: string) =>
+  roomsService.getRoomsByStudioId({ studioId, token });

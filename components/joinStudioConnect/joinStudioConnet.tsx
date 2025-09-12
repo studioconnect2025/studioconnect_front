@@ -20,9 +20,9 @@ export default function JoinStudioConnect() {
       </div>
 
       {/* Options */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl w-full px-10 py-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full px-10 py-16 mb-6">
         {/* Para músicos */}
-        <div className="bg-white shadow-md rounded-2xl p-6 flex flex-col items-center text-center hover:shadow-2xl transition gap-3">
+        <div className="bg-white transition-transform duration-300 ease-in-out hover:scale-110 shadow-md rounded-2xl p-6 flex flex-col items-center text-center hover:shadow-2xl gap-3">
             <div className="w-16 h-16 bg-sky-800 rounded-full flex items-center justify-center">
             <FaMusic  size={30} className="text-white mr-1" />
           </div>
@@ -37,13 +37,13 @@ export default function JoinStudioConnect() {
             <li>✔ Pagos seguros</li>
             <li>✔ Reseñas y valoraciones</li>
           </ul>
-          <button className="bg-sky-800 text-white px-6 py-2 cursor-pointer rounded-lg hover:bg-black transition">
+         <Link href="/useMusicianForm"> <button className="bg-sky-800 text-white px-6 py-2 cursor-pointer rounded-lg mt-6 hover:bg-black transition">
             Regístrate como músico
-          </button>
+          </button></Link>
         </div>
 
         {/* Para propietarios */}
-        <div className="bg-white shadow-md rounded-2xl p-6 flex flex-col items-center text-center hover:shadow-2xl transition gap-3">
+        <div className="bg-white transition-transform duration-300 ease-in-out hover:scale-110 shadow-md rounded-2xl p-6 flex flex-col items-center text-center hover:shadow-2xl gap-3">
           <div className="w-16 h-16 bg-sky-800 rounded-full flex items-center justify-center">
             <FaBuilding  size={30} className="text-white" />
           </div>

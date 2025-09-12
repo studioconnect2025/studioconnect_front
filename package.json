@@ -8,6 +8,9 @@
     "start": "next start"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@stripe/react-stripe-js": "^4.0.2",
+    "@stripe/stripe-js": "^7.9.0",
     "axios": "^1.11.0",
     "formik": "^2.4.6",
     "leaflet": "^1.9.4",
@@ -20,6 +23,7 @@
     "react-leaflet": "^5.0.0",
     "react-toastify": "^11.0.5",
     "sweetalert2": "^11.23.0",
+    "tailwind-merge": "^3.3.1",
     "yup": "^1.7.0",
     "zustand": "^5.0.8"
   },

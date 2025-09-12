@@ -29,10 +29,7 @@ type Props = {
 };
 
 export default async function StudioDetailsPage({ params }: Props) {
-  // await params para obtener el id
   const { id } = await params;
-
-  // Si querés manejar todo como Server Component:
   const studio: Studio = getStudioMockById(id);
   const rooms: Room[] = getRoomsMockByStudioId(id);
   const photos: string[] = getStudioPhotos(id);
