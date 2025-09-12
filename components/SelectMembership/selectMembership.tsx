@@ -5,7 +5,7 @@ export default function PricingPlans() {
     <section className="w-full bg-gray-50">
       {/* Hero */}
       <div className="bg-sky-800 text-white py-10 px-4 text-center">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-xl mx-auto">
           <div className="flex justify-center mb-4">
             <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center">
               <FaMedal size={40} className="text-sky-800" />
@@ -21,7 +21,7 @@ export default function PricingPlans() {
       </div>
 
       {/* Planes */}
-      <div className="max-w-5xl mx-auto px-4 py-12">
+      <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Plan Mensual */}
           <div className="bg-white  border-4 hover:border-black rounded-xl shadow-sm hover:shadow-xl relative text-center">
@@ -32,19 +32,15 @@ export default function PricingPlans() {
               <h2 className="text-2xl font-semibold text-black">Plan Mensual</h2>
               <p className="text-gray-500 text-base">Ideal para estudios en crecimiento.</p>
               <p className="text-3xl font-bold text-sky-700">
-                $7.999
+                $25usd
                 <span className="text-base font-normal ml-2 text-gray-600">/mes</span>
               </p>
 
               <ul className="space-y-6 text-base text-gray-700 text-left">
                 {[
-                  "Hasta 15 salas",
-                  "Gestión avanzada de reservas",
+                  "Acceso a mas de 2 salas para tu estudio",
                   "Atención al cliente prioritaria",
-                  "Análisis e informes avanzados",
-                  "Estadísticas",
                   "Marca personalizada",
-                  "Procesamiento de pagos",
                 ].map((item, i) => (
                   <li key={i} className="flex items-center">
                     <FaCheck className="w-4 h-4 text-sky-600 mr-2" />
@@ -64,17 +60,15 @@ export default function PricingPlans() {
               <h2 className="text-2xl font-semibold text-black">Plan Anual</h2>
               <p className="text-gray-500 text-base">Tu estudio siempre online, sin preocupaciones.</p>
               <p className="text-3xl font-bold text-sky-700">
-                $79.990
+                $100usd
                 <span className="text-base font-normal ml-2 text-gray-600">/año</span>
               </p>
 
-              <ul className="space-y-12 text-base text-gray-700 text-left">
+              <ul className="space-y-6 text-base text-gray-700 text-left">
                 {[
                   "Publica tu estudio 12 meses",
-                  "Ahorra 2 meses",
-                  "Mayor visibilidad en la plataforma",
+                  "Ahorra 3 meses",
                   "Análisis e informes avanzados",
-                  "Gestión de múltiples ubicaciones",
                 ].map((item, i) => (
                   <li key={i} className="flex items-center">
                     <FaCheck className="w-4 h-4 text-sky-600 mr-2" />
@@ -94,7 +88,7 @@ export default function PricingPlans() {
       {/* Que incluye */}
       <div className="max-w-6xl mx-auto px-4 pb-16">
         <h3 className="text-center text-xl md:text-2xl font-semibold mb-10 text-black">
-          Qué incluye
+          Y además te brindamos…
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 text-center  ">
           {[

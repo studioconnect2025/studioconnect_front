@@ -8,7 +8,7 @@ import { validateEmail, validatePassword } from "@/utils/validators/login";
 import { HiEye, HiEyeOff } from "react-icons/hi";
 
 interface LoginPageProps {
-  onClose?: () => void; // <--- agregamos la prop opcional
+  onClose?: () => void;
 }
 
 export default function LoginPage({ onClose }: LoginPageProps) {
