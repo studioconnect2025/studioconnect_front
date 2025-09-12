@@ -103,7 +103,7 @@ export default function RegisterPage() {
       await registerStudio(dataToSend, files);
 
       setMessage({ type: "success", text: "¡Estudio registrado correctamente!" });
-      setTimeout(() => router.push("/"), 2000);
+      setTimeout(() => router.push("/myStudio"), 2000);
     } catch (err: any) {
       setMessage({ type: "error", text: "Error al registrar estudio. Por favor, inténtalo de nuevo." });
       console.error(" Error registrando estudio:", err.response?.data || err.message);
@@ -111,7 +111,6 @@ export default function RegisterPage() {
       setSubmitting(false);
     }
   };
-
   return (
     <div>
       {/* HEADER */}
