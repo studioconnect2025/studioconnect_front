@@ -15,7 +15,7 @@ type AuthState = {
 };
 
 type AuthActions = {
-  setAuth: (data: { user: User; accessToken: string }) => void; // <-- 1. AÑADIMOS LA ACCIÓN AL TIPO
+  setAuth: (data: { user: User; accessToken: string }) => void; 
   login: (payload: LoginPayload) => Promise<void>;
   logout: () => Promise<void>;
   setUser: (u: User | null) => void;
@@ -31,7 +31,6 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       loading: false,
       error: null,
 
-      // <-- 2. IMPLEMENTAMOS LA LÓGICA DE LA NUEVA ACCIÓN
       setAuth(data) {
         set({
           user: data.user,
