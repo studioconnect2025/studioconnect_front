@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 interface BookingCheckoutProps {
   bookingId: string;
