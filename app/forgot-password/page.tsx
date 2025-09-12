@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AuthService } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
 
+
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
