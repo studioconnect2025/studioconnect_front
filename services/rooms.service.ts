@@ -182,48 +182,35 @@ export const roomsService = {
     return await roomsService.getRooms(token);
   },
 
-  // ==================== Instrumentos ====================
-  addInstrument: async ({
-    roomId,
-    instrumentData,
+  getRoomsByStudioId: async ({
+    studioId,
     token,
   }: {
-    roomId: string;
-    instrumentData: {
-      name: string;
-      description: string;
-      price: number;
-      available: boolean; 
-      categoryName: string;
-    };
+    studioId: string;
     token?: string;
   }) => {
     try {
       const accessToken = token ?? localStorage.getItem("accessToken");
-      if (!accessToken) throw new Error("No hay token disponible");
-
-      const body = {
-        roomId,
-        ...instrumentData,
-      };
-      const response = await fetch(`http://localhost:3000/instruments/create`, {
-        method: "POST",
+      const response = await fetch(`http://localhost:3000/studios/${studioId}/rooms`, {
+        method: "GET",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
-        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || "Error al agregar instrumento");
+        throw new Error(errorText);
       }
 
-      return await response.json();
+      const data = await response.json();
+      return Array.isArray(data?.rooms) ? data.rooms : Array.isArray(data) ? data : [];
     } catch (error) {
-      console.error("Error agregando instrumento:", error);
+      console.error("Error obteniendo salas del estudio:", error);
       throw error;
     }
   },
 };
+
+export const getStudioRooms = async (studioId: string, token?: string) =>
+  roomsService.getRoomsByStudioId({ studioId, token });
