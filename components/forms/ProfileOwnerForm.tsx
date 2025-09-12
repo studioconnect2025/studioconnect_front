@@ -4,7 +4,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { ReactNode, useState } from "react";
 import { FaUserLarge } from "react-icons/fa6";
-import { OwnerService } from "@/services/owner.services";
+import { OwnerService } from "@/services/studio.services";
 
 const brand = {
   primary: "#015E88",

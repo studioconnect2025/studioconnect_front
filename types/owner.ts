@@ -1,8 +1,11 @@
 export interface BasicInfo {
   id: string;
-  firstName: string;
-  lastName: string;
   email: string;
-  phoneNumber: string | null;
-  profilePhoto: string | null;
+  role: string | null;
+  isActive: boolean | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  phoneNumber?: string | null;
+  profilePhoto?: string | null;
+  businessBio?: string | null;
 }
