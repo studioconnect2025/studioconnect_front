@@ -1,12 +1,20 @@
 "use client";
 
+import { Suspense } from "react";
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { AuthService } from "@/services/auth.service";
 import { Eye, EyeOff } from "lucide-react";
 
-
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<p className="text-center text-gray-600">Cargando…</p>}>
+      <ResetPasswordInner />
+    </Suspense>
+  );
+}
+
+function ResetPasswordInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
@@ -50,7 +58,7 @@ export default function ResetPasswordPage() {
     }
 
     try {
-      // OJO: el backend espera { token, newPassword }
+      // el backend espera { token, newPassword }
       await AuthService.resetPassword({ token: token || "", newPassword: password });
 
       setSuccessMsg("✅ Contraseña restablecida exitosamente");
