@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { AuthService } from "@/services/auth.service";
 import { Eye, EyeOff } from "lucide-react";
 
+
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
   const router = useRouter();

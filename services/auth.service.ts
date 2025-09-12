@@ -2,6 +2,7 @@ import { http } from "@/lib/Http";
 import { ApiError, toApiError } from "@/utils/ApiError";
 import type { LoginPayload, LoginResponse, MeResponse } from "@/types/Auth";
 
+
 function extractRawToken(raw: any):
   | string
   | undefined {
@@ -16,6 +17,8 @@ function extractRawToken(raw: any):
 }
 
 type ResetPasswordPayload = { token: string; newPassword: string };
+
+export const dynamic = "force-dynamic"; 
 
 function normalizeBearer(token: string): string {
   return String(token).replace(/^Bearer\s+/i, "");
@@ -95,6 +98,7 @@ export const AuthService = {
       throw toApiError(e);
     }
   },
+
 
  async resetPassword({ token, newPassword }: ResetPasswordPayload): Promise<void> {
   try {
