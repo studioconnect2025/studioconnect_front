@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
-import { FaBuilding, FaUser } from "react-icons/fa";
+import { FaBuilding, FaCalendarCheck, FaUser } from "react-icons/fa";
 import {
   MdAppRegistration,
   MdOutlineCardMembership,
@@ -182,6 +182,14 @@ export const Header = () => {
                     className="w-full py-2 px-3 flex rounded hover:bg-gray-800"
                   >
                     <FaUser size={24} className="mr-3" /> Mi perfil
+                  </Link>
+                </li>
+                 <li>
+                  <Link
+                    href={user?.role === "Músico" ? "/myBookings" : "/profileOwner"}
+                    className="w-full py-2 px-3 flex rounded hover:bg-gray-800"
+                  >
+                   <FaCalendarCheck  size={24} className="mr-3" />Mis reservas
                   </Link>
                 </li>
 
