@@ -7,8 +7,6 @@ export async function registerStudioOwner(data: any) {
   const res = await axios.post(url, data, { withCredentials: true });
   return res.data;
 }
-
-// Ahora el tipo acepta el payload completo con profile y ubicacion
 export async function registerMusician(payload: {
   email: string;
   password: string;
@@ -25,9 +23,8 @@ export async function registerMusician(payload: {
     };
   };
 }) {
+   console.log("Payload que se envía al backend:", payload);
   const url = new URL("auth/register/musician", API).toString();
-
-  console.log("Payload enviado al backend:", payload); // Aquí ves todo en consola
 
   const res = await axios.post(url, payload, { withCredentials: true });
   return res.data;

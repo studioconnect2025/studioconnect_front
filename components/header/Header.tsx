@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
-import { FaBuilding, FaUser } from "react-icons/fa";
+import { FaBuilding, FaCalendarCheck, FaUser } from "react-icons/fa";
 import {
   MdAppRegistration,
   MdOutlineCardMembership,
@@ -19,10 +19,12 @@ import LoginPage from "@/components/login/login";
 import { CiLogin } from "react-icons/ci";
 import { AiOutlineForm } from "react-icons/ai";
 import { IoMdMenu } from "react-icons/io";
+import { profileService } from "@/services/musician.services";
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [profileName, setProfileName] = useState("");
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
@@ -33,6 +35,23 @@ export const Header = () => {
   const isLoggedIn = useIsAuth();
   const user = useAuthUser();
   const logout = useAuthStore((s) => s.logout);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await profileService.getMyProfile();
+        if (data?.profile) {
+          const fullName = `${data.profile.nombre ?? ""} ${data.profile.apellido ?? ""}`.trim();
+          setProfileName(fullName);
+        }
+      } catch (error) {
+        console.error("Error cargando perfil en Header:", error);
+      }
+    };
+
+    if (isLoggedIn) {
+      fetchProfile();
+    }
+  }, [isLoggedIn]);
 
   return (
     <header>
@@ -73,7 +92,7 @@ export const Header = () => {
               <>
                 <span className="text-white flex">
                   <MdOutlineWavingHand size={30} className="mr-3" />
-                  Hola {user?.name}
+                  Hola {profileName || user?.name} !
                 </span>
 
                 {/* Solo Dueño de estudio */}
@@ -165,6 +184,14 @@ export const Header = () => {
                     <FaUser size={24} className="mr-3" /> Mi perfil
                   </Link>
                 </li>
+                 <li>
+                  <Link
+                    href={user?.role === "Músico" ? "/myBookings" : "/profileOwner"}
+                    className="w-full py-2 px-3 flex rounded hover:bg-gray-800"
+                  >
+                   <FaCalendarCheck  size={24} className="mr-3" />Mis reservas
+                  </Link>
+                </li>
 
                 {/* Solo Dueño de estudio */}
                 {user?.role === "Dueño de Estudio" && (
@@ -247,15 +274,6 @@ export const Header = () => {
                     className="block py-2 px-3 text-white rounded hover:bg-gray-800"
                   >
                     Únete como anfitrión
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/membership"
-                    className="block py-2 px-3 text-white rounded hover:bg-gray-800"
-                    onClick={closeMenu}
-                  >
-                    Planes
                   </Link>
                 </li>
                 <li>
