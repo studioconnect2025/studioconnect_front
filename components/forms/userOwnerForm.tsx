@@ -12,11 +12,21 @@ const brand = { primary: "#015E88" };
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return (
-    <h3 className="text-sm md:text-base font-semibold text-gray-700 mb-3 mt-6">{children}</h3>
+    <h3 className="text-sm md:text-base font-semibold text-gray-700 mb-3 mt-6">
+      {children}
+    </h3>
   );
 }
 
-function Label({ htmlFor, children, required }: { htmlFor: string; children: ReactNode; required?: boolean }) {
+function Label({
+  htmlFor,
+  children,
+  required,
+}: {
+  htmlFor: string;
+  children: ReactNode;
+  required?: boolean;
+}) {
   return (
     <label htmlFor={htmlFor} className="block text-sm font-medium text-gray-700 mb-1">
       {children}
@@ -29,7 +39,17 @@ function HelpError({ name }: { name: string }) {
   return <ErrorMessage name={name} component="div" className="text-xs text-red-600 mt-1" />;
 }
 
-const Input = ({ name, type = "text", placeholder, togglePassword }: { name: string; type?: string; placeholder?: string; togglePassword?: boolean }) => {
+const Input = ({
+  name,
+  type = "text",
+  placeholder,
+  togglePassword,
+}: {
+  name: string;
+  type?: string;
+  placeholder?: string;
+  togglePassword?: boolean;
+}) => {
   const [show, setShow] = useState(false);
   const inputType = togglePassword && show ? "text" : type;
 
@@ -50,12 +70,28 @@ const Input = ({ name, type = "text", placeholder, togglePassword }: { name: str
           className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {show ? (
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.584 10.59A3 3 0 0012 15a3 3 0 001.414-.374M9.88 4.64A9.53 9.53 0 0112 4.5c5.523 0 10 4.5 10 7.5-.44 1.163-1.285 2.37-2.42 3.41M6.32 6.32C4.28 7.77 3 9.65 3 12c0 .67.15 1.32.43 1.93" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.584 10.59A3 3 0 0012 15a3 3 0 001.414-.374M9.88 4.64A9.53 9.53 0 0112 4.5c5.523 0 10 4.5 10 7.5-.44 1.163-1.285 2.37-2.42 3.41M6.32 6.32C4.28 7.77 3 9.65 3 12c0 .67.15 1.32.43 1.93"
+              />
             </svg>
           ) : (
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M2 12s3.5-7.5 10-7.5S22 12 22 12s-3.5 7.5-10 7.5S2 12 2 12z" />
               <circle cx="12" cy="12" r="3" />
             </svg>
@@ -72,14 +108,14 @@ const StudioSchema = Yup.object().shape({
   firstName: Yup.string().required("Requerido"),
   lastName: Yup.string().required("Requerido"),
   email: Yup.string().email("Email inválido").required("Requerido"),
-  password: Yup.string().required("Requerido").min(6, "Debe tener al menos 6 caracteres"),
+  password: Yup.string().required("Requerido").min(8, "Mínimo 8 caracteres"),
   confirmPassword: Yup.string()
     .required("Requerido")
-    .min(6, "Debe tener al menos 6 caracteres")
+    .min(8, "Mínimo 8 caracteres")
     .oneOf([Yup.ref("password")], "Las contraseñas deben coincidir"),
   phoneNumber: Yup.string()
     .required("Requerido")
-    .matches(/^(\+?\d{1,4}[-\s]?)?\d{7,15}$/, "Teléfono inválido"),
+    .matches(/^(\+?\d{1,4}[-\s]?)?\d{7,15}$/, "Teléfono inválido (7-15 dígitos)"),
 });
 
 export default function StudioConnectStudioForm() {
@@ -93,7 +129,9 @@ export default function StudioConnectStudioForm() {
               <FaBuilding size={30} className="text-sky-700" />
             </div>
           </div>
-          <h1 className="text-2xl md:text-3xl font-semibold">Registrate como Owner de estudio</h1>
+          <h1 className="text-2xl md:text-3xl font-semibold">
+            Registrate como Owner de estudio
+          </h1>
           <p className="mt-2 text-sm md:text-base text-gray-200">
             Únete a nuestra red de estudios de grabación profesionales y conéctate con músicos de todo el mundo.
           </p>
@@ -129,10 +167,16 @@ export default function StudioConnectStudioForm() {
                 await registerStudioOwner(payload);
                 toast.success("Registro completado correctamente!");
                 resetForm();
-                setTimeout(() => { window.location.href = "/"; }, 1500);
+                setTimeout(() => {
+                  window.location.href = "/";
+                }, 1500);
               } catch (err: any) {
-                console.error("Error en registro:", err.response?.data ?? err);
-                toast.error(err?.response?.data?.message ?? "Error al registrar");
+                const msg =
+                  err?.response?.data?.message ??
+                  err?.response?.data?.error ??
+                  err?.message ??
+                  "Error al registrar";
+                toast.error(Array.isArray(msg) ? msg.join(" | ") : String(msg));
               } finally {
                 setSubmitting(false);
               }
@@ -141,38 +185,51 @@ export default function StudioConnectStudioForm() {
             {({ isSubmitting }) => (
               <Form className="space-y-6">
                 <SectionTitle>Información del Propietario</SectionTitle>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="firstName" required>Nombre</Label>
+                    <Label htmlFor="firstName" required>
+                      Nombre
+                    </Label>
                     <Input name="firstName" placeholder="Juan" />
                   </div>
                   <div>
-                    <Label htmlFor="lastName" required>Apellido</Label>
+                    <Label htmlFor="lastName" required>
+                      Apellido
+                    </Label>
                     <Input name="lastName" placeholder="Pérez" />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="email" required>Email</Label>
+                  <Label htmlFor="email" required>
+                    Email
+                  </Label>
                   <Input name="email" type="email" placeholder="correo@ejemplo.com" />
                 </div>
 
                 <div>
-                  <Label htmlFor="password" required>Contraseña</Label>
+                  <Label htmlFor="password" required>
+                    Contraseña
+                  </Label>
                   <Input name="password" type="password" placeholder="********" togglePassword />
                 </div>
 
                 <div>
-                  <Label htmlFor="confirmPassword" required>Confirmar Contraseña</Label>
+                  <Label htmlFor="confirmPassword" required>
+                    Confirmar Contraseña
+                  </Label>
                   <Input name="confirmPassword" type="password" placeholder="********" togglePassword />
                 </div>
 
                 <div>
-                  <Label htmlFor="phoneNumber" required>Teléfono</Label>
-                  <Input name="phoneNumber" placeholder="+549111111111" />
+                  <Label htmlFor="phoneNumber" required>
+                    Teléfono
+                  </Label>
+                  <Input name="phoneNumber" placeholder="+5491112345678" />
                 </div>
 
-                <div className="pt-4">
+                <div className="pt-2">
                   <button
                     type="submit"
                     disabled={isSubmitting}
