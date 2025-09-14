@@ -159,7 +159,7 @@ export const Header = () => {
                 {/* Solo Músico: Mis reservas */}
                 {user?.role === "Músico" && (
                   <li>
-                    <Link href="/musicianProfile#myBookings" className="w-full py-2 px-3 flex rounded hover:bg-gray-800">
+                    <Link href="/myBookings" className="w-full py-2 px-3 flex rounded hover:bg-gray-800">
                       <FaCalendarCheck size={24} className="mr-3" /> Mis reservas
                     </Link>
                   </li>
