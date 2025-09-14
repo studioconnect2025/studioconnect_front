@@ -28,10 +28,7 @@ function Label({
   required?: boolean;
 }) {
   return (
-    <label
-      htmlFor={htmlFor}
-      className="block text-sm font-medium text-gray-700 mb-1"
-    >
+    <label htmlFor={htmlFor} className="block text-sm font-medium text-gray-700 mb-1">
       {children}
       {required && <span className="text-red-500 ml-1">*</span>}
     </label>
@@ -39,13 +36,7 @@ function Label({
 }
 
 function HelpError({ name }: { name: string }) {
-  return (
-    <ErrorMessage
-      name={name}
-      component="div"
-      className="text-xs text-red-600 mt-1"
-    />
-  );
+  return <ErrorMessage name={name} component="div" className="text-xs text-red-600 mt-1" />;
 }
 
 const Input = ({
@@ -79,12 +70,28 @@ const Input = ({
           className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {show ? (
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.584 10.59A3 3 0 0012 15a3 3 0 001.414-.374M9.88 4.64A9.53 9.53 0 0112 4.5c5.523 0 10 4.5 10 7.5-.44 1.163-1.285 2.37-2.42 3.41M6.32 6.32C4.28 7.77 3 9.65 3 12c0 .67.15 1.32.43 1.93" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.584 10.59A3 3 0 0012 15a3 3 0 001.414-.374M9.88 4.64A9.53 9.53 0 0112 4.5c5.523 0 10 4.5 10 7.5-.44 1.163-1.285 2.37-2.42 3.41M6.32 6.32C4.28 7.77 3 9.65 3 12c0 .67.15 1.32.43 1.93"
+              />
             </svg>
           ) : (
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <svg
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M2 12s3.5-7.5 10-7.5S22 12 22 12s-3.5 7.5-10 7.5S2 12 2 12z" />
               <circle cx="12" cy="12" r="3" />
             </svg>
@@ -96,7 +103,7 @@ const Input = ({
   );
 };
 
-// Validación (alineada al back: min 8)
+// Yup Schema para Owner (sin ubicación)
 const StudioSchema = Yup.object().shape({
   firstName: Yup.string().required("Requerido"),
   lastName: Yup.string().required("Requerido"),
@@ -108,10 +115,7 @@ const StudioSchema = Yup.object().shape({
     .oneOf([Yup.ref("password")], "Las contraseñas deben coincidir"),
   phoneNumber: Yup.string()
     .required("Requerido")
-    .matches(
-      /^(\+?\d{1,4}[-\s]?)?\d{7,15}$/,
-      "Teléfono inválido (7-15 dígitos, puede incluir +, espacios o guiones)"
-    ),
+    .matches(/^(\+?\d{1,4}[-\s]?)?\d{7,15}$/, "Teléfono inválido (7-15 dígitos)"),
 });
 
 export default function StudioConnectStudioForm() {
@@ -129,8 +133,7 @@ export default function StudioConnectStudioForm() {
             Registrate como Owner de estudio
           </h1>
           <p className="mt-2 text-sm md:text-base text-gray-200">
-            Únete a nuestra red de estudios de grabación profesionales y
-            conéctate con músicos de todo el mundo.
+            Únete a nuestra red de estudios de grabación profesionales y conéctate con músicos de todo el mundo.
           </p>
         </div>
       </div>
@@ -145,12 +148,11 @@ export default function StudioConnectStudioForm() {
               password: "",
               confirmPassword: "",
               phoneNumber: "",
-              // Si querés recolectar ubicación, agregá acá: ciudad, provincia, direccion, codigoPostal
             }}
             validationSchema={StudioSchema}
             onSubmit={async (values, { setSubmitting, resetForm }) => {
+              console.log("Formulario enviado con valores:", values);
               try {
-                // Mapear a la forma que espera el backend (CreateUserDto)
                 const payload = {
                   email: values.email,
                   password: values.password,
@@ -159,17 +161,10 @@ export default function StudioConnectStudioForm() {
                     nombre: values.firstName,
                     apellido: values.lastName,
                     numeroDeTelefono: values.phoneNumber,
-                    // Si luego agregás campos de ubicación en el form, podés enviar:
-                    // ubicacion: {
-                    //   ciudad: values.ciudad || undefined,
-                    //   provincia: values.provincia || undefined,
-                    //   calle: values.direccion || undefined,
-                    //   codigoPostal: values.codigoPostal || undefined,
-                    // },
                   },
                 };
 
-                await registerStudioOwner(payload as any);
+                await registerStudioOwner(payload);
                 toast.success("Registro completado correctamente!");
                 resetForm();
                 setTimeout(() => {
@@ -187,7 +182,7 @@ export default function StudioConnectStudioForm() {
               }
             }}
           >
-            {() => (
+            {({ isSubmitting }) => (
               <Form className="space-y-6">
                 <SectionTitle>Información del Propietario</SectionTitle>
 
@@ -217,24 +212,14 @@ export default function StudioConnectStudioForm() {
                   <Label htmlFor="password" required>
                     Contraseña
                   </Label>
-                  <Input
-                    name="password"
-                    type="password"
-                    placeholder="********"
-                    togglePassword
-                  />
+                  <Input name="password" type="password" placeholder="********" togglePassword />
                 </div>
 
                 <div>
                   <Label htmlFor="confirmPassword" required>
                     Confirmar Contraseña
                   </Label>
-                  <Input
-                    name="confirmPassword"
-                    type="password"
-                    placeholder="********"
-                    togglePassword
-                  />
+                  <Input name="confirmPassword" type="password" placeholder="********" togglePassword />
                 </div>
 
                 <div>
@@ -244,35 +229,14 @@ export default function StudioConnectStudioForm() {
                   <Input name="phoneNumber" placeholder="+5491112345678" />
                 </div>
 
-                {/* Si querés recolectar ubicación ahora, descomentá y agregá al initialValues y al payload:
-                <SectionTitle>Ubicación (opcional)</SectionTitle>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="ciudad">Ciudad</Label>
-                    <Input name="ciudad" placeholder="Córdoba" />
-                  </div>
-                  <div>
-                    <Label htmlFor="provincia">Provincia</Label>
-                    <Input name="provincia" placeholder="Córdoba" />
-                  </div>
-                  <div>
-                    <Label htmlFor="direccion">Calle</Label>
-                    <Input name="direccion" placeholder="San Martín 1500" />
-                  </div>
-                  <div>
-                    <Label htmlFor="codigoPostal">Código Postal</Label>
-                    <Input name="codigoPostal" placeholder="5000" />
-                  </div>
-                </div>
-                */}
-
                 <div className="pt-2">
                   <button
                     type="submit"
-                    className="w-full py-2 px-4 rounded-lg text-white font-medium shadow-md hover:opacity-90"
+                    disabled={isSubmitting}
+                    className="w-full py-2 px-4 rounded-lg text-white font-medium shadow-md hover:opacity-90 disabled:opacity-50"
                     style={{ backgroundColor: brand.primary }}
                   >
-                    Registrarme
+                    {isSubmitting ? "Registrando..." : "Registrarme"}
                   </button>
                 </div>
               </Form>

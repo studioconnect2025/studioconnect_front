@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { FaUser, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaUser } from "react-icons/fa";
 import { profileService } from "@/services/musician.services";
 import * as Yup from "yup";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+ import Swal from "sweetalert2";
 
 const passwordSchema = Yup.string()
     .min(6, "La contraseña debe tener al menos 6 caracteres")
@@ -18,8 +19,7 @@ const Profile: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [newPassword, setNewPassword] = useState("");
     const [passwordError, setPasswordError] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
-    const [loading, setLoading] = useState(true); // 👈 loading
+    const [loading, setLoading] = useState(true);
 
     const [formData, setFormData] = useState({
         nombre: "",
@@ -28,7 +28,7 @@ const Profile: React.FC = () => {
         provincia: "",
         calle: "",
         codigoPostal: "",
-        telefono: "",
+        numeroDeTelefono: "",
     });
 
     useEffect(() => {
@@ -36,23 +36,28 @@ const Profile: React.FC = () => {
             try {
                 setLoading(true);
                 const data = await profileService.getMyProfile();
-                const profile = data.profile;
 
-                if (profile) {
+                if (data) {
                     const loadedData = {
-                        nombre: profile.nombre || "",
-                        apellido: profile.apellido || "",
-                        ciudad: profile.ciudad || "",
-                        provincia: profile.provincia || "",
-                        calle: profile.calle || "",
-                        codigoPostal: profile.codigoPostal || "",
-                        telefono: profile.numeroDeTelefono || "",
+                        nombre: data.nombre || "",
+                        apellido: data.apellido || "",
+                        ciudad: data.ciudad || "",
+                        provincia: data.provincia || "",
+                        calle: data.calle || "",
+                        codigoPostal: data.codigoPostal || "",
+                        numeroDeTelefono: data.numeroDeTelefono || "",
                     };
                     setFormData(loadedData);
                     setOriginalData(loadedData);
                 }
 
-                setProfilePic(data.profileImageUrl || null);
+                setProfilePic(
+                    data.profileImageUrl
+                        ? data.profileImageUrl.startsWith("http")
+                            ? data.profileImageUrl
+                            : `http://localhost:3000${data.profileImageUrl}`
+                        : null
+                );
             } catch (error) {
                 console.error("Error cargando perfil:", error);
                 toast.error("Error cargando perfil");
@@ -70,19 +75,7 @@ const Profile: React.FC = () => {
 
     const handleSave = async () => {
         try {
-            const payload = {
-                profile: {
-                    nombre: formData.nombre,
-                    apellido: formData.apellido,
-                    numeroDeTelefono: formData.telefono,
-                    ciudad: formData.ciudad,
-                    provincia: formData.provincia,
-                    calle: formData.calle,
-                    codigoPostal: formData.codigoPostal,
-                },
-            };
-
-            await profileService.updateProfile({ profileData: payload });
+            await profileService.updateProfile({ profileData: formData });
             toast.success("Perfil actualizado correctamente");
             setOriginalData(formData);
             setIsEditing(false);
@@ -103,9 +96,17 @@ const Profile: React.FC = () => {
         if (!e.target.files || e.target.files.length === 0) return;
         const file = e.target.files[0];
 
+        setProfilePic(URL.createObjectURL(file));
+
         try {
             const data = await profileService.updateProfilePicture(file);
-            setProfilePic(data.profileImageUrl || null);
+            setProfilePic(
+                data.profileImageUrl
+                    ? data.profileImageUrl.startsWith("http")
+                        ? data.profileImageUrl
+                        : `http://localhost:3000${data.profileImageUrl}`
+                    : null
+            );
             toast.success("Foto actualizada correctamente");
         } catch (error) {
             console.error("Error actualizando foto:", error);
@@ -115,41 +116,52 @@ const Profile: React.FC = () => {
 
     const handleResetPassword = async () => {
         try {
-            await passwordSchema.validate(newPassword);
-            setPasswordError("");
             const token = prompt("Ingrese el token recibido por email:");
-            if (!token)
-                return toast.error(
-                    "Se requiere el token para cambiar la contraseña"
-                );
+            const newPassword = prompt("Ingrese la nueva contraseña:");
+            if (!token || !newPassword)
+                return toast.error("Se requiere token y nueva contraseña");
 
             await profileService.resetPassword({ token, newPassword });
             toast.success("Contraseña actualizada correctamente");
-            setNewPassword("");
-        } catch (err: any) {
-            if (err.name === "ValidationError") {
-                setPasswordError(err.message);
-            } else {
-                console.error(err);
-                toast.error("Error al actualizar la contraseña");
-            }
-        }
-    };
-
-    const handleDeleteAccount = async () => {
-        const confirmDelete = confirm(
-            "¿Está seguro de que desea eliminar su cuenta? Esta acción es irreversible."
-        );
-        if (!confirmDelete) return;
-
-        try {
-            await profileService.deleteAccount();
-            toast.success("Cuenta eliminada correctamente");
         } catch (error) {
             console.error(error);
-            toast.error("Error al eliminar la cuenta");
+            toast.error("Error al actualizar la contraseña");
         }
     };
+
+   
+
+const handleDeleteAccount = async () => {
+    const result = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Esta acción es irreversible y se eliminará tu cuenta",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            await profileService.deleteAccount();
+            Swal.fire(
+                'Eliminado!',
+                'Tu cuenta ha sido eliminada correctamente.',
+                'success'
+            );
+        } catch (error) {
+            console.error(error);
+            Swal.fire(
+                'Error',
+                'Hubo un problema al eliminar tu cuenta.',
+                'error'
+            );
+        }
+    }
+};
+
 
     if (loading) {
         return (
@@ -165,7 +177,7 @@ const Profile: React.FC = () => {
         <div className="items-center justify-center bg-gray-100 w-full">
             <ToastContainer />
             {/* Header */}
-            <div className="bg-sky-800 text-white py-4 px-4 text-center">
+            <div className="bg-sky-800 text-white py-6 px-4 text-center">
                 <div className="max-w-4xl mx-auto">
                     <div className="flex justify-center mb-4">
                         <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center overflow-hidden">
@@ -183,21 +195,24 @@ const Profile: React.FC = () => {
 
             {/* Card Container */}
             <div className="flex items-center justify-center bg-gray-100 p-10">
-                <div className="bg-white w-full max-w-4xl ml-10 rounded-xl shadow-lg p-6 space-y-3">
+                <div className="bg-white w-full max-w-4xl rounded-xl shadow-lg p-6 space-y-6">
                     {/* Información básica */}
                     <div>
                         <h2 className="text-sm md:text-base font-semibold text-gray-700 mb-3">
                             Información básica
                         </h2>
                         <div className="flex flex-col sm:flex-row sm:items-start mt-6 sm:space-x-6">
-                            {/* Foto de perfil */}
-                            <div className="flex flex-col items-center ml-5 sm:mr-6">
+                            {/* Foto de perfil con botón */}
+                            <div className="flex flex-col items-center">
                                 <div
-                                    className={`w-24 h-24 rounded-full flex items-center justify-center overflow-hidden ${
+                                    className={`w-24 h-24 rounded-full flex items-center justify-center overflow-hidden border-4 ${
                                         profilePic
-                                            ? "border-4 border-sky-600"
-                                            : "bg-gray-200"
-                                    }`}
+                                            ? "border-sky-600"
+                                            : "border-gray-300 bg-gray-200"
+                                    } cursor-pointer`}
+                                    onClick={() =>
+                                        fileInputRef.current?.click()
+                                    }
                                 >
                                     {profilePic ? (
                                         <img
@@ -207,13 +222,14 @@ const Profile: React.FC = () => {
                                         />
                                     ) : (
                                         <FaUser
-                                            size={50}
-                                            className="text-gray-500"
+                                            size={48}
+                                            className="text-gray-400"
                                         />
                                     )}
                                 </div>
                                 <button
-                                    className="cursor-pointer text-sky-600 text-sm mt-2 hover:underline"
+                                    type="button"
+                                    className="mt-2 cursor-pointer text-sky-600 text-sm hover:underline"
                                     onClick={() =>
                                         fileInputRef.current?.click()
                                     }
@@ -288,65 +304,20 @@ const Profile: React.FC = () => {
                             </div>
                         )}
                     </div>
+
                     {/* Seguridad de la cuenta */}
                     <div>
                         <h2 className="text-sm md:text-base font-semibold text-gray-700 mb-3">
                             Seguridad de la cuenta
                         </h2>
-                        <div className="flex justify-end bg-gray-50 p-4 rounded-md">
-                            <div className="flex items-center space-x-2">
-                                <p className="text-sm text-gray-700 mr-27">
+                        <div className="bg-gray-50 p-4 rounded-md">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                                <p className="text-sm text-gray-700">
                                     Restablece la contraseña de tu cuenta
                                 </p>
-
-                                {/* Input con ojo */}
-                                <div className="relative">
-                                    <input
-                                        type={
-                                            showPassword ? "text" : "password"
-                                        }
-                                        placeholder="Nueva contraseña"
-                                        value={newPassword}
-                                        onChange={(e) =>
-                                            setNewPassword(e.target.value)
-                                        }
-                                        className={`border rounded-md p-2 pr-10 text-gray-700 focus:outline-none focus:ring-2 ${
-                                            passwordError
-                                                ? "border-red-500 focus:ring-red-500"
-                                                : "border-gray-300 focus:ring-blue-500"
-                                        }`}
-                                    />
-                                    <button
-                                        type="button"
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600"
-                                        onClick={() =>
-                                            setShowPassword(!showPassword)
-                                        }
-                                    >
-                                        {showPassword ? (
-                                            <FaEyeSlash />
-                                        ) : (
-                                            <FaEye />
-                                        )}
-                                    </button>
-                                    {passwordError && (
-                                        <p className="text-red-500 text-sm mt-1 absolute -bottom-5 left-0">
-                                            {passwordError}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Botón */}
                                 <button
-                                    className={`border border-sky-700 text-sky-700 px-4 py-2 rounded-md hover:bg-blue-50 transition cursor-pointer ${
-                                        !newPassword || newPassword.length < 6
-                                            ? "opacity-50 cursor-not-allowed"
-                                            : ""
-                                    }`}
+                                    className="border border-sky-700 text-sky-700 px-4 py-2 rounded-md hover:bg-blue-50 transition cursor-pointer"
                                     onClick={handleResetPassword}
-                                    disabled={
-                                        !newPassword || newPassword.length < 6
-                                    }
                                 >
                                     Cambiar la contraseña
                                 </button>

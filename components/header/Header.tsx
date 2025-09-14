@@ -1,24 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Menu, X } from "lucide-react";
 import { FaBuilding, FaCalendarCheck, FaUser } from "react-icons/fa";
-import {
-  MdAppRegistration,
-  MdOutlineCardMembership,
-  MdOutlineDashboardCustomize,
-  MdOutlineWavingHand,
-} from "react-icons/md";
+import { MdAppRegistration, MdOutlineCardMembership, MdOutlineDashboardCustomize, MdOutlineWavingHand } from "react-icons/md";
 import { TbLogin } from "react-icons/tb";
 import { CgStudio } from "react-icons/cg";
-import { useIsAuth, useAuthUser, useAuthStore } from "@/stores/AuthStore";
-import { useRouter } from "next/navigation";
-import { Modal } from "@/components/modal/modal";
-import LoginPage from "@/components/login/login";
 import { CiLogin } from "react-icons/ci";
 import { AiOutlineForm } from "react-icons/ai";
 import { IoMdMenu } from "react-icons/io";
+
+import { useIsAuth, useAuthUser, useAuthStore } from "@/stores/AuthStore";
+import { Modal } from "@/components/modal/modal";
+import LoginPage from "@/components/login/login";
 import { profileService } from "@/services/musician.services";
 
 export const Header = () => {
@@ -35,6 +31,7 @@ export const Header = () => {
   const isLoggedIn = useIsAuth();
   const user = useAuthUser();
   const logout = useAuthStore((s) => s.logout);
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -47,10 +44,7 @@ export const Header = () => {
         console.error("Error cargando perfil en Header:", error);
       }
     };
-
-    if (isLoggedIn) {
-      fetchProfile();
-    }
+    if (isLoggedIn) fetchProfile();
   }, [isLoggedIn]);
 
   return (
@@ -67,18 +61,12 @@ export const Header = () => {
             <div className="hidden ml-16 lg:flex lg:w-auto lg:order-1">
               <ul className="flex flex-row lg:space-x-8 font-medium">
                 <li>
-                  <Link
-                    href="/useMusicianForm"
-                    className="block py-2 px-3 cursor-pointer text-white hover:text-gray-400"
-                  >
+                  <Link href="/useMusicianForm" className="block py-2 px-3 cursor-pointer text-white hover:text-gray-400">
                     Únete como músico
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/useOwnerForm"
-                    className="block py-2 px-3 cursor-pointer text-white hover:text-gray-400"
-                  >
+                  <Link href="/useOwnerForm" className="block py-2 px-3 cursor-pointer text-white hover:text-gray-400">
                     Únete como anfitrión
                   </Link>
                 </li>
@@ -92,15 +80,12 @@ export const Header = () => {
               <>
                 <span className="text-white flex">
                   <MdOutlineWavingHand size={30} className="mr-3" />
-                  Hola {profileName || user?.name} !
+                  Hola {profileName || user?.name}!
                 </span>
 
                 {/* Solo Dueño de estudio */}
                 {user?.role === "Dueño de Estudio" && (
-                  <Link
-                    href="/memberships"
-                    className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg"
-                  >
+                  <Link href="/memberships" className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg">
                     <MdOutlineCardMembership size={30} className="mr-2" /> Planes
                   </Link>
                 )}
@@ -115,10 +100,7 @@ export const Header = () => {
                   <TbLogin size={30} className="mr-2" /> Cerrar sesión
                 </button>
 
-                <button
-                  className="text-white flex cursor-pointer hover:bg-sky-800 p-2 rounded-lg"
-                  onClick={toggleMenu}
-                >
+                <button className="text-white flex cursor-pointer hover:bg-sky-800 p-2 rounded-lg" onClick={toggleMenu}>
                   <IoMdMenu size={30} className="mr-2" /> Menú
                 </button>
               </>
@@ -130,10 +112,7 @@ export const Header = () => {
                 >
                   <CiLogin size={30} className="mr-2" /> Iniciar sesión
                 </button>
-                <Link
-                  href="/joinStudioConnect"
-                  className="text-white flex hover:bg-sky-800 rounded-lg p-2"
-                >
+                <Link href="/joinStudioConnect" className="text-white flex hover:bg-sky-800 rounded-lg p-2">
                   <AiOutlineForm size={26} className="mr-2" /> Registrarse
                 </Link>
               </>
@@ -142,28 +121,23 @@ export const Header = () => {
 
           {/* Botón móvil */}
           <div className="flex lg:hidden items-center">
-            <button
-              className="text-white p-2 focus:outline-none"
-              onClick={toggleMenu}
-            >
+            <button className="text-white p-2 focus:outline-none" onClick={toggleMenu}>
               <Menu size={24} />
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Sidebar */}
+      {/* Sidebar móvil */}
       <div
-        className={`fixed top-0 left-0 h-full w-full z-50 transition-opacity duration-300 
-        ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+        className={`fixed top-0 left-0 h-full w-full z-50 transition-opacity duration-300 ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
         onClick={closeMenu}
       >
         <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 lg:hidden"></div>
 
         <div
           className={`absolute top-0 left-0 lg:right-0 lg:left-auto h-full bg-black text-white transform transition-transform duration-300
-            ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-full"}
-            w-full sm:w-64 lg:w-[400px]`}
+            ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-full"} w-full sm:w-64 lg:w-[400px]`}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex justify-end p-4">
@@ -177,63 +151,45 @@ export const Header = () => {
               <>
                 {/* Todos los usuarios */}
                 <li>
-                  <Link
-                    href={user?.role === "Músico" ? "/musicianProfile" : "/profileOwner"}
-                    className="w-full py-2 px-3 flex rounded hover:bg-gray-800"
-                  >
+                  <Link href="/musicianProfile" className="w-full py-2 px-3 flex rounded hover:bg-gray-800">
                     <FaUser size={24} className="mr-3" /> Mi perfil
                   </Link>
                 </li>
-                 <li>
-                  <Link
-                    href={user?.role === "Músico" ? "/myBookings" : "/profileOwner"}
-                    className="w-full py-2 px-3 flex rounded hover:bg-gray-800"
-                  >
-                   <FaCalendarCheck  size={24} className="mr-3" />Mis reservas
-                  </Link>
-                </li>
+
+                {/* Solo Músico: Mis reservas */}
+                {user?.role === "Músico" && (
+                  <li>
+                    <Link href="/musicianProfile#myBookings" className="w-full py-2 px-3 flex rounded hover:bg-gray-800">
+                      <FaCalendarCheck size={24} className="mr-3" /> Mis reservas
+                    </Link>
+                  </li>
+                )}
 
                 {/* Solo Dueño de estudio */}
                 {user?.role === "Dueño de Estudio" && (
                   <>
                     <li>
-                      <Link
-                        href="/memberships"
-                        className="flex w-full py-2 px-3 rounded hover:bg-gray-800"
-                        onClick={closeMenu}
-                      >
+                      <Link href="/memberships" className="flex w-full py-2 px-3 rounded hover:bg-gray-800">
                         <MdOutlineCardMembership size={24} className="mr-3" /> Planes
                       </Link>
                     </li>
                     <li>
-                      <Link
-                        href="/studioRegister"
-                        className="w-full py-2 px-3 flex rounded hover:bg-gray-800"
-                      >
+                      <Link href="/studioRegister" className="w-full py-2 px-3 flex rounded hover:bg-gray-800">
                         <MdAppRegistration size={24} className="mr-3" /> Registrar mi estudio
                       </Link>
                     </li>
                     <li>
-                      <Link
-                        href="/studioDashboard"
-                        className="flex w-full py-2 px-3 rounded hover:bg-gray-800"
-                      >
+                      <Link href="/studioDashboard" className="flex w-full py-2 px-3 rounded hover:bg-gray-800">
                         <MdOutlineDashboardCustomize size={24} className="mr-3" /> Dashboard
                       </Link>
                     </li>
                     <li>
-                      <Link
-                        href="/myStudio"
-                        className="flex w-full py-2 px-3 rounded hover:bg-gray-800"
-                      >
+                      <Link href="/myStudio" className="flex w-full py-2 px-3 rounded hover:bg-gray-800">
                         <FaBuilding size={24} className="mr-3" /> Mi estudio
                       </Link>
                     </li>
                     <li>
-                      <Link
-                        href="/studioRooms"
-                        className="flex w-full py-2 px-3 rounded hover:bg-gray-800"
-                      >
+                      <Link href="/studioRooms" className="flex w-full py-2 px-3 rounded hover:bg-gray-800">
                         <CgStudio size={24} className="mr-3" /> Mis salas
                       </Link>
                     </li>
@@ -269,10 +225,7 @@ export const Header = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/useOwnerForm"
-                    className="block py-2 px-3 text-white rounded hover:bg-gray-800"
-                  >
+                  <Link href="/useOwnerForm" className="block py-2 px-3 text-white rounded hover:bg-gray-800">
                     Únete como anfitrión
                   </Link>
                 </li>
@@ -285,10 +238,7 @@ export const Header = () => {
                   </button>
                 </li>
                 <li>
-                  <Link
-                    href="/joinStudioConnect"
-                    className="block py-2 px-3 rounded bg-[#015C85] text-white"
-                  >
+                  <Link href="/joinStudioConnect" className="block py-2 px-3 rounded bg-[#015C85] text-white">
                     Registrarse
                   </Link>
                 </li>

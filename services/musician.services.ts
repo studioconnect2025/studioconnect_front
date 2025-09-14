@@ -26,7 +26,7 @@ export const profileService = {
       const formData = new FormData();
       formData.append("file", file); 
 
-      const response = await http.patch("/profile/me/picture", formData, {
+      const response = await http.patch("/profile/me", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
