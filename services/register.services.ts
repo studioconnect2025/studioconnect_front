@@ -1,31 +1,82 @@
-import axios from "axios";
+// src/services/auth.ts
+import { http, parseHttpError } from "@/lib/Http";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/";
-
-export async function registerStudioOwner(data: any) {
-  const url = new URL("auth/register/studio-owner", API).toString();
-  const res = await axios.post(url, data, { withCredentials: true });
-  return res.data;
+/** ===== Tipos mínimos (pueden moverse a src/types/auth.ts si querés) ===== */
+export interface UbicacionPayload {
+  ciudad?: string;
+  provincia?: string;
+  calle?: string;
+  codigoPostal?: string;
 }
-export async function registerMusician(payload: {
+
+export interface ProfilePayload {
+  nombre?: string;
+  apellido?: string;
+  numeroDeTelefono?: string;
+  ubicacion?: UbicacionPayload;
+  // también soportamos plano si alguna vista lo manda así:
+  ciudad?: string;
+  provincia?: string;
+  calle?: string;
+  codigoPostal?: string;
+}
+
+export interface RegisterPayload {
   email: string;
   password: string;
   confirmPassword: string;
-  profile: {
-    nombre: string;
-    apellido: string;
-    numeroDeTelefono: string;
-    ubicacion: {
-      ciudad: string;
-      provincia: string;
-      calle: string;
-      codigoPostal: string;
+  profile?: ProfilePayload; // opcional: el back crea igual el user
+}
+
+export interface RegisterResponse {
+  access_token: string;
+  user: {
+    id: string;
+    email: string;
+    role: string; // "Músico" | "Dueño de Estudio"
+    isActive: boolean;
+    profile?: {
+      id: string;
+      userId: string;
+      nombre?: string;
+      apellido?: string;
+      numeroDeTelefono?: string;
+      ciudad?: string;
+      provincia?: string;
+      calle?: string;
+      codigoPostal?: string;
     };
   };
-}) {
-   console.log("Payload que se envía al backend:", payload);
-  const url = new URL("auth/register/musician", API).toString();
+}
 
-  const res = await axios.post(url, payload, { withCredentials: true });
-  return res.data;
+/** ===== Servicios ===== */
+
+/** Registro de MÚSICO (el back fija role="Músico" por endpoint) */
+export async function registerMusician(
+  payload: RegisterPayload
+): Promise<RegisterResponse> {
+  try {
+    const { data } = await http.post<RegisterResponse>(
+      "/auth/register/musician",
+      payload
+    );
+    return data;
+  } catch (err) {
+    throw parseHttpError(err);
+  }
+}
+
+/** Registro de DUEÑO (el back fija role="Dueño de Estudio" por endpoint) */
+export async function registerStudioOwner(
+  payload: RegisterPayload
+): Promise<RegisterResponse> {
+  try {
+    const { data } = await http.post<RegisterResponse>(
+      "/auth/register/studio-owner",
+      payload
+    );
+    return data;
+  } catch (err) {
+    throw parseHttpError(err);
+  }
 }

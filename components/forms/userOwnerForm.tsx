@@ -8,9 +8,7 @@ import { registerStudioOwner } from "@/services/register.services";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const brand = {
-  primary: "#015E88",
-};
+const brand = { primary: "#015E88" };
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return (
@@ -20,9 +18,20 @@ function SectionTitle({ children }: { children: ReactNode }) {
   );
 }
 
-function Label({ htmlFor, children, required }: { htmlFor: string; children: ReactNode; required?: boolean }) {
+function Label({
+  htmlFor,
+  children,
+  required,
+}: {
+  htmlFor: string;
+  children: ReactNode;
+  required?: boolean;
+}) {
   return (
-    <label htmlFor={htmlFor} className="block text-sm font-medium text-gray-700 mb-1">
+    <label
+      htmlFor={htmlFor}
+      className="block text-sm font-medium text-gray-700 mb-1"
+    >
       {children}
       {required && <span className="text-red-500 ml-1">*</span>}
     </label>
@@ -30,10 +39,26 @@ function Label({ htmlFor, children, required }: { htmlFor: string; children: Rea
 }
 
 function HelpError({ name }: { name: string }) {
-  return <ErrorMessage name={name} component="div" className="text-xs text-red-600 mt-1" />;
+  return (
+    <ErrorMessage
+      name={name}
+      component="div"
+      className="text-xs text-red-600 mt-1"
+    />
+  );
 }
 
-const Input = ({ name, type = "text", placeholder, togglePassword }: { name: string; type?: string; placeholder?: string; togglePassword?: boolean }) => {
+const Input = ({
+  name,
+  type = "text",
+  placeholder,
+  togglePassword,
+}: {
+  name: string;
+  type?: string;
+  placeholder?: string;
+  togglePassword?: boolean;
+}) => {
   const [show, setShow] = useState(false);
   const inputType = togglePassword && show ? "text" : type;
 
@@ -71,19 +96,22 @@ const Input = ({ name, type = "text", placeholder, togglePassword }: { name: str
   );
 };
 
-// Yup Schema
+// Validación (alineada al back: min 8)
 const StudioSchema = Yup.object().shape({
   firstName: Yup.string().required("Requerido"),
   lastName: Yup.string().required("Requerido"),
   email: Yup.string().email("Email inválido").required("Requerido"),
-  password: Yup.string().required("Requerido").min(6, "Debe tener al menos 6 caracteres"),
+  password: Yup.string().required("Requerido").min(8, "Mínimo 8 caracteres"),
   confirmPassword: Yup.string()
     .required("Requerido")
-    .min(6, "Debe tener al menos 6 caracteres")
+    .min(8, "Mínimo 8 caracteres")
     .oneOf([Yup.ref("password")], "Las contraseñas deben coincidir"),
   phoneNumber: Yup.string()
     .required("Requerido")
-    .matches(/^(\+?\d{1,4}[-\s]?)?\d{7,15}$/, "Teléfono inválido (7-15 dígitos, puede incluir +, espacios o guiones)"),
+    .matches(
+      /^(\+?\d{1,4}[-\s]?)?\d{7,15}$/,
+      "Teléfono inválido (7-15 dígitos, puede incluir +, espacios o guiones)"
+    ),
 });
 
 export default function StudioConnectStudioForm() {
@@ -97,9 +125,12 @@ export default function StudioConnectStudioForm() {
               <FaBuilding size={30} className="text-sky-700" />
             </div>
           </div>
-          <h1 className="text-2xl md:text-3xl font-semibold">Registrate como Owner de estudio</h1>
+          <h1 className="text-2xl md:text-3xl font-semibold">
+            Registrate como Owner de estudio
+          </h1>
           <p className="mt-2 text-sm md:text-base text-gray-200">
-            Únete a nuestra red de estudios de grabación profesionales y conéctate con músicos de todo el mundo.
+            Únete a nuestra red de estudios de grabación profesionales y
+            conéctate con músicos de todo el mundo.
           </p>
         </div>
       </div>
@@ -114,27 +145,43 @@ export default function StudioConnectStudioForm() {
               password: "",
               confirmPassword: "",
               phoneNumber: "",
+              // Si querés recolectar ubicación, agregá acá: ciudad, provincia, direccion, codigoPostal
             }}
             validationSchema={StudioSchema}
             onSubmit={async (values, { setSubmitting, resetForm }) => {
               try {
+                // Mapear a la forma que espera el backend (CreateUserDto)
                 const payload = {
-                  name: values.firstName,
-                  lastName: values.lastName,
                   email: values.email,
                   password: values.password,
                   confirmPassword: values.confirmPassword,
-                  phoneNumber: values.phoneNumber,
+                  profile: {
+                    nombre: values.firstName,
+                    apellido: values.lastName,
+                    numeroDeTelefono: values.phoneNumber,
+                    // Si luego agregás campos de ubicación en el form, podés enviar:
+                    // ubicacion: {
+                    //   ciudad: values.ciudad || undefined,
+                    //   provincia: values.provincia || undefined,
+                    //   calle: values.direccion || undefined,
+                    //   codigoPostal: values.codigoPostal || undefined,
+                    // },
+                  },
                 };
 
-                await registerStudioOwner(payload);
+                await registerStudioOwner(payload as any);
                 toast.success("Registro completado correctamente!");
                 resetForm();
                 setTimeout(() => {
                   window.location.href = "/";
                 }, 1500);
               } catch (err: any) {
-                toast.error(err?.response?.data?.message ?? "Error al registrar");
+                const msg =
+                  err?.response?.data?.message ??
+                  err?.response?.data?.error ??
+                  err?.message ??
+                  "Error al registrar";
+                toast.error(Array.isArray(msg) ? msg.join(" | ") : String(msg));
               } finally {
                 setSubmitting(false);
               }
@@ -143,38 +190,83 @@ export default function StudioConnectStudioForm() {
             {() => (
               <Form className="space-y-6">
                 <SectionTitle>Información del Propietario</SectionTitle>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="firstName" required>Nombre</Label>
+                    <Label htmlFor="firstName" required>
+                      Nombre
+                    </Label>
                     <Input name="firstName" placeholder="Juan" />
                   </div>
                   <div>
-                    <Label htmlFor="lastName" required>Apellido</Label>
+                    <Label htmlFor="lastName" required>
+                      Apellido
+                    </Label>
                     <Input name="lastName" placeholder="Pérez" />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="email" required>Email</Label>
+                  <Label htmlFor="email" required>
+                    Email
+                  </Label>
                   <Input name="email" type="email" placeholder="correo@ejemplo.com" />
                 </div>
 
                 <div>
-                  <Label htmlFor="password" required>Contraseña</Label>
-                  <Input name="password" type="password" placeholder="********" togglePassword />
+                  <Label htmlFor="password" required>
+                    Contraseña
+                  </Label>
+                  <Input
+                    name="password"
+                    type="password"
+                    placeholder="********"
+                    togglePassword
+                  />
                 </div>
 
                 <div>
-                  <Label htmlFor="confirmPassword" required>Confirmar Contraseña</Label>
-                  <Input name="confirmPassword" type="password" placeholder="********" togglePassword />
+                  <Label htmlFor="confirmPassword" required>
+                    Confirmar Contraseña
+                  </Label>
+                  <Input
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="********"
+                    togglePassword
+                  />
                 </div>
 
                 <div>
-                  <Label htmlFor="phoneNumber" required>Teléfono</Label>
-                  <Input name="phoneNumber" placeholder="+573101234567" />
+                  <Label htmlFor="phoneNumber" required>
+                    Teléfono
+                  </Label>
+                  <Input name="phoneNumber" placeholder="+5491112345678" />
                 </div>
 
-                <div className="pt-4">
+                {/* Si querés recolectar ubicación ahora, descomentá y agregá al initialValues y al payload:
+                <SectionTitle>Ubicación (opcional)</SectionTitle>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="ciudad">Ciudad</Label>
+                    <Input name="ciudad" placeholder="Córdoba" />
+                  </div>
+                  <div>
+                    <Label htmlFor="provincia">Provincia</Label>
+                    <Input name="provincia" placeholder="Córdoba" />
+                  </div>
+                  <div>
+                    <Label htmlFor="direccion">Calle</Label>
+                    <Input name="direccion" placeholder="San Martín 1500" />
+                  </div>
+                  <div>
+                    <Label htmlFor="codigoPostal">Código Postal</Label>
+                    <Input name="codigoPostal" placeholder="5000" />
+                  </div>
+                </div>
+                */}
+
+                <div className="pt-2">
                   <button
                     type="submit"
                     className="w-full py-2 px-4 rounded-lg text-white font-medium shadow-md hover:opacity-90"
