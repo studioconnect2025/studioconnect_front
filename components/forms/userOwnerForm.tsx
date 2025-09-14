@@ -8,15 +8,11 @@ import { registerStudioOwner } from "@/services/register.services";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const brand = {
-  primary: "#015E88",
-};
+const brand = { primary: "#015E88" };
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return (
-    <h3 className="text-sm md:text-base font-semibold text-gray-700 mb-3 mt-6">
-      {children}
-    </h3>
+    <h3 className="text-sm md:text-base font-semibold text-gray-700 mb-3 mt-6">{children}</h3>
   );
 }
 
@@ -71,7 +67,7 @@ const Input = ({ name, type = "text", placeholder, togglePassword }: { name: str
   );
 };
 
-// Yup Schema
+// Yup Schema para Owner (sin ubicación)
 const StudioSchema = Yup.object().shape({
   firstName: Yup.string().required("Requerido"),
   lastName: Yup.string().required("Requerido"),
@@ -83,7 +79,7 @@ const StudioSchema = Yup.object().shape({
     .oneOf([Yup.ref("password")], "Las contraseñas deben coincidir"),
   phoneNumber: Yup.string()
     .required("Requerido")
-    .matches(/^(\+?\d{1,4}[-\s]?)?\d{7,15}$/, "Teléfono inválido (7-15 dígitos, puede incluir +, espacios o guiones)"),
+    .matches(/^(\+?\d{1,4}[-\s]?)?\d{7,15}$/, "Teléfono inválido"),
 });
 
 export default function StudioConnectStudioForm() {
@@ -117,30 +113,32 @@ export default function StudioConnectStudioForm() {
             }}
             validationSchema={StudioSchema}
             onSubmit={async (values, { setSubmitting, resetForm }) => {
+              console.log("Formulario enviado con valores:", values);
               try {
                 const payload = {
-                  name: values.firstName,
-                  lastName: values.lastName,
                   email: values.email,
                   password: values.password,
                   confirmPassword: values.confirmPassword,
-                  phoneNumber: values.phoneNumber,
+                  profile: {
+                    nombre: values.firstName,
+                    apellido: values.lastName,
+                    numeroDeTelefono: values.phoneNumber,
+                  },
                 };
 
                 await registerStudioOwner(payload);
                 toast.success("Registro completado correctamente!");
                 resetForm();
-                setTimeout(() => {
-                  window.location.href = "/";
-                }, 1500);
+                setTimeout(() => { window.location.href = "/"; }, 1500);
               } catch (err: any) {
+                console.error("Error en registro:", err.response?.data ?? err);
                 toast.error(err?.response?.data?.message ?? "Error al registrar");
               } finally {
                 setSubmitting(false);
               }
             }}
           >
-            {() => (
+            {({ isSubmitting }) => (
               <Form className="space-y-6">
                 <SectionTitle>Información del Propietario</SectionTitle>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -171,16 +169,17 @@ export default function StudioConnectStudioForm() {
 
                 <div>
                   <Label htmlFor="phoneNumber" required>Teléfono</Label>
-                  <Input name="phoneNumber" placeholder="+573101234567" />
+                  <Input name="phoneNumber" placeholder="+549111111111" />
                 </div>
 
                 <div className="pt-4">
                   <button
                     type="submit"
-                    className="w-full py-2 px-4 rounded-lg text-white font-medium shadow-md hover:opacity-90"
+                    disabled={isSubmitting}
+                    className="w-full py-2 px-4 rounded-lg text-white font-medium shadow-md hover:opacity-90 disabled:opacity-50"
                     style={{ backgroundColor: brand.primary }}
                   >
-                    Registrarme
+                    {isSubmitting ? "Registrando..." : "Registrarme"}
                   </button>
                 </div>
               </Form>
