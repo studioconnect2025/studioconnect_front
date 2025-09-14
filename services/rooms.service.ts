@@ -70,7 +70,7 @@ export const roomsService = {
         token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
       if (!accessToken) throw new Error("No hay token disponible");
 
-      const response = await fetch(`${API}/rooms/my-rooms`, {
+      const response = await fetch(`${API}/owners/me/studio/rooms`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -196,19 +196,25 @@ export const roomsService = {
     try {
       const accessToken =
         token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
-      const response = await fetch(`${API}/studios/${studioId}/rooms`, {
+
+      const url = `${API}/rooms?studioId=${encodeURIComponent(studioId)}`;
+      const res = await fetch(url, {
         method: "GET",
         headers: {
           ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
+      if (res.status === 404) {
+        return [];
+      }
+
+      if (!res.ok) {
+        const errorText = await res.text();
         throw new Error(errorText);
       }
 
-      const data = await response.json();
+      const data = await res.json();
       return Array.isArray(data?.rooms) ? data.rooms : Array.isArray(data) ? data : [];
     } catch (error) {
       console.error("Error obteniendo salas del estudio:", error);
@@ -216,7 +222,6 @@ export const roomsService = {
     }
   },
 
-  // ✅ NUEVO: expuesto en el objeto
   addInstrument: async ({
     roomId,
     instrumentData,

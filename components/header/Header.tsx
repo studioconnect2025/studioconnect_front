@@ -33,30 +33,42 @@ export const Header = () => {
   const logout = useAuthStore((s) => s.logout);
 
   useEffect(() => {
+    let mounted = true;
+
     const fetchProfile = async () => {
       try {
+        const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+        if (!token || !isLoggedIn) return;
+
         const data = await profileService.getMyProfile();
+        if (!mounted) return;
+
         if (data?.profile) {
           const fullName = `${data.profile.nombre ?? ""} ${data.profile.apellido ?? ""}`.trim();
           setProfileName(fullName);
+        } else {
+          setProfileName("");
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error cargando perfil en Header:", error);
       }
     };
+
     if (isLoggedIn) fetchProfile();
+
+    return () => {
+      mounted = false;
+    };
   }, [isLoggedIn]);
 
   return (
     <header>
       <nav className="bg-black border-gray-200 px-4 lg:px-6 py-6 dark:bg-black">
         <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-2xl">
-          {/* Logo */}
           <Link href="/" className="flex items-center">
             <img src="/logo.png" alt="Logo" className="w-56 h-auto" />
           </Link>
 
-          {/* Links desktop */}
           {!isLoggedIn && (
             <div className="hidden ml-16 lg:flex lg:w-auto lg:order-1">
               <ul className="flex flex-row lg:space-x-8 font-medium">
@@ -74,7 +86,6 @@ export const Header = () => {
             </div>
           )}
 
-          {/* Botones desktop */}
           <div className="hidden lg:flex items-center lg:order-2 gap-6 mr-16">
             {isLoggedIn ? (
               <>
@@ -83,7 +94,6 @@ export const Header = () => {
                   Hola {profileName || user?.name}!
                 </span>
 
-                {/* Solo Dueño de estudio */}
                 {user?.role === "Dueño de Estudio" && (
                   <Link href="/memberships" className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg">
                     <MdOutlineCardMembership size={30} className="mr-2" /> Planes
@@ -106,10 +116,7 @@ export const Header = () => {
               </>
             ) : (
               <>
-                <button
-                  onClick={openLoginModal}
-                  className="text-white hover:bg-sky-800 cursor-pointer flex p-2 mr-5 rounded-lg"
-                >
+                <button onClick={openLoginModal} className="text-white hover:bg-sky-800 cursor-pointer flex p-2 mr-5 rounded-lg">
                   <CiLogin size={30} className="mr-2" /> Iniciar sesión
                 </button>
                 <Link href="/joinStudioConnect" className="text-white flex hover:bg-sky-800 rounded-lg p-2">
@@ -119,7 +126,6 @@ export const Header = () => {
             )}
           </div>
 
-          {/* Botón móvil */}
           <div className="flex lg:hidden items-center">
             <button className="text-white p-2 focus:outline-none" onClick={toggleMenu}>
               <Menu size={24} />
@@ -128,7 +134,6 @@ export const Header = () => {
         </div>
       </nav>
 
-      {/* Sidebar móvil */}
       <div
         className={`fixed top-0 left-0 h-full w-full z-50 transition-opacity duration-300 ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
         onClick={closeMenu}
@@ -136,8 +141,9 @@ export const Header = () => {
         <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 lg:hidden"></div>
 
         <div
-          className={`absolute top-0 left-0 lg:right-0 lg:left-auto h-full bg-black text-white transform transition-transform duration-300
-            ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-full"} w-full sm:w-64 lg:w-[400px]`}
+          className={`absolute top-0 left-0 lg:right-0 lg:left-auto h-full bg-black text-white transform transition-transform duration-300 ${
+            isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-full"
+          } w-full sm:w-64 lg:w-[400px]`}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex justify-end p-4">
@@ -149,14 +155,12 @@ export const Header = () => {
           <ul className="flex flex-col mt-6 space-y-4 p-6">
             {isLoggedIn ? (
               <>
-                {/* Todos los usuarios */}
                 <li>
                   <Link href="/musicianProfile" className="w-full py-2 px-3 flex rounded hover:bg-gray-800">
                     <FaUser size={24} className="mr-3" /> Mi perfil
                   </Link>
                 </li>
 
-                {/* Solo Músico: Mis reservas */}
                 {user?.role === "Músico" && (
                   <li>
                     <Link href="/myBookings" className="w-full py-2 px-3 flex rounded hover:bg-gray-800">
@@ -165,7 +169,6 @@ export const Header = () => {
                   </li>
                 )}
 
-                {/* Solo Dueño de estudio */}
                 {user?.role === "Dueño de Estudio" && (
                   <>
                     <li>
@@ -196,7 +199,6 @@ export const Header = () => {
                   </>
                 )}
 
-                {/* Botón cerrar sesión */}
                 <li>
                   <button
                     onClick={async () => {
@@ -211,7 +213,6 @@ export const Header = () => {
               </>
             ) : (
               <>
-                {/* Usuario no autenticado */}
                 <li>
                   <Link
                     href="#"
@@ -230,10 +231,7 @@ export const Header = () => {
                   </Link>
                 </li>
                 <li>
-                  <button
-                    className="block py-2 px-3 text-white rounded hover:bg-gray-800 w-full text-left"
-                    onClick={openLoginModal}
-                  >
+                  <button className="block py-2 px-3 text-white rounded hover:bg-gray-800 w-full text-left" onClick={openLoginModal}>
                     Iniciar sesión
                   </button>
                 </li>
@@ -248,7 +246,6 @@ export const Header = () => {
         </div>
       </div>
 
-      {/* Modal de login */}
       <Modal isOpen={loginModalOpen} onClose={closeLoginModal}>
         <LoginPage onClose={closeLoginModal} />
       </Modal>
