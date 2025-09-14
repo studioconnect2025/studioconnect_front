@@ -3,9 +3,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaUser } from "react-icons/fa";
 import { profileService } from "@/services/musician.services";
+import * as Yup from "yup";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
+
+const passwordSchema = Yup.string()
+  .min(6, "La contraseña debe tener al menos 6 caracteres")
+  .required("La contraseña es requerida");
 
 const Profile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -13,7 +18,6 @@ const Profile: React.FC = () => {
   const [originalData, setOriginalData] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [loading, setLoading] = useState(true);
-
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -23,23 +27,19 @@ const Profile: React.FC = () => {
     codigoPostal: "",
     numeroDeTelefono: "",
   });
-
   const [role, setRole] = useState<string>("");
 
-  // Obtener rol del localStorage
   useEffect(() => {
     const storedState = localStorage.getItem("auth");
     const parsedState = storedState ? JSON.parse(storedState) : null;
     setRole(parsedState?.state?.user?.role || "");
   }, []);
 
-  // Cargar perfil
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
         const data = await profileService.getMyProfile();
-
         if (data) {
           const loadedData = {
             nombre: data.nombre || "",
@@ -96,7 +96,6 @@ const Profile: React.FC = () => {
   const handleProfilePicChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
-
     setProfilePic(URL.createObjectURL(file));
 
     try {
@@ -119,7 +118,8 @@ const Profile: React.FC = () => {
     try {
       const token = prompt("Ingrese el token recibido por email:");
       const newPassword = prompt("Ingrese la nueva contraseña:");
-      if (!token || !newPassword) return toast.error("Se requiere token y nueva contraseña");
+      if (!token || !newPassword)
+        return toast.error("Se requiere token y nueva contraseña");
 
       await profileService.resetPassword({ token, newPassword });
       toast.success("Contraseña actualizada correctamente");
@@ -144,7 +144,11 @@ const Profile: React.FC = () => {
     if (result.isConfirmed) {
       try {
         await profileService.deleteAccount();
-        Swal.fire("Eliminado!", "Tu cuenta ha sido eliminada correctamente.", "success");
+        Swal.fire(
+          "Eliminado!",
+          "Tu cuenta ha sido eliminada correctamente.",
+          "success"
+        );
       } catch (error) {
         console.error(error);
         Swal.fire("Error", "Hubo un problema al eliminar tu cuenta.", "error");
@@ -160,9 +164,18 @@ const Profile: React.FC = () => {
     );
   }
 
-  // Claves de ubicación que ocultaremos si están vacías
-  const ubicacionKeys = ["ciudad", "provincia", "calle", "codigoPostal"];
   const isOwner = role === "Dueño de Estudio";
+  const ubicacionKeys = ["ciudad", "provincia", "calle", "codigoPostal"];
+
+  // Filtra campos vacíos
+  const filteredFormData = Object.entries(formData).filter(([key, value]) => {
+    if (isOwner && ubicacionKeys.includes(key)) {
+      if (value === "" || value === null || value === undefined || value.trim() === "") {
+        return false;
+      }
+    }
+    return true;
+  });
 
   return (
     <div className="items-center justify-center bg-gray-100 w-full">
@@ -191,13 +204,11 @@ const Profile: React.FC = () => {
           <div>
             <h2 className="text-sm md:text-base font-semibold text-gray-700 mb-3">Información básica</h2>
             <div className="flex flex-col sm:flex-row sm:items-start mt-6 sm:space-x-6">
-              
-              {/* Foto de perfil */}
+
+              {/* Foto */}
               <div className="flex flex-col items-center">
                 <div
-                  className={`w-24 h-24 rounded-full flex items-center justify-center overflow-hidden border-4 ${
-                    profilePic ? "border-sky-600" : "border-gray-300 bg-gray-200"
-                  } cursor-pointer`}
+                  className={`w-24 h-24 rounded-full flex items-center justify-center overflow-hidden border-4 ${profilePic ? "border-sky-600" : "border-gray-300 bg-gray-200"} cursor-pointer`}
                   onClick={() => fileInputRef.current?.click()}
                 >
                   {profilePic ? (
@@ -216,35 +227,30 @@ const Profile: React.FC = () => {
                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleProfilePicChange} />
               </div>
 
-              {/* Inputs del formulario */}
+              {/* Campos */}
               <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {Object.entries(formData)
-                  .filter(([key, value]) => {
-                    if (isOwner && ubicacionKeys.includes(key) && !value) return false;
-                    return true;
-                  })
-                  .map(([key, value]) => (
-                    <div key={key}>
-                      <label className="block text-sm font-medium text-gray-700 capitalize">
-                        {key.replace(/([A-Z])/g, " $1")}
-                      </label>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          name={key}
-                          value={value}
-                          onChange={(e) => handleChange(key, e.target.value)}
-                          className="mt-1 w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      ) : (
-                        <p className="mt-1 w-full border border-gray-300 rounded-md p-2 text-gray-700">{value}</p>
-                      )}
-                    </div>
-                  ))}
+                {filteredFormData.map(([key, value]) => (
+                  <div key={key}>
+                    <label className="block text-sm font-medium text-gray-700 capitalize">
+                      {key.replace(/([A-Z])/g, " $1")}
+                    </label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name={key}
+                        value={value}
+                        onChange={(e) => handleChange(key, e.target.value)}
+                        className="mt-1 w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <p className="mt-1 w-full border border-gray-300 rounded-md p-2 text-gray-700">{value}</p>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Botones Guardar / Cancelar */}
+            {/* Botones */}
             {isEditing ? (
               <div className="flex justify-end mt-4 space-x-2">
                 <button
@@ -292,9 +298,7 @@ const Profile: React.FC = () => {
           <div>
             <h2 className="text-sm md:text-base font-semibold text-gray-700 mb-3">Zona de peligro</h2>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-red-50 p-5 rounded-md">
-              <p className="text-sm text-red-600">
-                Eliminar permanentemente su cuenta y todos los datos
-              </p>
+              <p className="text-sm text-red-600">Eliminar permanentemente su cuenta y todos los datos</p>
               <button
                 className="mt-2 sm:mt-0 bg-red-600 text-white px-4 py-1 cursor-pointer rounded-md hover:bg-red-700 transition"
                 onClick={handleDeleteAccount}
@@ -303,7 +307,6 @@ const Profile: React.FC = () => {
               </button>
             </div>
           </div>
-
         </div>
       </div>
     </div>
