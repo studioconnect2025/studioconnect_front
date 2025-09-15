@@ -12,6 +12,20 @@ const passwordSchema = Yup.string()
   .min(6, "La contraseña debe tener al menos 6 caracteres")
   .required("La contraseña es requerida");
 
+// Base de API (Vercel -> Render)
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
+
+// Resuelve URL absoluta para imágenes devueltas por la API
+function resolveUrl(u?: string | null): string | null {
+  if (!u) return null;
+  if (u.startsWith("http")) return u;
+  try {
+    return new URL(u, API_BASE).toString();
+  } catch {
+    return u; // fallback sin romper
+  }
+}
+
 const Profile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profilePic, setProfilePic] = useState<string | null>(null);
@@ -54,13 +68,7 @@ const Profile: React.FC = () => {
           setOriginalData(loadedData);
         }
 
-        setProfilePic(
-          data.profileImageUrl
-            ? data.profileImageUrl.startsWith("http")
-              ? data.profileImageUrl
-              : `http://localhost:3000${data.profileImageUrl}`
-            : null
-        );
+        setProfilePic(resolveUrl(data?.profileImageUrl));
       } catch (error) {
         console.error("Error cargando perfil:", error);
         toast.error("Error cargando perfil");
@@ -100,13 +108,7 @@ const Profile: React.FC = () => {
 
     try {
       const data = await profileService.updateProfilePicture(file);
-      setProfilePic(
-        data.profileImageUrl
-          ? data.profileImageUrl.startsWith("http")
-            ? data.profileImageUrl
-            : `http://localhost:3000${data.profileImageUrl}`
-          : null
-      );
+      setProfilePic(resolveUrl(data?.profileImageUrl));
       toast.success("Foto actualizada correctamente");
     } catch (error) {
       console.error("Error actualizando foto:", error);
@@ -144,11 +146,7 @@ const Profile: React.FC = () => {
     if (result.isConfirmed) {
       try {
         await profileService.deleteAccount();
-        Swal.fire(
-          "Eliminado!",
-          "Tu cuenta ha sido eliminada correctamente.",
-          "success"
-        );
+        Swal.fire("Eliminado!", "Tu cuenta ha sido eliminada correctamente.", "success");
       } catch (error) {
         console.error(error);
         Swal.fire("Error", "Hubo un problema al eliminar tu cuenta.", "error");
@@ -208,7 +206,9 @@ const Profile: React.FC = () => {
               {/* Foto */}
               <div className="flex flex-col items-center">
                 <div
-                  className={`w-24 h-24 rounded-full flex items-center justify-center overflow-hidden border-4 ${profilePic ? "border-sky-600" : "border-gray-300 bg-gray-200"} cursor-pointer`}
+                  className={`w-24 h-24 rounded-full flex items-center justify-center overflow-hidden border-4 ${
+                    profilePic ? "border-sky-600" : "border-gray-300 bg-gray-200"
+                  } cursor-pointer`}
                   onClick={() => fileInputRef.current?.click()}
                 >
                   {profilePic ? (
