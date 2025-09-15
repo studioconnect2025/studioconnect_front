@@ -29,9 +29,9 @@ function formatMonthYear(iso: string) {
   return new Date(iso).toLocaleDateString("es-AR", { month: "long", year: "numeric" });
 }
 
-type PageProps = { params: { id: string } };
+type Props = { params: { id: string } };
 
-export default async function StudioDetailsPage({ params }: PageProps) {
+export default async function StudioDetailsPage({ params }: Props) {
   const { id } = params;
 
   // 1) Studio real
