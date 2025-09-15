@@ -46,16 +46,11 @@ export const profileService = {
       const formData = new FormData();
       formData.append("file", file);
 
-<<<<<<< HEAD
-      const response = await http.patch("/profile/me", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-=======
       const response = await http.patch("/profile/me/picture", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
->>>>>>> 6b49b91 (Estudios destacados: usar fotos reales + placeholder. Cloudinary ok. Header tolerante.)
       });
 
       return response.data;
