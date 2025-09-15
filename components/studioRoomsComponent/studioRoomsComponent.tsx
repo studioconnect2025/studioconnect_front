@@ -12,6 +12,8 @@ import type {
 import Swal from "sweetalert2";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { instrumentsService } from "@/services/instruments.service";
+
 
 // ==================== Modal Edición Sala ====================
 interface EditRoomModalProps {
@@ -254,6 +256,8 @@ const EditRoomModal: FC<EditRoomModalProps> = ({
 };
 
 // ==================== Modal Agregar Instrumento ====================
+
+
 interface AddInstrumentModalProps {
     roomId: string;
     onClose: () => void;
@@ -294,11 +298,13 @@ const AddInstrumentModal: FC<AddInstrumentModalProps> = ({
             const instrumentPayload = {
                 ...formData,
                 price: Number(formData.price),
+                roomId, // 👈 importante pasarlo aquí
             };
-            const newInstrument = await roomsService.addInstrument({
-                roomId,
-                instrumentData: instrumentPayload,
-            });
+
+            const newInstrument = await instrumentsService.createInstrument(
+                instrumentPayload
+            );
+
             onAdded(newInstrument);
             onClose();
             toast.success("Instrumento agregado correctamente");
