@@ -1,13 +1,7 @@
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
 export const roomsService = {
-  createRoom: async ({
-    token,
-    roomData,
-  }: {
-    token: string;
-    roomData: any;
-  }) => {
+  createRoom: async ({ token, roomData }: { token: string; roomData: any }) => {
     try {
       const response = await fetch(`${API}/rooms`, {
         method: "POST",
@@ -17,12 +11,7 @@ export const roomsService = {
         },
         body: JSON.stringify(roomData),
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText);
-      }
-
+      if (!response.ok) throw new Error(await response.text());
       return await response.json();
     } catch (error) {
       console.error("Error creando la sala:", error);
@@ -46,17 +35,10 @@ export const roomsService = {
 
       const response = await fetch(`${API}/rooms/${roomId}/images`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
         body: imagesFormData,
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText);
-      }
-
+      if (!response.ok) throw new Error(await response.text());
       return await response.json();
     } catch (error) {
       console.error("Error subiendo imágenes de la sala:", error);
@@ -70,18 +52,11 @@ export const roomsService = {
         token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
       if (!accessToken) throw new Error("No hay token disponible");
 
-      const response = await fetch(`${API}/rooms/my-rooms`, {
+      const response = await fetch(`${API}/owners/me/studio/rooms`, {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText);
-      }
-
+      if (!response.ok) throw new Error(await response.text());
       return await response.json();
     } catch (error) {
       console.error("Error obteniendo salas:", error);
@@ -97,16 +72,9 @@ export const roomsService = {
 
       const response = await fetch(`${API}/owners/me/studio/rooms/${roomId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText);
-      }
-
+      if (!response.ok) throw new Error(await response.text());
       return await response.json();
     } catch (error) {
       console.error("Error eliminando la sala:", error);
@@ -136,12 +104,7 @@ export const roomsService = {
         },
         body: JSON.stringify(roomData),
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText);
-      }
-
+      if (!response.ok) throw new Error(await response.text());
       return await response.json();
     } catch (error) {
       console.error("Error actualizando la sala:", error);
@@ -165,16 +128,9 @@ export const roomsService = {
 
       const response = await fetch(`${API}/rooms/${roomId}/images/${imageIndex}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText);
-      }
-
+      if (!response.ok) throw new Error(await response.text());
       return await response.json();
     } catch (error) {
       console.error("Error eliminando la imagen de la sala:", error);
@@ -196,25 +152,24 @@ export const roomsService = {
     try {
       const accessToken =
         token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
-      const response = await fetch(`${API}/studios/${studioId}/rooms`, {
+
+      const url = `${API}/rooms?studioId=${encodeURIComponent(studioId)}`;
+      const res = await fetch(url, {
         method: "GET",
-        headers: {
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        },
+        headers: { ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText);
-      }
+      if (res.status === 404) return [];
+      if (!res.ok) throw new Error(await res.text());
 
-      const data = await response.json();
+      const data = await res.json();
       return Array.isArray(data?.rooms) ? data.rooms : Array.isArray(data) ? data : [];
     } catch (error) {
       console.error("Error obteniendo salas del estudio:", error);
       throw error;
     }
   },
+} as const;
 
-}
- 
+export const getStudioRooms = async (studioId: string, token?: string) =>
+  roomsService.getRoomsByStudioId({ studioId, token });

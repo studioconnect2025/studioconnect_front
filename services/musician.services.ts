@@ -1,19 +1,36 @@
 import { http } from "@/lib/Http";
 
+const getAccessToken = () =>
+  (typeof window !== "undefined" ? localStorage.getItem("accessToken") : null);
+
 export const profileService = {
+  // Devuelve null si no hay sesión o si el endpoint no está disponible (401/403/404)
   getMyProfile: async () => {
     try {
-      const response = await http.get("/profile/me");
-      return response.data;
+      const token = getAccessToken();
+      if (!token) return null;
+
+      const response = await http.get("/profile/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      return response.data ?? null;
     } catch (error: any) {
+      const status = error?.response?.status;
+      if (status === 401 || status === 403 || status === 404) return null; // usuario público o ruta ausente
       console.error("Error en profileService.getMyProfile:", error);
-      throw new Error("No se pudo obtener el perfil");
+      return null; // no arrojar error: evita crashear Header/UI en build/start
     }
   },
 
   updateProfile: async ({ profileData }: { profileData: any }) => {
     try {
-      const response = await http.patch("/profile/me", profileData);
+      const token = getAccessToken();
+      if (!token) throw new Error("No hay sesión activa");
+
+      const response = await http.patch("/profile/me", profileData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       return response.data;
     } catch (error: any) {
       console.error("Error en profileService.updateProfile:", error);
@@ -23,11 +40,17 @@ export const profileService = {
 
   updateProfilePicture: async (file: File) => {
     try {
-      const formData = new FormData();
-      formData.append("file", file); 
+      const token = getAccessToken();
+      if (!token) throw new Error("No hay sesión activa");
 
-      const response = await http.patch("/profile/me", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await http.patch("/profile/me/picture", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
       });
 
       return response.data;
@@ -39,7 +62,12 @@ export const profileService = {
 
   deleteAccount: async () => {
     try {
-      const response = await http.delete("/profile/me");
+      const token = getAccessToken();
+      if (!token) throw new Error("No hay sesión activa");
+
+      const response = await http.delete("/profile/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       return response.data;
     } catch (error: any) {
       console.error("Error en profileService.deleteAccount:", error);
@@ -47,7 +75,6 @@ export const profileService = {
     }
   },
 
-  
   resetPassword: async ({ token, newPassword }: { token: string; newPassword: string }) => {
     try {
       const response = await http.post("/auth/password-reset/reset", { token, newPassword });
