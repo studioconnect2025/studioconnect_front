@@ -29,10 +29,12 @@ function formatMonthYear(iso: string) {
   return new Date(iso).toLocaleDateString("es-AR", { month: "long", year: "numeric" });
 }
 
-type Props = { params: { id: string } };
-
-export default async function StudioDetailsPage({ params }: Props) {
-  const { id } = params;
+export default async function StudioDetailsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
 
   // 1) Studio real
   const studio: ServiceStudio = await OwnerService.getStudioById(id);
