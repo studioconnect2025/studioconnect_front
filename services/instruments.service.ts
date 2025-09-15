@@ -7,7 +7,7 @@ export const instrumentsService = {
     price: number;
     available: boolean;
     categoryName: string;
-    studioId: string;
+    roomId: string;
   }) => {
     try {
       const response = await http.post("/instruments/create", instrument);

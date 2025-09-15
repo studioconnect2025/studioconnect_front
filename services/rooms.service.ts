@@ -216,42 +216,5 @@ export const roomsService = {
     }
   },
 
-  // ✅ NUEVO: expuesto en el objeto
-  addInstrument: async ({
-    roomId,
-    instrumentData,
-    token,
-  }: {
-    roomId: string;
-    instrumentData: any;
-    token?: string;
-  }) => {
-    try {
-      const accessToken =
-        token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
-      if (!accessToken) throw new Error("No hay token disponible");
-
-      const res = await fetch(`${API}/rooms/${roomId}/instruments`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(instrumentData),
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText);
-      }
-
-      return await res.json();
-    } catch (error) {
-      console.error("Error agregando instrumento:", error);
-      throw error;
-    }
-  },
-} as const;
-
-export const getStudioRooms = async (studioId: string, token?: string) =>
-  roomsService.getRoomsByStudioId({ studioId, token });
+}
+ 
