@@ -1,12 +1,21 @@
+// src/services/auth.ts
 import axios from "axios";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/";
+const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
+/** ===== Registrar dueño de estudio ===== */
 export async function registerStudioOwner(data: any) {
-  const url = new URL("auth/register/studio-owner", API).toString();
-  const res = await axios.post(url, data, { withCredentials: true });
-  return res.data;
+  const url = `${API.replace(/\/$/, "")}/auth/register/studio-owner`;
+  try {
+    const res = await axios.post(url, data, { withCredentials: true });
+    return res.data;
+  } catch (err: any) {
+    console.error("Error en registerStudioOwner:", err.response?.data ?? err);
+    throw err;
+  }
 }
+
+/** ===== Registrar músico ===== */
 export async function registerMusician(payload: {
   email: string;
   password: string;
@@ -15,7 +24,7 @@ export async function registerMusician(payload: {
     nombre: string;
     apellido: string;
     numeroDeTelefono: string;
-    ubicacion: {
+    ubicacion?: { 
       ciudad: string;
       provincia: string;
       calle: string;
@@ -23,9 +32,12 @@ export async function registerMusician(payload: {
     };
   };
 }) {
-   console.log("Payload que se envía al backend:", payload);
-  const url = new URL("auth/register/musician", API).toString();
-
-  const res = await axios.post(url, payload, { withCredentials: true });
-  return res.data;
+  const url = `${API.replace(/\/$/, "")}/auth/register/musician`;
+  try {
+    const res = await axios.post(url, payload, { withCredentials: true });
+    return res.data;
+  } catch (err: any) {
+    console.error("Error en registerMusician:", err.response?.data ?? err);
+    throw err;
+  }
 }
