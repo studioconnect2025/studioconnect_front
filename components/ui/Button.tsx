@@ -18,7 +18,7 @@ type ButtonProps = {
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 const base =
-  "inline-flex items-center justify-center rounded-lg font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition";
+  "inline-flex items-center justify-center font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition";
 
 const sizes = {
   sm: "px-3 py-1.5 text-sm",
@@ -28,7 +28,7 @@ const sizes = {
 
 const variants = {
   brand: "text-white", 
-  primary: "bg-sky-800 text-white hover:bg-black",
+  primary: "bg-sky-800 text-white px-6 py-2 cursor-pointer rounded-lg hover:bg-black transition mt-8",
   secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300",
   outline: "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50",
   danger: "bg-red-600 text-white hover:bg-red-700",
