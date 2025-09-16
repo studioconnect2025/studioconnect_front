@@ -5,7 +5,6 @@ import { parseJwt } from "@/utils/jwt";
 import type { User, LoginPayload } from "@/types/Auth";
 import { http } from "@/lib/Http"; 
 
-
 type AuthState = {
   user: User | null;
   accessToken: string | null;
@@ -15,7 +14,7 @@ type AuthState = {
 };
 
 type AuthActions = {
-  setAuth: (data: { user: User; accessToken: string }) => void; // <-- 1. AÑADIMOS LA ACCIÓN AL TIPO
+  setAuth: (data: { user: User | null; accessToken: string | null }) => void; // ✅ ahora acepta null
   login: (payload: LoginPayload) => Promise<void>;
   logout: () => Promise<void>;
   setUser: (u: User | null) => void;
@@ -31,12 +30,11 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       loading: false,
       error: null,
 
-      // <-- 2. IMPLEMENTAMOS LA LÓGICA DE LA NUEVA ACCIÓN
       setAuth(data) {
         set({
           user: data.user,
           accessToken: data.accessToken,
-          isAuthenticated: true,
+          isAuthenticated: !!data.user && !!data.accessToken,
           loading: false,
           error: null,
         });
@@ -103,7 +101,6 @@ export const useAuthStore = create<AuthState & AuthActions>()(
     }
   )
 );
-
 
 export const useAuthLoading = () => useAuthStore((s) => s.loading);
 export const useAuthError = () => useAuthStore((s) => s.error);

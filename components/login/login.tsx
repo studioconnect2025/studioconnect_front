@@ -166,23 +166,26 @@ export default function LoginPage({ onClose }: LoginPageProps) {
 
             {/* Remember & Forgot */}
             <div className="flex items-center justify-between">
-              <label className="inline-flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-600"
-                />
-                <span className="text-sm text-gray-600">Recordarme</span>
-              </label>
+  <label className="inline-flex items-center gap-2">
+    <input
+      type="checkbox"
+      checked={remember}
+      onChange={(e) => setRemember(e.target.checked)}
+      className="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-600"
+    />
+    <span className="text-sm text-gray-600">Recordarme</span>
+  </label>
 
-              <Link
-                href="/forgot-password"
-                className="text-sm text-sky-700 hover:underline"
-              >
-                ¿Olvidaste tu contraseña?
-              </Link>
-            </div>
+  <Link
+    href="/forgot-password"
+    onClick={() => {
+      onClose?.(); // ✅ Cierra el modal al navegar
+    }}
+    className="text-sm text-sky-700 hover:underline"
+  >
+    ¿Olvidaste tu contraseña?
+  </Link>
+</div>
 
             {/* Submit */}
             <button

@@ -1,60 +1,51 @@
-'use client';
+"use client";
 
-import { useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuthStore } from '@/stores/AuthStore'; // Importa tu store
-import { parseJwt } from '@/utils/jwt'; // Asumo que tienes esta utilidad
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/stores/AuthStore";
+import { parseJwt } from "@/utils/jwt";
+import type { User } from "@/types/Auth";
 
-function SSOContent() {
+export default function SSOPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const setAuth = useAuthStore((s) => s.setAuth);
 
   useEffect(() => {
-    const token = searchParams.get('token');
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
 
-    if (token) {
-      try {
-        localStorage.setItem('accessToken', token);
-        const claims = parseJwt<{ sub?: string; email?: string; role?: string }>(token);
-        const user = claims
-          ? {
-              id: claims.sub ?? "",
-              email: claims.email ?? "",
-              role: claims.role,
-              name: (claims.email?.split("@")[0] as string) ?? "",
-            }
-          : null;
-
-        if (user) {
-          // --- AJUSTE AQUÍ ---
-          // Simplemente pasa el usuario y el token.
-          // La lógica de isAuthenticated: true ya está dentro de la función setAuth en tu store.
-          setAuth({
-            user: user,
-            accessToken: token,
-          });
-        }
-
-        router.replace('/studioDashboard');
-
-      } catch (error) {
-        console.error("Error al procesar el token:", error);
-        router.replace('/login?error=token_invalido');
-      }
-    } else {
-      router.replace('/login?error=sso_fallido');
+    if (!token) {
+      localStorage.removeItem("accessToken");
+      setAuth({ accessToken: null, user: null });
+      router.replace("/login?error=sso_failed");
+      return;
     }
-  }, [router, searchParams, setAuth]);
 
-  return <div>Verificando autenticación...</div>;
-}
+    try {
+      localStorage.setItem("accessToken", token);
+      const claims = parseJwt<{ sub?: string; email?: string; role?: string }>(token);
+      const user: User | null = claims
+        ? {
+            id: claims.sub ?? "",
+            email: claims.email ?? "",
+            role: claims.role,
+            name: (claims.email?.split("@")[0] as string) ?? "",
+          }
+        : null;
 
-// Usamos Suspense para asegurar que los searchParams estén disponibles del lado del cliente
-export default function SSOPage() {
-    return (
-        <Suspense fallback={<div>Cargando...</div>}>
-            <SSOContent />
-        </Suspense>
-    )
+      setAuth({ accessToken: token, user });
+      router.replace("/");
+    } catch (err) {
+      console.error("Error procesando el token SSO:", err);
+      localStorage.removeItem("accessToken");
+      setAuth({ accessToken: null, user: null });
+      router.replace("/login?error=sso_failed");
+    }
+  }, [router, setAuth]);
+
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <p>Procesando inicio de sesión...</p>
+    </div>
+  );
 }
