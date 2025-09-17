@@ -1,5 +1,5 @@
 
-import { http } from "@/lib/Http";
+import { http } from "@/lib/http";
 
 export const registerStudio = async (values: any, files: any) => {
   const token = localStorage.getItem("accessToken");

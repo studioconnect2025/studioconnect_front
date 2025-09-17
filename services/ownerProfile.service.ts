@@ -1,4 +1,4 @@
-import { http } from "@/lib/Http";
+import { http } from "@/lib/http";
 import { toApiError } from "@/utils/ApiError";
 import { BasicInfo } from "@/types/owner";
 
