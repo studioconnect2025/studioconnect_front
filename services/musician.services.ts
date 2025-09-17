@@ -1,4 +1,4 @@
-import { http } from "@/lib/Http";
+import { http } from "@/lib/http";
 
 const getAccessToken = () =>
   (typeof window !== "undefined" ? localStorage.getItem("accessToken") : null);
@@ -39,26 +39,25 @@ export const profileService = {
   },
 
   updateProfilePicture: async (file: File) => {
-    try {
-      const token = getAccessToken();
-      if (!token) throw new Error("No hay sesión activa");
+  try {
+    const token = getAccessToken();
+    if (!token) throw new Error("No hay sesión activa");
 
-      const formData = new FormData();
-      formData.append("file", file);
+    const formData = new FormData();
+    formData.append("file", file);
 
-      const response = await http.patch("/profile/me/picture", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
+    const response = await http.patch("/profile/me", formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-      return response.data;
-    } catch (error: any) {
-      console.error("Error en profileService.updateProfilePicture:", error);
-      throw new Error("No se pudo actualizar la foto de perfil");
-    }
-  },
+    return response.data;
+  } catch (error: any) {
+    console.error("Error en profileService.updateProfilePicture:", error);
+    throw new Error("No se pudo actualizar la foto de perfil");
+  }
+},
 
   deleteAccount: async () => {
     try {

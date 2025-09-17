@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 import { AuthService } from "@/services/auth.service";
 import { parseJwt } from "@/utils/jwt";
 import type { User, LoginPayload } from "@/types/Auth";
-import { http } from "@/lib/Http"; 
+import { http } from "@/lib/http"; 
 
 
 type AuthState = {

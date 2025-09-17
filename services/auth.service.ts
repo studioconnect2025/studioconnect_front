@@ -1,4 +1,4 @@
-import { http } from "@/lib/Http";
+import { http } from "@/lib/http";
 import { ApiError, toApiError } from "@/utils/ApiError";
 import type { LoginPayload, LoginResponse, MeResponse } from "@/types/Auth";
 
