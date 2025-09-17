@@ -8,35 +8,25 @@ export async function registerStudioOwner(data: any) {
     });
     return res.data;
   } catch (err: any) {
-    console.error("Error en registerStudioOwner:", err.response?.data ?? err);
-    throw err;
+    const message =
+      err.response?.data?.message || err.message || "Error desconocido";
+    console.log("Error en registerStudioOwner:", message);
+    throw new Error(message); // <-- lanzar solo el mensaje
   }
 }
 
 /** ===== Registrar músico ===== */
-export async function registerMusician(payload: {
-  email: string;
-  password: string;
-  confirmPassword: string;
-  profile: {
-    nombre: string;
-    apellido: string;
-    numeroDeTelefono: string;
-    ubicacion?: {
-      ciudad: string;
-      provincia: string;
-      calle: string;
-      codigoPostal: string;
-    };
-  };
-}) {
+export async function registerMusician(payload: any) {
   try {
     const res = await http.post("/auth/register/musician", payload, {
       withCredentials: true,
     });
     return res.data;
   } catch (err: any) {
-    console.error("Error en registerMusician:", err.response?.data ?? err);
-    throw err;
+    const message =
+      err.response?.data?.message || err.message || "Error desconocido";
+    console.log("Error en registerMusician:", message);
+    throw new Error(message);
   }
 }
+

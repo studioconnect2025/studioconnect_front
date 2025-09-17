@@ -5,15 +5,13 @@ import { FaCircle, FaEdit } from "react-icons/fa";
 import { FaTrashArrowUp } from "react-icons/fa6";
 import Link from "next/link";
 import { roomsService } from "../../services/rooms.service";
-import type {
-  Room as RoomType,
-  Instrument as InstrumentType,
-} from "../../types/Rooms";
+import type { Room as RoomType, Instrument as InstrumentType } from "../../types/Rooms";
 import Swal from "sweetalert2";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { instrumentsService } from "@/services/instruments.service";
 
+// ====================== EditRoomModal ======================
 interface EditRoomModalProps {
   room: RoomType;
   onClose: () => void;
@@ -63,10 +61,7 @@ const EditRoomModal: FC<EditRoomModalProps> = ({ room, onClose, onUpdated }) => 
     if (!result.isConfirmed) return;
 
     try {
-      await roomsService.deleteRoomImage({
-        roomId: room.id,
-        imageIndex: index,
-      });
+      await roomsService.deleteRoomImage({ roomId: room.id, imageIndex: index });
       setImagesPreview((prev) => prev.filter((_, i) => i !== index));
       toast.success("Imagen eliminada");
     } catch (error) {
@@ -87,21 +82,18 @@ const EditRoomModal: FC<EditRoomModalProps> = ({ room, onClose, onUpdated }) => 
         pricePerHour: Number(formData.pricePerHour) || 0,
       };
 
-      const updatedRoom = await roomsService.updateRoom({
-        roomId: room.id,
-        roomData,
-      });
+      const updatedRoom = await roomsService.updateRoom({ roomId: room.id, roomData });
 
       if (images) {
         const form = new FormData();
         Array.from(images).forEach((file) => form.append("images", file));
-        await roomsService.uploadRoomImages({
-          roomId: room.id,
-          imagesFormData: form,
-        });
+        await roomsService.uploadRoomImages({ roomId: room.id, imagesFormData: form });
       }
 
-      onUpdated(updatedRoom);
+      // Recargar instrumentos de la sala actualizada
+      const instruments = await instrumentsService.getInstrumentsByRoom(room.id);
+      onUpdated({ ...updatedRoom, instruments });
+
       onClose();
       toast.success("Sala actualizada correctamente");
     } catch (error) {
@@ -170,6 +162,7 @@ const EditRoomModal: FC<EditRoomModalProps> = ({ room, onClose, onUpdated }) => 
   );
 };
 
+// ====================== AddInstrumentModal ======================
 interface AddInstrumentModalProps {
   roomId: string;
   onClose: () => void;
@@ -191,22 +184,14 @@ const AddInstrumentModal: FC<AddInstrumentModalProps> = ({ roomId, onClose, onAd
   ) => {
     const target = e.target as HTMLInputElement;
     const { name, value, type, checked } = target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
+    setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const instrumentPayload = {
-        ...formData,
-        price: Number(formData.price),
-        roomId,
-      };
-
+      const instrumentPayload = { ...formData, price: Number(formData.price), roomId };
       const newInstrument = await instrumentsService.createInstrument(instrumentPayload);
       onAdded(newInstrument);
       onClose();
@@ -244,6 +229,7 @@ const AddInstrumentModal: FC<AddInstrumentModalProps> = ({ roomId, onClose, onAd
   );
 };
 
+// ====================== RoomsGrid ======================
 const RoomsGrid: FC = () => {
   const [rooms, setRooms] = useState<RoomType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -251,17 +237,24 @@ const RoomsGrid: FC = () => {
   const [selectedRoom, setSelectedRoom] = useState<RoomType | null>(null);
   const [instrumentRoomId, setInstrumentRoomId] = useState<string | null>(null);
 
+  const fetchRooms = async () => {
+    try {
+      const roomsData = await roomsService.getRooms();
+      const roomsWithInstruments = await Promise.all(
+        roomsData.map(async (room: RoomType) => {
+          const instruments = await instrumentsService.getInstrumentsByRoom(room.id);
+          return { ...room, instruments };
+        })
+      );
+      setRooms(roomsWithInstruments);
+    } catch (err: any) {
+      setError(err.message || "Error desconocido al obtener salas");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchRooms = async () => {
-      try {
-        const data = await roomsService.getRooms();
-        setRooms(data);
-      } catch (err: any) {
-        setError(err.message || "Error desconocido al obtener salas");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchRooms();
   }, []);
 
@@ -289,16 +282,9 @@ const RoomsGrid: FC = () => {
   };
 
   const handleInstrumentAdded = (roomId: string, instrument: InstrumentType) => {
-    const instrumentWithKey = {
-      ...instrument,
-      id: instrument.id || `temp-${Date.now()}-${Math.random()}`,
-    };
-
     setRooms((prev) =>
       prev.map((r) =>
-        r.id === roomId
-          ? { ...r, instruments: [...(r.instruments || []), instrumentWithKey] }
-          : r
+        r.id === roomId ? { ...r, instruments: [...(r.instruments || []), instrument] } : r
       )
     );
   };
@@ -359,30 +345,23 @@ const RoomsGrid: FC = () => {
                 <div className="flex-1 p-4 flex flex-col gap-2">
                   <h2 className="text-2xl  text-gray-900">{room.name}</h2>
                   <p className="text-lg text-gray-500">
-                    Capacidad:{" "}
-                    <span className="font-medium text-gray-700">{room.capacity ?? "-"} personas</span>
+                    Capacidad: <span className="font-medium text-gray-700">{room.capacity ?? "-"} personas</span>
                   </p>
                   <p className="text-lg text-gray-500">
                     Tamaño: <span className="font-medium text-gray-700">{room.size ?? "-"} m²</span>
                   </p>
                   <p className="text-lg text-gray-500">
-                    Tarifa:{" "}
-                    <span className="font-medium text-gray-700">
-                      {room.pricePerHour ? `$${Number(room.pricePerHour).toLocaleString()}/hora` : "-"}
-                    </span>
-                  </p>
-
-                  <p className="text-sm text-gray-600">
-                    Instrumentos: {room.instruments?.length ?? 0}
+                    Tarifa: <span className="font-medium text-gray-700">{room.pricePerHour ? `$${Number(room.pricePerHour).toLocaleString()}/hora` : "-"}</span>
                   </p>
 
                   {room.instruments && room.instruments.length > 0 && (
                     <div>
-                      <p className="text-xl mb-3 font-medium text-gray-700">Instrumentos</p>
-                      <ul className="flex space-x-3">
+                      <p className="text-xl mb-3 font-medium text-gray-700">Instrumentos:</p>
+                      <ul className="flex flex-row flex-wrap gap-4">
                         {room.instruments.map((inst) => (
                           <li key={inst.id} className="flex items-center gap-2 text-gray-700">
-                            <FaCircle size={13} className="text-sky-700" /> {inst.name}
+                            <FaCircle size={10} className="text-sky-700" />
+                            <span>{inst.name} - ${inst.price.toLocaleString()}</span>
                           </li>
                         ))}
                       </ul>
@@ -421,7 +400,7 @@ const RoomsGrid: FC = () => {
           room={selectedRoom}
           onClose={() => setSelectedRoom(null)}
           onUpdated={(updated) =>
-            setRooms((prev) => prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r)))
+            setRooms((prev) => prev.map((r) => (r.id === updated.id ? updated : r)))
           }
         />
       )}
@@ -430,7 +409,7 @@ const RoomsGrid: FC = () => {
         <AddInstrumentModal
           roomId={instrumentRoomId}
           onClose={() => setInstrumentRoomId(null)}
-          onAdded={(instrument) => handleInstrumentAdded(instrumentRoomId, instrument)}
+          onAdded={(instrument) => handleInstrumentAdded(instrumentRoomId!, instrument)}
         />
       )}
     </section>
