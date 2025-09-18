@@ -119,9 +119,7 @@ export const Header = () => {
                 <button onClick={openLoginModal} className="text-white hover:bg-sky-800 cursor-pointer flex p-2 mr-5 rounded-lg">
                   <CiLogin size={30} className="mr-2" /> Iniciar sesión
                 </button>
-                <Link href="/joinStudioConnect" className="text-white flex hover:bg-sky-800 rounded-lg p-2">
-                  <AiOutlineForm size={26} className="mr-2" /> Registrarse
-                </Link>
+
               </>
             )}
           </div>
