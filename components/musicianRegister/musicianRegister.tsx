@@ -104,11 +104,7 @@ const Input = ({
               stroke="currentColor"
               strokeWidth="1.6"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M2 12s3.5-7.5 10-7.5S22 12 22 12s-3.5 7.5-10 7.5S2 12 2 12z"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2 12s3.5-7.5 10-7.5S22 12 22 12s-3.5 7.5-10 7.5S2 12 2 12z" />
               <circle cx="12" cy="12" r="3" />
             </svg>
           )}
@@ -143,7 +139,24 @@ const MusicianSchema = Yup.object().shape({
   codigoPostal: Yup.string().required("Requerido"),
 });
 
-export default function MusicianRegisterForm() {
+type DefaultValues = { nombre?: string; apellido?: string; email?: string } | undefined;
+
+export default function RegisterForm({ defaultValues }: { defaultValues?: DefaultValues }) {
+  const [loading, setLoading] = useState(false);
+
+  const initialValues = {
+    nombre: defaultValues?.nombre || "",
+    apellido: defaultValues?.apellido || "",
+    email: defaultValues?.email || "",
+    password: "",
+    confirmPassword: "",
+    numeroDeTelefono: "",
+    ciudad: "",
+    provincia: "",
+    calle: "",
+    codigoPostal: "",
+  };
+
   return (
     <div>
       <ToastContainer position="top-right" autoClose={3000} />
@@ -166,20 +179,10 @@ export default function MusicianRegisterForm() {
       <div className="flex items-center justify-center bg-gray-100 py-6">
         <div className="w-full max-w-2xl bg-white ml-4 rounded-xl shadow-lg p-6">
           <Formik
-            initialValues={{
-              nombre: "",
-              apellido: "",
-              email: "",
-              password: "",
-              confirmPassword: "",
-              numeroDeTelefono: "",
-              ciudad: "",
-              provincia: "",
-              calle: "",
-              codigoPostal: "",
-            }}
+            initialValues={initialValues}
             validationSchema={MusicianSchema}
             onSubmit={async (values, { setSubmitting, resetForm }) => {
+              setLoading(true);
               try {
                 const payload = {
                   email: values.email,
@@ -207,6 +210,7 @@ export default function MusicianRegisterForm() {
                 toast.error(err?.response?.data?.message ?? "Error al registrar");
               } finally {
                 setSubmitting(false);
+                setLoading(false);
               }
             }}
           >
@@ -272,8 +276,9 @@ export default function MusicianRegisterForm() {
                     type="submit"
                     className="w-full py-2 px-4 rounded-lg text-white font-medium shadow-md hover:opacity-90"
                     style={{ backgroundColor: brand.primary }}
+                    disabled={loading}
                   >
-                    Registrarme
+                    {loading ? "Registrando..." : "Registrarme"}
                   </button>
                 </div>
               </Form>

@@ -118,7 +118,20 @@ const StudioSchema = Yup.object().shape({
     .matches(/^(\+?\d{1,4}[-\s]?)?\d{7,15}$/, "Teléfono inválido (7-15 dígitos)"),
 });
 
-export default function StudioConnectStudioForm() {
+type OwnerDefaults = { firstName?: string; lastName?: string; email?: string } | undefined;
+
+export default function StudioConnectStudioForm({ defaultValues }: { defaultValues?: OwnerDefaults }) {
+  const [loading, setLoading] = useState(false);
+
+  const initialValues = {
+    firstName: defaultValues?.firstName || "",
+    lastName: defaultValues?.lastName || "",
+    email: defaultValues?.email || "",
+    password: "",
+    confirmPassword: "",
+    phoneNumber: "",
+  };
+
   return (
     <div>
       <ToastContainer position="top-right" autoClose={3000} />
@@ -141,17 +154,10 @@ export default function StudioConnectStudioForm() {
       <div className="flex items-center justify-center bg-gray-100 py-4 px-4">
         <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6">
           <Formik
-            initialValues={{
-              firstName: "",
-              lastName: "",
-              email: "",
-              password: "",
-              confirmPassword: "",
-              phoneNumber: "",
-            }}
+            initialValues={initialValues}
             validationSchema={StudioSchema}
             onSubmit={async (values, { setSubmitting, resetForm }) => {
-              console.log("Formulario enviado con valores:", values);
+              setLoading(true);
               try {
                 const payload = {
                   email: values.email,
@@ -179,6 +185,7 @@ export default function StudioConnectStudioForm() {
                 toast.error(Array.isArray(msg) ? msg.join(" | ") : String(msg));
               } finally {
                 setSubmitting(false);
+                setLoading(false);
               }
             }}
           >
@@ -232,11 +239,11 @@ export default function StudioConnectStudioForm() {
                 <div className="pt-2">
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || loading}
                     className="w-full py-2 px-4 rounded-lg text-white font-medium shadow-md hover:opacity-90 disabled:opacity-50"
                     style={{ backgroundColor: brand.primary }}
                   >
-                    {isSubmitting ? "Registrando..." : "Registrarme"}
+                    {isSubmitting || loading ? "Registrando..." : "Registrarme"}
                   </button>
                 </div>
               </Form>
