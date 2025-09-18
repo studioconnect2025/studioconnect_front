@@ -9,6 +9,7 @@ export type FeaturedStudio = {
   photos?: string[];
   amenities?: string[];
   pricePerHour?: number;
+  
 
   createdAt?: string; // por si el back lo expone
 };

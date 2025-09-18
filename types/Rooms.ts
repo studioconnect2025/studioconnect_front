@@ -12,6 +12,7 @@ export interface Instrument {
     price: number;
     available: boolean;
     categoryName: string;
+    roomId: string;
 }
 
 export interface Room {

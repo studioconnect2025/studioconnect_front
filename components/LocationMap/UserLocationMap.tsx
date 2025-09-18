@@ -1,69 +1,137 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup , Tooltip } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import Link from "next/link";
+import { OwnerService, Studio } from "@/services/studio.services";
 
-// Configuración del ícono de Leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "/leaflet/marker-icon-2x.png", 
-/*   iconUrl: "/leaflet/marker-icon.png",
-  shadowUrl: "/leaflet/marker-shadow.png", */
+const studioIcon = new L.Icon({
+    iconUrl: "/ubicacion.png",
+    iconRetinaUrl: "/ubicacion.png",
+    iconSize: [56, 61],
+    iconAnchor: [28, 61],
+    popupAnchor: [0, -61],
 });
 
-const UserLocationMap = () => {
-  // Estado para la ubicación del usuario
-  const [position, setPosition] = useState<[number, number] | null>(null);
+const userIcon = new L.Icon({
+    iconUrl: "/ubication2.png",
+    iconRetinaUrl: "/ubicacion.png",
+    iconSize: [47, 60],
+    iconAnchor: [28, 61],
+    popupAnchor: [0, -61],
+});
 
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      console.log("Geolocation no soportada por el navegador");
-      return;
+interface StudiosMapProps {
+    center: [number, number];
+}
+
+export default function StudiosMap({ center }: StudiosMapProps) {
+    const [studios, setStudios] = useState<Studio[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [mapCenter, setMapCenter] = useState<[number, number]>(center);
+
+    useEffect(() => {
+        setMapCenter(center);
+    }, [center]);
+
+    useEffect(() => {
+        async function fetchStudios() {
+            try {
+                const data = await OwnerService.getAllStudios();
+                const studiosWithCoords = data.filter((s) => s.lat && s.lng);
+                setStudios(studiosWithCoords);
+            } catch (err) {
+                console.error("Error cargando estudios:", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchStudios();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="h-80 w-full bg-gray-200 rounded-xl flex items-center justify-center">
+                Cargando estudios...
+            </div>
+        );
     }
 
-    // Obtenemos la ubicación inicial
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setPosition([latitude, longitude]);
-      },
-      (err) => {
-        console.error("Error obteniendo ubicación:", err);
-        // Posicion default
-        setPosition([-34.6037, -58.3816])
-      }
-    );
-  }, []);
+    if (studios.length === 0) {
+        return (
+            <div className="h-80 w-full bg-gray-200 rounded-xl flex items-center justify-center">
+                No hay estudios disponibles con coordenadas
+            </div>
+        );
+    }
 
-  if (!position) {
     return (
-      <div className="h-80 w-full flex items-center justify-center bg-gray-200 rounded-xl">
-        Obteniendo ubicación...
-      </div>
+        <div className="h-80 w-full rounded-xl overflow-hidden">
+            <MapContainer
+                center={mapCenter}
+                zoom={10}
+                className="h-full w-full"
+                key={`${mapCenter[0]}-${mapCenter[1]}`}
+            >
+                <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+
+                {/* Marcador usuario */}
+                <Marker position={mapCenter} icon={userIcon}>
+                    <Tooltip
+                        direction="top"
+                        offset={[0, -55]}
+                        opacity={1}
+                        permanent
+                    >
+                        <span className="font-bold text-sm text-sky-700">
+                            Tu
+                        </span>
+                    </Tooltip>
+                </Marker>
+
+                {/* Marcadores de estudios */}
+                {studios.map((studio) => (
+                    <Marker
+                        key={studio.id}
+                        position={[studio.lat!, studio.lng!]}
+                        icon={studioIcon}
+                    >
+                        <Popup>
+                            <div className="w-48">
+                                <img
+                                    src={
+                                        studio.photos &&
+                                        studio.photos.length > 0
+                                            ? studio.photos[0]
+                                            : "/placeholder.png"
+                                    }
+                                    alt={studio.name}
+                                    className="w-full h-24 object-cover rounded-md"
+                                />
+                                <div className="mt-2">
+                                    <h3 className="font-semibold text-sm">
+                                        {studio.name}
+                                    </h3>
+                                    <p className="text-xs text-gray-500">
+                                        {studio.studioType || "Tipo de estudio"}
+                                    </p>
+                                    <Link
+                                        href={`/studios/${studio.id}`}
+                                        className="mt-2 inline-block text-xs text-blue-600 hover:underline"
+                                    >
+                                        Ver detalle →
+                                    </Link>
+                                </div>
+                            </div>
+                        </Popup>
+                    </Marker>
+                ))}
+            </MapContainer>
+        </div>
     );
-  }
-
-  return (
-    <div className="text-black p-4 rounded-xl h-80 w-full">
-      <h2 className="mb-2">Mi ubicación</h2>
-      <MapContainer
-        center={position}
-        zoom={15}
-        scrollWheelZoom={false}
-        className="h-54 w-full rounded-xl"
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <Marker position={position}>
-          <Popup>Ubicación del usuario</Popup>
-        </Marker>
-      </MapContainer>
-    </div>
-  );
-};
-
-export default UserLocationMap;
+}

@@ -83,4 +83,13 @@ export const profileService = {
       throw error;
     }
   },
+  getMyStudio: async () => {
+    try {
+      const response = await http.get("/owners/me/studio");
+      return response.data; // Retorna los datos del estudio incluyendo salas y fotos
+    } catch (error: any) {
+      console.error("Error en profileService.getMyStudio:", error);
+      throw new Error("No se pudo obtener la información del estudio");
+    }
+  },
 };

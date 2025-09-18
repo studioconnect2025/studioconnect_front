@@ -4,7 +4,7 @@ import React from 'react';
 import { googleMapsEmbedUrl } from './mapUrl';
 
 type Props = {
-  mapQuery: string;   // viene del mock
+  mapQuery: string; 
   address?: string;   
   className?: string; 
 };
