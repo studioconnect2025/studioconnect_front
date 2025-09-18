@@ -1,5 +1,4 @@
-import { http } from "@/lib/http";
-import axios from "axios";
+import { http, parseHttpError } from "@/lib/http";
 
 // Registrar dueño de estudio
 export async function registerStudioOwner(data: any) {
@@ -8,11 +7,8 @@ export async function registerStudioOwner(data: any) {
       withCredentials: true,
     });
     return res.data;
-  } catch (err: any) {
-    const message =
-      err.response?.data?.message || err.message || "Error desconocido";
-    console.log("Error en registerStudioOwner:", message);
-    throw new Error(message); // <-- lanzar solo el mensaje
+  } catch (err) {
+    throw parseHttpError(err);
   }
 }
 
@@ -33,12 +29,12 @@ export async function registerMusician(payload: {
     };
   };
 }) {
-  const url = `${API.replace(/\/$/, "")}/auth/register/musician`;
   try {
-    const res = await axios.post(url, payload, { withCredentials: true });
+    const res = await http.post("/auth/register/musician", payload, {
+      withCredentials: true,
+    });
     return res.data;
-  } catch (err: any) {
-    console.error("Error en registerMusician:", err.response?.data ?? err);
-    throw err;
+  } catch (err) {
+    throw parseHttpError(err);
   }
 }
