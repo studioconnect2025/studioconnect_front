@@ -1,6 +1,6 @@
 import { http } from "@/lib/http";
 import { ApiError, toApiError } from "@/utils/ApiError";
-import type { LoginPayload, LoginResponse, MeResponse } from "@/types/Auth";
+import type { LoginPayload, LoginResponse, MeResponse, GoogleRegistrationPayload } from "@/types/Auth";
 
 
 function extractRawToken(raw: any):
@@ -99,7 +99,6 @@ export const AuthService = {
     }
   },
 
-
  async resetPassword({ token, newPassword }: ResetPasswordPayload): Promise<void> {
   try {
     await http.post("/auth/password-reset/reset", { token, newPassword });
@@ -115,7 +114,55 @@ export const AuthService = {
     } catch (e) {
       return { valid: false };
     }
+  },
 
+  // Método para completar registro con Google (CON DEBUG LOGS)
+  async completeGoogleRegistration(payload: GoogleRegistrationPayload): Promise<{ accessToken: string; user?: any }> {
+    try {
+      // Debug logs para ver qué se está enviando
+      console.log('🚀 Sending registration request:', {
+        payload,
+        headers: {
+          Authorization: `Bearer ${payload.registrationToken}`,
+        }
+      });
 
-  }
+      const { data } = await http.post<LoginResponse>("/auth/register/google", payload, {
+        headers: {
+          Authorization: `Bearer ${payload.registrationToken}`,
+        },
+      });
+      
+      console.log('✅ Registration response received:', data);
+      
+      const { accessToken, user } = normalizeLoginResponse(data);
+      
+      if (typeof window !== "undefined") {
+        localStorage.setItem("accessToken", accessToken);
+      }
+      
+      return { accessToken, user };
+    } catch (e: any) {
+      console.error('❌ Registration error:', {
+        message: e?.message,
+        status: e?.response?.status,
+        data: e?.response?.data,
+        config: {
+          url: e?.config?.url,
+          method: e?.config?.method,
+          headers: e?.config?.headers,
+        }
+      });
+      throw toApiError(e);
+    }
+  },
+
+  // Método para obtener la URL de login de Google
+  getGoogleLoginUrl(): string {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const cleanBaseUrl = baseUrl.replace(/\/$/, ''); // Remover "/" al final si existe
+    
+    console.log('🚀 Google Login URL:', `${cleanBaseUrl}/auth/google/login`); // Para debug
+    return `${cleanBaseUrl}/auth/google/login`;
+  },
 };
