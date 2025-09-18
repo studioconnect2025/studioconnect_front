@@ -7,10 +7,12 @@ export type Studio = {
   address?: string;
   city?: string;
   province?: string;
+  lat?: number | null;  
+  lng?: number | null;
   country?: string;
   rating?: number;
   reviewsCount?: number;
-  services?: string[]; // ← agregado: habilita services en el Studio
+  services?: string[]; 
 };
 
 export type Room = {

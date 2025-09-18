@@ -7,9 +7,9 @@ export const registerStudio = async (values: any, files: any) => {
 
   // Campos de texto
   formData.append("name", values.name);
-  formData.append("studioType", values.studioType); // "produccion", etc.
-  formData.append("pais", values.pais); // agregado
-  formData.append("codigoPostal", values.codigoPostal); // agregado
+  formData.append("studioType", values.studioType);
+  formData.append("pais", values.pais);
+  formData.append("codigoPostal", values.codigoPostal);
   formData.append("city", values.city);
   formData.append("province", values.province);
   formData.append("address", values.address);
@@ -28,15 +28,13 @@ export const registerStudio = async (values: any, files: any) => {
     formData.append("comercialRegister", files.comercialRegister);
   }
   if (files.photos?.length) {
-    files.photos.forEach((file: File) => {
-      formData.append("photos", file);
-    });
+    files.photos.forEach((file: File) => formData.append("photos", file));
   }
 
+  // Aquí quitamos Content-Type manual
   return await http.post("/owners/me/studio/files", formData, {
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "multipart/form-data",
     },
   });
 };

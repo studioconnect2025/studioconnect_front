@@ -1,12 +1,37 @@
 import { http } from "@/lib/http";
 import { ApiError, toApiError } from "@/utils/ApiError";
 
-export interface Studio {
+export type Studio = {
   id: string;
   name: string;
   description?: string;
-  ownerId: string;
-}
+  address?: string;
+  city?: string;
+  province?: string;
+  country?: string;
+  codigoPostal?: string;
+ pricePerHour: string
+  // Coordenadas
+  lat?: number;
+  lng?: number;
+
+  // Info extra
+  studioType?: string;
+  rating?: number;
+  reviewsCount?: number;
+  services?: string[];
+  photos?: string[];
+  amenities?: string[];
+
+  // Horarios
+  openingTime?: string;
+  closingTime?: string;
+
+  // Estado
+  isActive?: boolean;
+  status?: string;
+};
+
 
 export interface UpdateStudioPayload {
   name?: string;
