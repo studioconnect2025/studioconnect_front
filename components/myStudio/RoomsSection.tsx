@@ -6,44 +6,81 @@ type Room = {
   sizeM2?: number;
   minHours?: number;
   pricePerHour?: number;
+  image?: string;
+  [k: string]: any;
 };
+
+function isImageLikeUrl(s: string) {
+  if (typeof s !== "string") return false;
+  if (s.startsWith("data:image/")) return true;
+  return /^https?:\/\/.+\.(jpg|jpeg|png|webp|gif|avif)(\?.*)?$/i.test(s);
+}
+
+function firstRoomImage(r: any): string | undefined {
+  const direct = [
+    r?.image,
+    r?.imageUrl,
+    r?.cover,
+    r?.coverPhoto,
+    r?.photo,
+    r?.photoUrl,
+    r?.thumbnail,
+    r?.thumb,
+  ];
+  for (const x of direct) if (isImageLikeUrl(x)) return x;
+
+  const bagKeys = [
+    "photos",
+    "images",
+    "gallery",
+    "media",
+    "pictures",
+    "photoUrls",
+    "imageUrls",
+  ];
+  for (const k of bagKeys) {
+    const v = r?.[k];
+    if (!Array.isArray(v)) continue;
+    for (const it of v) {
+      if (typeof it === "string" && isImageLikeUrl(it)) return it;
+      const u = it?.url || it?.secure_url || it?.imageUrl || it?.src || it?.path;
+      if (isImageLikeUrl(u)) return u;
+    }
+  }
+  return undefined;
+}
 
 export default function RoomsSection({ rooms = [] }: { rooms: Room[] }) {
   if (!rooms.length) {
-    return (
-      <section className="relative rounded-2xl overflow-hidden shadow-[0_12px_12px_-12px_rgba(2,6,23,0.28)] ring-1 ring-white/10 bg-gradient-to-b from-[#0F3B57] via-[#0B2746] to-[#071E32] backdrop-blur-md p-4 md:p-6">
-        <div className="text-white/80 text-sm">Aún no hay salas cargadas.</div>
-      </section>
-    );
+    return <div className="text-sm text-slate-600">Aún no hay salas cargadas.</div>;
   }
 
   return (
-    <section className="relative rounded-2xl overflow-hidden shadow-[0_12px_12px_-12px_rgba(2,6,23,0.28)] ring-1 ring-white/10 bg-gradient-to-b from-[#0F3B57] via-[#0B2746] to-[#071E32] backdrop-blur-md p-4 md:p-6">
-      {/* highlight sutil */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-transparent" />
-
-      <div className="relative space-y-4">
-        {rooms.map((room) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {rooms.map((room) => {
+        const img = firstRoomImage(room);
+        return (
           <div
-            key={room.id}
-            className="relative rounded-xl border border-white/12 bg-white/5 backdrop-blur-[2px] p-4 flex items-start justify-between"
+            key={room.id ?? room.name}
+            className="rounded-lg border border-slate-200 overflow-hidden bg-white"
           >
-            {/* brillo fino arriba de cada card */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-transparent rounded-xl" />
+            <div className="relative h-36 bg-slate-100">
+              {img ? (
+                <img src={img} alt={room.name ?? "Sala"} className="h-full w-full object-cover" />
+              ) : null}
+            </div>
 
-            <div className="relative">
-              <h4 className="font-medium text-white/90">
-                {room.name ?? "Sala"}
-              </h4>
-              <p className="mt-1 text-sm text-white/70">
+            <div className="p-3">
+              <h4 className="font-medium text-slate-900">{room.name ?? "Sala"}</h4>
+              <p className="mt-1 text-xs text-slate-600">
                 {(room.type || "Tipo")} • {(room.sizeM2 ? `${room.sizeM2} m²` : "m²")} •{" "}
                 {(room.minHours ? `Min. ${room.minHours} hs` : "Min. hs")} •{" "}
                 {(room.pricePerHour ? `$${room.pricePerHour}/hora` : "$/hora")}
               </p>
             </div>
           </div>
-        ))}
-      </div>
-    </section>
+        );
+      })}
+    </div>
   );
 }

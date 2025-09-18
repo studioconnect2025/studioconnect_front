@@ -35,15 +35,7 @@ export const BannerText = () => {
           Explorar estudios <MoveRight className="w-5 h-5" />
         </button>
 
-        {/* Solo mostrar si NO está logueado */}
-        {!isLoggedIn && (
-          <Link
-            href="/useOwnerForm"
-            className="flex justify-center items-center gap-2 text-white p-3 border-2 border-white rounded-md w-full sm:w-auto hover:bg-white hover:text-black transition"
-          >
-            Registrar mi estudio <MoveRight className="w-5 h-5" />
-          </Link>
-        )}
+
       </div>
     </div>
   );

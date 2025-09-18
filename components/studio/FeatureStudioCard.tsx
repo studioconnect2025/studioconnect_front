@@ -13,19 +13,22 @@ export function FeaturedStudioCard({ id, studio }: Props) {
       : "/images/placeholders/studio-cover.webp";
 
   const hasPrice = typeof studio.pricePerHour === "number";
-  
 
   return (
-    <div className="rounded-xl hover:shadow-2xl border cursor-pointer bg-white shadow-sm overflow-hidden flex flex-col h-full">
-      <div className="relative h-40 w-full bg-gray-100">
+    <div className="rounded-xl hover:shadow-2xl border bg-white shadow-sm overflow-hidden flex flex-col h-full">
+      <Link
+        href={`/studios/${id}`}
+        aria-label={`Ver detalle de ${studio.name}`}
+        className="group block relative h-40 w-full bg-gray-100 overflow-hidden"
+      >
         <Image
           src={cover}
           alt={studio.name}
           fill
-          className="object-cover"
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
           sizes="(max-width:768px) 100vw, (max-width:1024px) 50vw, 33vw"
         />
-      </div>
+      </Link>
 
       <div className="p-4 flex-1 flex flex-col gap-3">
         <div className="flex items-start justify-between gap-3">
@@ -68,9 +71,8 @@ export function FeaturedStudioCard({ id, studio }: Props) {
         )}
 
         <div
-          className={`mt-auto flex items-center gap-3 ${
-            hasPrice ? "justify-between" : "justify-end"
-          }`}
+          className={`mt-auto flex items-center gap-3 ${hasPrice ? "justify-between" : "justify-end"
+            }`}
         >
           {hasPrice && (
             <p className="text-base text-black">

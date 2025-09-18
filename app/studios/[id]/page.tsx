@@ -87,12 +87,7 @@ export default async function StudioDetailsPage({
                     {location ?? "Ubicación no disponible"}
                   </p>
                 </div>
-                {/* Acciones (placeholders) */}
-                <div className="flex items-center gap-2">
-                  <button className="rounded-md border border-white/20 bg-white/10 px-2 py-1 text-[11px] hover:bg-white/15">Guardar</button>
-                  <button className="rounded-md border border-white/20 bg-white/10 px-2 py-1 text-[11px] hover:bg-white/15">Compartir</button>
-                  <button aria-label="Más" className="grid h-7 w-7 place-items-center rounded-md border border-white/20 bg-white/10 hover:bg-white/15">⋯</button>
-                </div>
+
               </div>
 
               {studio.description && (
