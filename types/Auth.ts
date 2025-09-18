@@ -20,3 +20,8 @@ export type MeResponse = User;
 export type RefreshResponse = {
   accessToken: string;
 };
+
+export type GoogleRegistrationPayload = {
+  role: 'MUSICIAN' | 'STUDIO_OWNER';
+  registrationToken: string;
+};
