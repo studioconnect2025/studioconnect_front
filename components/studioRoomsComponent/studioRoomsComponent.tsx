@@ -14,6 +14,9 @@ import type {
     Instrument as InstrumentType,
 } from "../../types/Rooms";
 
+import {instrumentsService} from "@/services/instruments.service"
+import { string } from "yup";
+
 // ==================== Modal Edición Sala ====================
 interface EditRoomModalProps {
     room: RoomType;
@@ -300,7 +303,7 @@ const AddInstrumentModal: FC<AddInstrumentModalProps> = ({
                 ...formData,
                 price: Number(formData.price),
             };
-            const newInstrument = await roomsService.addInstrument({
+            const newInstrument = await instrumentsService.addInstrument({
                 roomId,
                 instrumentData: instrumentPayload,
             });
@@ -429,7 +432,7 @@ const RoomsGrid: FC = () => {
         if (!result.isConfirmed) return;
 
         try {
-            await roomsService.deleteRoom(roomId);
+            await roomsService.deleteRoom({roomId});
             setRooms((prev) => prev.filter((room) => room.id !== roomId));
             toast.success("Sala eliminada correctamente");
         } catch (error) {
