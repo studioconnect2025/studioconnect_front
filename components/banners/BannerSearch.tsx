@@ -114,7 +114,7 @@ export const BannerSearch = ({
                 <div className="flex flex-col items-center justify-center  sm:mt-0">
                     <button
                         onClick={handleSearch}
-                        className="flex items-center gap-2 bg-sky-700 hover:bg-sky-800 transition text-white font-semibold px-6 py-3 mt-6 rounded-xl"
+                        className="flex items-center cursor-pointer gap-2 bg-sky-700 hover:bg-sky-800 transition text-white font-semibold px-6 py-3 mt-6 rounded-xl"
                     >
                         <Search className="w-5 h-5" />
                         Buscar
