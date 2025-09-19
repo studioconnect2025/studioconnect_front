@@ -7,10 +7,13 @@ import type { FeaturedStudio } from "@/types/featuredStudio";
 type Props = { id: string; studio: FeaturedStudio };
 
 export function FeaturedStudioCard({ id, studio }: Props) {
-  const cover =
-    studio.photos && studio.photos.length > 0
+ const cover =
+  studio.photos && studio.photos.length > 0 && studio.photos[0]
+    ? studio.photos[0].startsWith("http")
       ? studio.photos[0]
-      : "/images/placeholders/studio-cover.webp";
+      : `/${studio.photos[0].replace(/^\/+/, "")}`
+    : "/images/placeholders/studio-cover.webp";
+
 
   const hasPrice = typeof studio.pricePerHour === "number";
 
