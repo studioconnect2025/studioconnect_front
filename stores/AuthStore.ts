@@ -4,6 +4,7 @@ import { AuthService } from "@/services/auth.service";
 import { parseJwt } from "@/utils/jwt";
 import type { User, LoginPayload, GoogleRegistrationPayload } from "@/types/Auth";
 import { http } from "@/lib/http"; 
+import { setAccessTokenCookie, clearAccessTokenCookie } from "@/utils/authCookies";
 
 type AuthState = {
   user: User | null;
@@ -49,7 +50,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         try { 
           const res = await AuthService.login(payload); 
           localStorage.setItem("accessToken", res.accessToken);
-          const claims = parseJwt<{ sub?: string; email?: string; role?: string }>(res.accessToken);
+setAccessTokenCookie(res.accessToken);          
+const claims = parseJwt<{ sub?: string; email?: string; role?: string }>(res.accessToken);
           const finalUser: User | null = claims
             ? ({
                 id: claims.sub ?? "",
@@ -82,6 +84,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           await AuthService.logout(); 
         } finally {
           localStorage.removeItem("accessToken");
+          clearAccessTokenCookie(); 
           delete (http as any).defaults?.headers?.common?.Authorization;
           set({ user: null, accessToken: null, isAuthenticated: false });
         }
@@ -121,7 +124,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           );
 
           localStorage.setItem("accessToken", res.data.accessToken);
-
+          setAccessTokenCookie(res.data.accessToken); 
           const claims = parseJwt<{ sub?: string; email?: string; role?: string }>(res.data.accessToken);
           const finalUser: User | null = claims
             ? ({
@@ -156,6 +159,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         
         try {
           localStorage.setItem("accessToken", token);
+          setAccessTokenCookie(token); 
           const claims = parseJwt<{ sub?: string; email?: string; role?: string }>(token);
           const finalUser: User | null = claims
             ? ({
