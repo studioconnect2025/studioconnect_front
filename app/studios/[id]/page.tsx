@@ -1,9 +1,14 @@
-// pages/studios/[id]/page.tsx
 import StudioDetailsClient from "@/components/studiodetalle/studioDetalle";
 import { OwnerService, type Studio as ServiceStudio } from "@/services/studio.services";
 import { roomsService } from "@/services/rooms.service";
 
-export default async function StudioDetailsPage({ params }: { params: { id: string } }) {
+interface StudioDetailsPageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default async function StudioDetailsPage({ params }: StudioDetailsPageProps) {
   const { id } = params;
 
   const studio: ServiceStudio = await OwnerService.getStudioById(id);
