@@ -23,6 +23,7 @@ export type Studio = {
   photos?: string[];
   amenities?: string[];
 
+
   // Horarios
   openingTime?: string;
   closingTime?: string;

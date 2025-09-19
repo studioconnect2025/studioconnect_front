@@ -139,7 +139,7 @@ export const roomsService = {
       const accessToken =
         token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
 
-      const response = await http.get(`/rooms`, {
+      const response = await http.get(`/rooms/studio/${studioId}`, {
         params: { studioId },
         headers: {
           ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
