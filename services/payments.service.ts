@@ -13,23 +13,43 @@ export interface MembershipPaymentResponse {
   paymentIntentId: string;
 }
 
+export interface ConfirmPaymentResponse {
+  status: string;
+  paymentIntentId: string;
+}
+
 export type MembershipPlan = "MONTHLY" | "ANNUAL";
 
 export const PaymentsService = {
-  async payMembership(payload: { plan: MembershipPlan }) {
-    const { data } = await http.post("/payments/membership", payload);
-    // espera: { clientSecret: string, amount: number }
+  /**
+   * Crear pago de membresía
+   */
+  async payMembership(payload: { plan: MembershipPlan }): Promise<MembershipPaymentResponse> {
+    const { data } = await http.post<MembershipPaymentResponse>("/payments/membership", payload);
     return data;
   },
 
-  async payBooking(payload: { bookingId: string; instrumentIds?: string[] }) {
-    const { data } = await http.post("/payments/booking", payload);
+  /**
+   * Crear pago de reserva (booking)
+   */
+  async payBooking(payload: { bookingId: string; instrumentIds?: string[] }): Promise<BookingPaymentResponse> {
+    const { data } = await http.post<BookingPaymentResponse>("/payments/booking", payload);
     return data;
   },
 
-  async confirmPayment(paymentIntentId: string) {
-    const { data } = await http.get(`/payments/confirm/${paymentIntentId}`);
+  /**
+   * Confirmar estado de un pago
+   */
+  async confirmPayment(paymentIntentId: string): Promise<ConfirmPaymentResponse> {
+    const { data } = await http.get<ConfirmPaymentResponse>(`/payments/confirm/${paymentIntentId}`);
     return data;
   },
-  
+
+  /**
+   * Capturar un pago (solo el dueño del estudio puede hacerlo).
+   */
+  async capture(paymentIntentId: string): Promise<ConfirmPaymentResponse> {
+    const { data } = await http.post<ConfirmPaymentResponse>(`/payments/capture/${paymentIntentId}`);
+    return data;
+  },
 };
