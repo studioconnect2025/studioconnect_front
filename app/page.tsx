@@ -3,12 +3,12 @@ import { BannerImg } from "@/components/banners/BannerImg";
 import { BannerSearch } from "@/components/banners/BannerSearch";
 import { BannerText } from "@/components/banners/BannerText";
 import ClientUserLocationMap from "@/components/LocationMap/ClientUserLocationMap";
-import { ReviewList } from "@/components/reviews/ReviewList";
 import { FeaturedStudiosList } from "@/components/studio/FeatureStudioList";
 import WhyChooseStudioConnect from "@/components/WhyChooseStudioConnect/WhyChooseStudioConnect";
 import { OwnerToolbar } from "@/components/ownerToolBar/ownerToolBar";
 import { useAuthUser, useIsAuth } from "@/stores/AuthStore";
 import { useState } from "react";
+import ReviewList from "@/components/reviews/ReviewList";
 
 export default function Home() {
     const isLoggedIn = useIsAuth();

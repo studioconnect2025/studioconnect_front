@@ -7,12 +7,14 @@ import { OwnerService, Studio } from "@/services/studio.services";
 import Swal from "sweetalert2";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import { useRouter } from "next/navigation"
 
 interface BookingWithStudio extends Booking {
   studioData?: Studio;
 }
 
 const Reservas = () => {
+  const router = useRouter();
   const [bookings, setBookings] = useState<BookingWithStudio[]>([]);
   const [loading, setLoading] = useState(true);
   const [ratings, setRatings] = useState<Record<string, number>>({});
@@ -78,7 +80,7 @@ const Reservas = () => {
       try {
         await BookingService.cancelBooking(bookingId);
         toast.success("Reserva cancelada correctamente");
-        setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: "CANCELADA" } : b));
+        setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: "CANCELLED" } : b));
       } catch (error) {
         console.error(error);
         toast.error("Error al cancelar la reserva");
@@ -87,9 +89,9 @@ const Reservas = () => {
   };
 
   const now = new Date();
-  const proximas = bookings.filter(b => new Date(b.startTime) >= now && b.status !== "CANCELADA");
-  const pasadas = bookings.filter(b => new Date(b.startTime) < now && b.status !== "CANCELADA");
-  const canceladas = bookings.filter(b => b.status === "CANCELADA");
+  const proximas = bookings.filter(b => new Date(b.startTime) >= now && b.status !== "CANCELLED");
+  const pasadas = bookings.filter(b => new Date(b.startTime) < now && b.status !== "CANCELLED");
+  const canceladas = bookings.filter(b => b.status === "CANCELLED");
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
@@ -111,6 +113,16 @@ const Reservas = () => {
   const handleRating = (bookingId: string, stars: number) => {
     setRatings(prev => ({ ...prev, [bookingId]: stars }));
     toast.success(`Reserva calificada con ${stars} estrellas`);
+  };
+
+  // 🔹 Traducción de estados del backend al front
+  const translateStatus = (status: string) => {
+    switch (status) {
+      case "PENDING": return "Pendiente";
+      case "CONFIRMED": return "Confirmada";
+      case "CANCELLED": return "Cancelada";
+      default: return status;
+    }
   };
 
   if (loading) return (
@@ -162,13 +174,16 @@ const Reservas = () => {
                 <div className="flex flex-col sm:flex-row items-end sm:items-center sm:space-x-6 mt-3 sm:mt-0">
                   <p className="font-semibold text-gray-800 mb-2 sm:mb-0">Total ${b.totalPrice}</p>
 
-                  {b.status === "CANCELADA" ? (
+                  {b.status === "CANCELLED" ? (
                     <span className="text-red-600 font-semibold px-4 py-2 rounded-md border border-red-300">
-                      Reserva cancelada
+                      {translateStatus(b.status)}
                     </span>
                   ) : (
                     <>
-                      <button className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-800 transition">
+                      <button
+                        onClick={() => router.push(`/payments/booking/${b.id}`)}
+                        className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-800 transition"
+                      >
                         Pagar reserva
                       </button>
 
@@ -216,7 +231,7 @@ const Reservas = () => {
                     <div className="flex items-center text-sm text-gray-600 mt-1 space-x-4">
                       <span className="flex items-center gap-1"><FaCalendarAlt className="text-sky-700" /> {formatDate(b.startTime)}</span>
                       <span className="flex items-center gap-1"><FaClock className="text-sky-700" /> {formatTime(b.startTime, b.endTime)}</span>
-                      <span className="text-green-600 font-medium">{b.status}</span>
+                      <span className="text-green-600 font-medium">{translateStatus(b.status)}</span>
                     </div>
                   </div>
                 </div>
@@ -263,7 +278,7 @@ const Reservas = () => {
                   <div>
                     <h3 className="font-semibold text-gray-800">{b.studioData?.name ?? b.studio} - {b.room}</h3>
                     <p className="text-sm text-gray-500">{b.studioData?.city ?? ""}</p>
-                    <span className="text-red-600 font-medium mt-1">{b.status}</span>
+                    <span className="text-red-600 font-medium mt-1">{translateStatus(b.status)}</span>
                   </div>
                 </div>
 
