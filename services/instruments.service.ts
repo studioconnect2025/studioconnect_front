@@ -35,4 +35,14 @@ export const instrumentsService = {
       return [];
     }
   },
+
+  deleteInstrument: async (instrumentId: string, token?: string) => {
+    try {
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      await http.delete(`/instruments/${instrumentId}`, { headers });
+      return true;
+    } catch (error) {
+      throw parseHttpError(error);
+    }
+  },
 };
