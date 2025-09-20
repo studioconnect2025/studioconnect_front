@@ -13,6 +13,7 @@ export interface Instrument {
     available: boolean;
     categoryName: string;
     roomId: string;
+     room?: Room;
 }
 
 export interface Room {
@@ -31,4 +32,5 @@ export interface Room {
     imagePublicIds?: string[] | null;
     isActive?: boolean;
     instruments?: Instrument[];
+    
 }
