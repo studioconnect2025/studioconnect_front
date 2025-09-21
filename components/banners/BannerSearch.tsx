@@ -90,7 +90,7 @@ export const BannerSearch = ({
           </div>
 
           {results.length > 0 && (
-            <ul className="absolute top-full mt-1 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-52 sm:max-h-60 overflow-y-auto text-sm">
+            <ul className="absolute top-full mt-1 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-xl z-1000 max-h-52 sm:max-h-60 overflow-y-auto text-sm">
               {results.map((r, i) => (
                 <li
                   key={i}
