@@ -102,7 +102,7 @@ export default function Search() {
           Busca y filtra entre miles de estudios de grabación profesionales en
           la ubicación de tu preferencia
         </p>
-        <div className="w-full max-w-3xl px-2 sm:px-0">
+        <div className="w-full  px-2 sm:px-0">
           <BannerSearch
             onLocationSelect={(lat, lng) => {
               console.log("Coordenadas seleccionadas:", lat, lng);

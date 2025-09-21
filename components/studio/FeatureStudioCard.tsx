@@ -3,17 +3,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import type { FeaturedStudio } from "@/types/featuredStudio";
+import { useAuthUser } from "@/stores/AuthStore";
 
 type Props = { id: string; studio: FeaturedStudio };
 
 export function FeaturedStudioCard({ id, studio }: Props) {
- const cover =
-  studio.photos && studio.photos.length > 0 && studio.photos[0]
-    ? studio.photos[0].startsWith("http")
-      ? studio.photos[0]
-      : `/${studio.photos[0].replace(/^\/+/, "")}`
-    : "/images/placeholders/studio-cover.webp";
-
+  const user = useAuthUser(); // <-- obtenemos usuario
+  const cover =
+    studio.photos && studio.photos.length > 0 && studio.photos[0]
+      ? studio.photos[0].startsWith("http")
+        ? studio.photos[0]
+        : `/${studio.photos[0].replace(/^\/+/, "")}`
+      : "/images/placeholders/studio-cover.webp";
 
   const hasPrice = typeof studio.pricePerHour === "number";
 
@@ -74,19 +75,21 @@ export function FeaturedStudioCard({ id, studio }: Props) {
         )}
 
         <div
-          className={`mt-auto flex items-center gap-3 ${hasPrice ? "justify-between" : "justify-end"
-            }`}
+          className={`mt-auto flex items-center gap-3 ${
+            hasPrice ? "justify-between" : "justify-end"
+          }`}
         >
           {hasPrice && (
             <p className="text-base text-black">
               ${studio.pricePerHour!.toLocaleString("es-AR")}/hr
             </p>
           )}
+
           <Link
             href={`/studios/${id}`}
             className="inline-flex items-center justify-center rounded-lg bg-[#00618E] text-white px-4 py-2 text-sm hover:bg-gray-800 transition"
           >
-            Reservar ahora
+            {user?.role === "Músico" ? "Reservar ahora" : "Ver estudio"}
           </Link>
         </div>
       </div>

@@ -7,6 +7,7 @@ import { BookingService, BookingPayload } from "@/services/booking.services";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useAuthUser, useIsAuth } from "@/stores/AuthStore";
 
 const ClientUserLocationMap = dynamic(
   () => import("@/components/LocationMap/ClientUserLocationMap"),
@@ -42,6 +43,8 @@ export default function StudioDetailsClient({ studio }: any) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
   const router = useRouter();
+  const user = useAuthUser();
+  const isLoggedIn = useIsAuth();
 
   const rooms: Room[] =
     studio.rooms?.map((r: any) => ({
@@ -130,9 +133,9 @@ export default function StudioDetailsClient({ studio }: any) {
 
     if (start < opening || end > closing) {
       toast.error(
-        `El horario seleccionado debe estar entre ${
-          studio.openingTime ?? "00:00"
-        } y ${studio.closingTime ?? "23:59"}`
+        `El horario seleccionado debe estar entre ${studio.openingTime ?? "00:00"} y ${
+          studio.closingTime ?? "23:59"
+        }`
       );
       return;
     }
@@ -172,6 +175,18 @@ export default function StudioDetailsClient({ studio }: any) {
     }
   };
 
+  const handleReserveClick = () => {
+    if (!isLoggedIn) {
+      toast.info("Debe iniciar sesión para reservar.");
+      return;
+    }
+    if (user?.role !== "Músico") {
+      toast.info("Solo los músicos pueden realizar reservas.");
+      return;
+    }
+    handleReserve();
+  };
+
   const prevPhoto = () =>
     setCurrentPhotoIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
   const nextPhoto = () =>
@@ -207,7 +222,7 @@ export default function StudioDetailsClient({ studio }: any) {
               </button>
             </section>
 
-            {/* Tarjeta estudio */}
+            {/* Información del estudio */}
             <section className="rounded-xl border border-[#E5E7EB] bg-gradient-to-b from-[#036D9D] to-[#0B0F12] p-4 sm:p-6 text-white shadow-md">
               <h1 className="text-lg sm:text-xl font-bold">{studio.name}</h1>
               <p className="mt-1 text-sm text-white/80">{studio.address ?? studio.city}</p>
@@ -263,14 +278,20 @@ export default function StudioDetailsClient({ studio }: any) {
                               <div className="flex items-center gap-2 sm:gap-3">
                                 <div className="flex items-center gap-1 bg-white/10 rounded px-1 py-0.5">
                                   <button
-                                    onClick={() => handleInstrumentChange(inst.id, -1, inst.name, r.id)}
+                                    onClick={() =>
+                                      handleInstrumentChange(inst.id, -1, inst.name, r.id)
+                                    }
                                     className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded bg-white/20 hover:bg-white/30 transition cursor-pointer"
                                   >
                                     -
                                   </button>
-                                  <span className="w-6 sm:w-8 text-center text-xs sm:text-sm">{selectedInstruments[inst.id] || 0}</span>
+                                  <span className="w-6 sm:w-8 text-center text-xs sm:text-sm">
+                                    {selectedInstruments[inst.id] || 0}
+                                  </span>
                                   <button
-                                    onClick={() => handleInstrumentChange(inst.id, 1, inst.name, r.id)}
+                                    onClick={() =>
+                                      handleInstrumentChange(inst.id, 1, inst.name, r.id)
+                                    }
                                     className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded bg-white/20 hover:bg-white/30 transition cursor-pointer"
                                   >
                                     +
@@ -287,7 +308,11 @@ export default function StudioDetailsClient({ studio }: any) {
                     )}
                   </div>
                 ))}
-                {rooms.length === 0 && <p className="text-sm text-white/70">Este estudio aún no tiene salas publicadas.</p>}
+                {rooms.length === 0 && (
+                  <p className="text-sm text-white/70">
+                    Este estudio aún no tiene salas publicadas.
+                  </p>
+                )}
               </div>
             </section>
 
@@ -362,10 +387,19 @@ export default function StudioDetailsClient({ studio }: any) {
                 </div>
 
                 <button
-                  onClick={handleReserve}
-                  className="w-full bg-sky-700 hover:bg-black cursor-pointer text-white font-semibold py-3 rounded-lg mt-2 shadow transition"
+                  onClick={handleReserveClick}
+                  className={`w-full font-semibold py-3 rounded-lg mt-2 shadow transition ${
+                    isLoggedIn && user?.role === "Músico"
+                      ? "bg-sky-700 hover:bg-black cursor-pointer text-white"
+                      : "bg-gray-400 cursor-not-allowed text-white"
+                  }`}
+                  disabled={!isLoggedIn || user?.role !== "Músico"}
                 >
-                  Reservar ahora
+                  {isLoggedIn
+                    ? user?.role === "Músico"
+                      ? "Reservar ahora"
+                      : "No disponible para owners"
+                    : "Inicia sesión para reservar"}
                 </button>
               </section>
             </div>
