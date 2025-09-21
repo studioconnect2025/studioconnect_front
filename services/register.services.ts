@@ -1,21 +1,18 @@
-// src/services/auth.ts
-import axios from "axios";
+import { http, parseHttpError } from "@/lib/http";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-
-/** ===== Registrar dueño de estudio ===== */
+// Registrar dueño de estudio
 export async function registerStudioOwner(data: any) {
-  const url = `${API.replace(/\/$/, "")}/auth/register/studio-owner`;
   try {
-    const res = await axios.post(url, data, { withCredentials: true });
+    const res = await http.post("/auth/register/studio-owner", data, {
+      withCredentials: true,
+    });
     return res.data;
-  } catch (err: any) {
-    console.error("Error en registerStudioOwner:", err.response?.data ?? err);
-    throw err;
+  } catch (err) {
+    throw parseHttpError(err);
   }
 }
 
-/** ===== Registrar músico ===== */
+// Registrar músico
 export async function registerMusician(payload: {
   email: string;
   password: string;
@@ -32,12 +29,12 @@ export async function registerMusician(payload: {
     };
   };
 }) {
-  const url = `${API.replace(/\/$/, "")}/auth/register/musician`;
   try {
-    const res = await axios.post(url, payload, { withCredentials: true });
+    const res = await http.post("/auth/register/musician", payload, {
+      withCredentials: true,
+    });
     return res.data;
-  } catch (err: any) {
-    console.error("Error en registerMusician:", err.response?.data ?? err);
-    throw err;
+  } catch (err) {
+    throw parseHttpError(err);
   }
 }

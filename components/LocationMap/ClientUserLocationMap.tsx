@@ -1,23 +1,20 @@
-// components/LocationMap/ClientUserLocationMap.tsx
 'use client';
 
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
+interface ClientUserLocationMapProps {
+  center: [number, number];
+}
 
-// Import dinámico del mapa real
-const UserLocationMap = dynamic(
+const StudiosMap = dynamic<{ center: [number, number] }>(
   () => import('./UserLocationMap'),
   { ssr: false }
 );
 
-export default function ClientUserLocationMap() {
+export default function ClientUserLocationMap({ center }: ClientUserLocationMapProps) {
   return (
-    <Suspense fallback={
-      <div className="h-80 w-full bg-gray-200 rounded-xl flex items-center justify-center">
-        Cargando mapa...
-      </div>
-    }>
-      <UserLocationMap />
+    <Suspense fallback={<div className="h-80 w-full bg-gray-200 rounded-xl flex items-center justify-center">Cargando mapa...</div>}>
+      <StudiosMap center={center} />
     </Suspense>
   );
 }

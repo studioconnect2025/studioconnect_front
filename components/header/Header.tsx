@@ -4,13 +4,18 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
-import { FaBuilding, FaCalendarCheck, FaUser } from "react-icons/fa";
-import { MdAppRegistration, MdOutlineCardMembership, MdOutlineDashboardCustomize, MdOutlineWavingHand } from "react-icons/md";
+import { FaBuilding, FaCalendarCheck, FaUser, FaUserCog } from "react-icons/fa";
+import {
+  MdAppRegistration,
+  MdOutlineCardMembership,
+  MdOutlineDashboardCustomize,
+  MdOutlineWavingHand,
+  MdReviews,
+} from "react-icons/md";
 import { TbLogin } from "react-icons/tb";
 import { CgStudio } from "react-icons/cg";
 import { CiLogin } from "react-icons/ci";
-import { AiOutlineForm } from "react-icons/ai";
-import { IoMdMenu } from "react-icons/io";
+import { IoMdMenu, IoMdSearch } from "react-icons/io";
 
 import { useIsAuth, useAuthUser, useAuthStore } from "@/stores/AuthStore";
 import { Modal } from "@/components/modal/modal";
@@ -56,19 +61,29 @@ export const Header = () => {
 
     if (isLoggedIn) fetchProfile();
 
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [isLoggedIn]);
+
+  const MenuLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
+    <Link
+      href={href}
+      className="w-full py-2 px-3 flex rounded hover:bg-gray-800"
+      onClick={() => closeMenu()}
+    >
+      {children}
+    </Link>
+  );
 
   return (
     <header>
       <nav className="bg-black border-gray-200 px-4 lg:px-6 py-6 dark:bg-black">
         <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-2xl">
+          {/* Logo */}
           <Link href="/" className="flex items-center">
-            <img src="/logo.png" alt="Logo" className="w-56 h-auto" />
+            <img src="/logo.png" alt="Logo" className="w-40 sm:w-56 h-auto" />
           </Link>
 
+          {/* Desktop links when NOT logged in */}
           {!isLoggedIn && (
             <div className="hidden ml-16 lg:flex lg:w-auto lg:order-1">
               <ul className="flex flex-row lg:space-x-8 font-medium">
@@ -86,6 +101,7 @@ export const Header = () => {
             </div>
           )}
 
+          {/* Desktop right section */}
           <div className="hidden lg:flex items-center lg:order-2 gap-6 mr-16">
             {isLoggedIn ? (
               <>
@@ -115,17 +131,13 @@ export const Header = () => {
                 </button>
               </>
             ) : (
-              <>
-                <button onClick={openLoginModal} className="text-white hover:bg-sky-800 cursor-pointer flex p-2 mr-5 rounded-lg">
-                  <CiLogin size={30} className="mr-2" /> Iniciar sesión
-                </button>
-                <Link href="/joinStudioConnect" className="text-white flex hover:bg-sky-800 rounded-lg p-2">
-                  <AiOutlineForm size={26} className="mr-2" /> Registrarse
-                </Link>
-              </>
+              <button onClick={openLoginModal} className="text-white hover:bg-sky-800 cursor-pointer flex p-2 mr-5 rounded-lg">
+                <CiLogin size={30} className="mr-2" /> Iniciar sesión
+              </button>
             )}
           </div>
 
+          {/* Mobile menu button */}
           <div className="flex lg:hidden items-center">
             <button className="text-white p-2 focus:outline-none" onClick={toggleMenu}>
               <Menu size={24} />
@@ -134,6 +146,7 @@ export const Header = () => {
         </div>
       </nav>
 
+      {/* Drawer Mobile */}
       <div
         className={`fixed top-0 left-0 h-full w-full z-50 transition-opacity duration-300 ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
         onClick={closeMenu}
@@ -141,7 +154,7 @@ export const Header = () => {
         <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 lg:hidden"></div>
 
         <div
-          className={`absolute top-0 left-0 lg:right-0 lg:left-auto h-full bg-black text-white transform transition-transform duration-300 ${
+          className={`absolute   top-0 left-0 lg:right-0 lg:left-auto h-full bg-black text-white transform transition-transform duration-300 ${
             isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-full"
           } w-full sm:w-64 lg:w-[400px]`}
           onClick={(e) => e.stopPropagation()}
@@ -155,46 +168,80 @@ export const Header = () => {
           <ul className="flex flex-col mt-6 space-y-4 p-6">
             {isLoggedIn ? (
               <>
+                {/* Mi perfil */}
+                {user?.role !== "Administrador" && (
+                  <li>
+                    <MenuLink href="/musicianProfile">
+                      <FaUser size={24} className="mr-3" /> Mi perfil
+                    </MenuLink>
+                  </li>
+                )}
+
                 <li>
-                  <Link href="/musicianProfile" className="w-full py-2 px-3 flex rounded hover:bg-gray-800">
-                    <FaUser size={24} className="mr-3" /> Mi perfil
-                  </Link>
+                  <MenuLink href="/search">
+                    <IoMdSearch size={26} className="mr-3" /> Explorar estudios
+                  </MenuLink>
                 </li>
 
                 {user?.role === "Músico" && (
                   <li>
-                    <Link href="/myBookings" className="w-full py-2 px-3 flex rounded hover:bg-gray-800">
+                    <MenuLink href="/myBookings">
                       <FaCalendarCheck size={24} className="mr-3" /> Mis reservas
-                    </Link>
+                    </MenuLink>
                   </li>
                 )}
 
                 {user?.role === "Dueño de Estudio" && (
                   <>
                     <li>
-                      <Link href="/memberships" className="flex w-full py-2 px-3 rounded hover:bg-gray-800">
+                      <MenuLink href="/memberships">
                         <MdOutlineCardMembership size={24} className="mr-3" /> Planes
-                      </Link>
+                      </MenuLink>
                     </li>
                     <li>
-                      <Link href="/studioRegister" className="w-full py-2 px-3 flex rounded hover:bg-gray-800">
+                      <MenuLink href="/studioRegister">
                         <MdAppRegistration size={24} className="mr-3" /> Registrar mi estudio
-                      </Link>
+                      </MenuLink>
                     </li>
                     <li>
-                      <Link href="/studioDashboard" className="flex w-full py-2 px-3 rounded hover:bg-gray-800">
+                      <MenuLink href="/studioDashboard">
                         <MdOutlineDashboardCustomize size={24} className="mr-3" /> Dashboard
-                      </Link>
+                      </MenuLink>
                     </li>
                     <li>
-                      <Link href="/myStudio" className="flex w-full py-2 px-3 rounded hover:bg-gray-800">
+                      <MenuLink href="/myStudio">
                         <FaBuilding size={24} className="mr-3" /> Mi estudio
-                      </Link>
+                      </MenuLink>
                     </li>
                     <li>
-                      <Link href="/studioRooms" className="flex w-full py-2 px-3 rounded hover:bg-gray-800">
+                      <MenuLink href="/studioRooms">
                         <CgStudio size={24} className="mr-3" /> Mis salas
-                      </Link>
+                      </MenuLink>
+                    </li>
+                  </>
+                )}
+
+                {user?.role === "Administrador" && (
+                  <>
+                    <li>
+                      <MenuLink href="/admin">
+                        <MdOutlineDashboardCustomize size={24} className="mr-3" /> Dashboard
+                      </MenuLink>
+                    </li>
+                    <li>
+                      <MenuLink href="/admin/users">
+                        <FaUserCog size={24} className="mr-3" /> Usuarios
+                      </MenuLink>
+                    </li>
+                    <li>
+                      <MenuLink href="/admin/studios">
+                        <FaBuilding size={24} className="mr-3" /> Estudios
+                      </MenuLink>
+                    </li>
+                    <li>
+                      <MenuLink href="/admin/reviews">
+                        <MdReviews size={24} className="mr-3" /> Reviews
+                      </MenuLink>
                     </li>
                   </>
                 )}
@@ -204,6 +251,7 @@ export const Header = () => {
                     onClick={async () => {
                       await logout();
                       router.push("/");
+                      closeMenu();
                     }}
                     className="w-full flex text-left cursor-pointer py-2 px-3 rounded hover:bg-gray-800"
                   >
@@ -214,31 +262,21 @@ export const Header = () => {
             ) : (
               <>
                 <li>
-                  <Link
-                    href="#"
-                    className="block py-2 px-3 text-white rounded hover:bg-gray-800"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      openLoginModal();
-                    }}
+                  <MenuLink href="/useMusicianForm">Únete como músico</MenuLink>
+                </li>
+                <li>
+                  <MenuLink href="/useOwnerForm">Únete como anfitrión</MenuLink>
+                </li>
+                <li>
+                  <button
+                    className="block py-2 px-3 text-white rounded hover:bg-gray-800 w-full text-left"
+                    onClick={() => { openLoginModal(); closeMenu(); }}
                   >
-                    Únete como músico
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/useOwnerForm" className="block py-2 px-3 text-white rounded hover:bg-gray-800">
-                    Únete como anfitrión
-                  </Link>
-                </li>
-                <li>
-                  <button className="block py-2 px-3 text-white rounded hover:bg-gray-800 w-full text-left" onClick={openLoginModal}>
                     Iniciar sesión
                   </button>
                 </li>
                 <li>
-                  <Link href="/joinStudioConnect" className="block py-2 px-3 rounded bg-[#015C85] text-white">
-                    Registrarse
-                  </Link>
+                  <MenuLink href="/joinStudioConnect">Registrarse</MenuLink>
                 </li>
               </>
             )}

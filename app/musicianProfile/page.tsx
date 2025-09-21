@@ -12,17 +12,15 @@ const passwordSchema = Yup.string()
   .min(6, "La contraseña debe tener al menos 6 caracteres")
   .required("La contraseña es requerida");
 
-// Base de API (Vercel -> Render)
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 
-// Resuelve URL absoluta para imágenes devueltas por la API
 function resolveUrl(u?: string | null): string | null {
   if (!u) return null;
   if (u.startsWith("http")) return u;
   try {
     return new URL(u, API_BASE).toString();
   } catch {
-    return u; // fallback sin romper
+    return u;
   }
 }
 
@@ -31,7 +29,10 @@ const Profile: React.FC = () => {
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [originalData, setOriginalData] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -41,19 +42,16 @@ const Profile: React.FC = () => {
     codigoPostal: "",
     numeroDeTelefono: "",
   });
-  const [role, setRole] = useState<string>("");
 
-  useEffect(() => {
-    const storedState = localStorage.getItem("auth");
-    const parsedState = storedState ? JSON.parse(storedState) : null;
-    setRole(parsedState?.state?.user?.role || "");
-  }, []);
+  // Bandera que controla el banner de membresía
+  const [hasMembership, setHasMembership] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
         const data = await profileService.getMyProfile();
+
         if (data) {
           const loadedData = {
             nombre: data.nombre || "",
@@ -66,13 +64,35 @@ const Profile: React.FC = () => {
           };
           setFormData(loadedData);
           setOriginalData(loadedData);
+
+          // Preferimos el campo del backend si existe
+          if (data.membershipActive || data.hasMembership) {
+            setHasMembership(true);
+          }
         }
 
-        setProfilePic(resolveUrl(data?.profileImageUrl));
-      } catch (error) {
-        console.error("Error cargando perfil:", error);
+        setProfilePic(
+          data?.profileImageUrl
+            ? data.profileImageUrl.startsWith("http")
+              ? data.profileImageUrl
+              : `http://localhost:3000${data.profileImageUrl}`
+            : null
+        );
+      } catch (err) {
+        console.error("Error cargando perfil:", err);
         toast.error("Error cargando perfil");
       } finally {
+        // Si el backend no indicó membresía, revisamos localStorage (ux inmediato al volver del pago)
+        try {
+          const justPaid = localStorage.getItem("membershipJustPaid");
+          if (!hasMembership && justPaid) {
+            setHasMembership(true);
+            // limpiamos el flag para no mostrar permanentemente (backend deberá confirmar)
+            localStorage.removeItem("membershipJustPaid");
+          }
+        } catch (err) {
+          // ignore
+        }
         setLoading(false);
       }
     };
@@ -108,7 +128,13 @@ const Profile: React.FC = () => {
 
     try {
       const data = await profileService.updateProfilePicture(file);
-      setProfilePic(resolveUrl(data?.profileImageUrl));
+      setProfilePic(
+        data.profileImageUrl
+          ? data.profileImageUrl.startsWith("http")
+            ? data.profileImageUrl
+            : `http://localhost:3000${data.profileImageUrl}`
+          : null
+      );
       toast.success("Foto actualizada correctamente");
     } catch (error) {
       console.error("Error actualizando foto:", error);
@@ -162,23 +188,9 @@ const Profile: React.FC = () => {
     );
   }
 
-  const isOwner = role === "Dueño de Estudio";
-  const ubicacionKeys = ["ciudad", "provincia", "calle", "codigoPostal"];
-
-  // Filtra campos vacíos
-  const filteredFormData = Object.entries(formData).filter(([key, value]) => {
-    if (isOwner && ubicacionKeys.includes(key)) {
-      if (value === "" || value === null || value === undefined || value.trim() === "") {
-        return false;
-      }
-    }
-    return true;
-  });
-
   return (
     <div className="items-center justify-center bg-gray-100 w-full">
       <ToastContainer />
-
       {/* Header */}
       <div className="bg-sky-800 text-white py-6 px-4 text-center">
         <div className="max-w-4xl mx-auto">
@@ -188,22 +200,26 @@ const Profile: React.FC = () => {
             </div>
           </div>
           <h1 className="text-2xl md:text-3xl font-semibold">Mi perfil</h1>
-          <p className="mt-2 text-sm md:text-base text-gray-200">
-            Administrar la información y preferencias de su cuenta
-          </p>
+          <p className="mt-2 text-sm md:text-base text-gray-200">Administrar la información y preferencias de su cuenta</p>
+
+          {/* Banner de membresía */}
+          {hasMembership && (
+            <div className="mt-4 bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded-md shadow-sm inline-block">
+              <span className="font-semibold">✅ Membresía activa</span>
+              <span className="ml-2 text-sm text-green-700">Gracias, tu plan está activo.</span>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Card Container */}
       <div className="flex items-center justify-center bg-gray-100 p-10">
         <div className="bg-white w-full max-w-4xl rounded-xl shadow-lg p-6 space-y-6">
-
           {/* Información básica */}
           <div>
             <h2 className="text-sm md:text-base font-semibold text-gray-700 mb-3">Información básica</h2>
             <div className="flex flex-col sm:flex-row sm:items-start mt-6 sm:space-x-6">
-
-              {/* Foto */}
+              {/* Foto de perfil con botón */}
               <div className="flex flex-col items-center">
                 <div
                   className={`w-24 h-24 rounded-full flex items-center justify-center overflow-hidden border-4 ${
@@ -217,31 +233,19 @@ const Profile: React.FC = () => {
                     <FaUser size={48} className="text-gray-400" />
                   )}
                 </div>
-                <button
-                  type="button"
-                  className="mt-2 cursor-pointer text-sky-600 text-sm hover:underline"
-                  onClick={() => fileInputRef.current?.click()}
-                >
+                <button type="button" className="mt-2 cursor-pointer text-sky-600 text-sm hover:underline" onClick={() => fileInputRef.current?.click()}>
                   {profilePic ? "Cambiar foto" : "Subir foto"}
                 </button>
                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleProfilePicChange} />
               </div>
 
-              {/* Campos */}
+              {/* Inputs del formulario */}
               <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {filteredFormData.map(([key, value]) => (
+                {Object.entries(formData).map(([key, value]) => (
                   <div key={key}>
-                    <label className="block text-sm font-medium text-gray-700 capitalize">
-                      {key.replace(/([A-Z])/g, " $1")}
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 capitalize">{key.replace(/([A-Z])/g, " $1")}</label>
                     {isEditing ? (
-                      <input
-                        type="text"
-                        name={key}
-                        value={value}
-                        onChange={(e) => handleChange(key, e.target.value)}
-                        className="mt-1 w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
+                      <input type="text" name={key} value={value} onChange={(e) => handleChange(key, e.target.value)} className="mt-1 w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
                     ) : (
                       <p className="mt-1 w-full border border-gray-300 rounded-md p-2 text-gray-700">{value}</p>
                     )}
@@ -250,28 +254,19 @@ const Profile: React.FC = () => {
               </div>
             </div>
 
-            {/* Botones */}
+            {/* Botones Guardar / Cancelar */}
             {isEditing ? (
               <div className="flex justify-end mt-4 space-x-2">
-                <button
-                  className="bg-gray-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-gray-700 transition"
-                  onClick={handleCancel}
-                >
+                <button className="bg-gray-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-gray-700 transition" onClick={handleCancel}>
                   Cancelar
                 </button>
-                <button
-                  className="bg-sky-700 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-black transition"
-                  onClick={handleSave}
-                >
+                <button className="bg-sky-700 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-black transition" onClick={handleSave}>
                   Guardar cambios
                 </button>
               </div>
             ) : (
               <div className="flex justify-end mt-4">
-                <button
-                  className="bg-sky-700 text-white px-4 py-2 rounded-md hover:bg-black cursor-pointer transition"
-                  onClick={() => setIsEditing(true)}
-                >
+                <button className="bg-sky-700 text-white px-4 py-2 rounded-md hover:bg-black cursor-pointer transition" onClick={() => setIsEditing(true)}>
                   Editar perfil
                 </button>
               </div>
@@ -284,10 +279,7 @@ const Profile: React.FC = () => {
             <div className="bg-gray-50 p-4 rounded-md">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
                 <p className="text-sm text-gray-700">Restablece la contraseña de tu cuenta</p>
-                <button
-                  className="border border-sky-700 text-sky-700 px-4 py-2 rounded-md hover:bg-blue-50 transition cursor-pointer"
-                  onClick={handleResetPassword}
-                >
+                <button className="border border-sky-700 text-sky-700 px-4 py-2 rounded-md hover:bg-blue-50 transition cursor-pointer" onClick={handleResetPassword}>
                   Cambiar la contraseña
                 </button>
               </div>
@@ -299,10 +291,7 @@ const Profile: React.FC = () => {
             <h2 className="text-sm md:text-base font-semibold text-gray-700 mb-3">Zona de peligro</h2>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-red-50 p-5 rounded-md">
               <p className="text-sm text-red-600">Eliminar permanentemente su cuenta y todos los datos</p>
-              <button
-                className="mt-2 sm:mt-0 bg-red-600 text-white px-4 py-1 cursor-pointer rounded-md hover:bg-red-700 transition"
-                onClick={handleDeleteAccount}
-              >
+              <button className="mt-2 sm:mt-0 bg-red-600 text-white px-4 py-1 cursor-pointer rounded-md hover:bg-red-700 transition" onClick={handleDeleteAccount}>
                 Borrar cuenta
               </button>
             </div>

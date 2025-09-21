@@ -3,29 +3,36 @@ import Link from "next/link";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import type { FeaturedStudio } from "@/types/featuredStudio";
+import { useAuthUser } from "@/stores/AuthStore";
 
 type Props = { id: string; studio: FeaturedStudio };
 
 export function FeaturedStudioCard({ id, studio }: Props) {
+  const user = useAuthUser(); // <-- obtenemos usuario
   const cover =
-    studio.photos && studio.photos.length > 0
-      ? studio.photos[0]
+    studio.photos && studio.photos.length > 0 && studio.photos[0]
+      ? studio.photos[0].startsWith("http")
+        ? studio.photos[0]
+        : `/${studio.photos[0].replace(/^\/+/, "")}`
       : "/images/placeholders/studio-cover.webp";
 
   const hasPrice = typeof studio.pricePerHour === "number";
-  
 
   return (
-    <div className="rounded-xl hover:shadow-2xl border cursor-pointer bg-white shadow-sm overflow-hidden flex flex-col h-full">
-      <div className="relative h-40 w-full bg-gray-100">
+    <div className="rounded-xl hover:shadow-2xl border bg-white shadow-sm overflow-hidden flex flex-col h-full">
+      <Link
+        href={`/studios/${id}`}
+        aria-label={`Ver detalle de ${studio.name}`}
+        className="group block relative h-40 w-full bg-gray-100 overflow-hidden"
+      >
         <Image
           src={cover}
           alt={studio.name}
           fill
-          className="object-cover"
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
           sizes="(max-width:768px) 100vw, (max-width:1024px) 50vw, 33vw"
         />
-      </div>
+      </Link>
 
       <div className="p-4 flex-1 flex flex-col gap-3">
         <div className="flex items-start justify-between gap-3">
@@ -77,11 +84,12 @@ export function FeaturedStudioCard({ id, studio }: Props) {
               ${studio.pricePerHour!.toLocaleString("es-AR")}/hr
             </p>
           )}
+
           <Link
             href={`/studios/${id}`}
             className="inline-flex items-center justify-center rounded-lg bg-[#00618E] text-white px-4 py-2 text-sm hover:bg-gray-800 transition"
           >
-            Reservar ahora
+            {user?.role === "Músico" ? "Reservar ahora" : "Ver estudio"}
           </Link>
         </div>
       </div>
