@@ -2,16 +2,20 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
-import { FaBuilding, FaCalendarCheck, FaUser } from "react-icons/fa";
-import { MdAppRegistration, MdOutlineCardMembership, MdOutlineDashboardCustomize, MdOutlineWavingHand } from "react-icons/md";
+import { FaBuilding, FaCalendarCheck, FaUser, FaUserCog } from "react-icons/fa";
+import {
+  MdAppRegistration,
+  MdOutlineCardMembership,
+  MdOutlineDashboardCustomize,
+  MdOutlineWavingHand,
+  MdReviews,
+} from "react-icons/md";
 import { TbLogin } from "react-icons/tb";
 import { CgStudio } from "react-icons/cg";
 import { CiLogin } from "react-icons/ci";
-import { IoMdMenu } from "react-icons/io";
-import { FaUserCog } from "react-icons/fa";
-import { MdReviews, MdSettings } from "react-icons/md";
+import { IoMdMenu, IoMdSearch } from "react-icons/io";
 
 import { useIsAuth, useAuthUser, useAuthStore } from "@/stores/AuthStore";
 import { Modal } from "@/components/modal/modal";
@@ -29,20 +33,9 @@ export const Header = () => {
   const closeLoginModal = () => setLoginModalOpen(false);
 
   const router = useRouter();
-  const sp = useSearchParams();
-  const pathname = usePathname();
   const isLoggedIn = useIsAuth();
   const user = useAuthUser();
   const logout = useAuthStore((s) => s.logout);
-
-  useEffect(() => {
-    if (sp.get("auth") === "login") {
-      setLoginModalOpen(true);
-      const params = new URLSearchParams(sp.toString());
-      params.delete("auth");
-      router.replace(`${pathname}${params.toString() ? `?${params.toString()}` : ""}`, { scroll: false });
-    }
-  }, [sp, router, pathname]);
 
   useEffect(() => {
     let mounted = true;
@@ -68,12 +61,9 @@ export const Header = () => {
 
     if (isLoggedIn) fetchProfile();
 
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [isLoggedIn]);
 
-  // Wrapper para links que cierren menú al navegar
   const MenuLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
     <Link
       href={href}
@@ -88,11 +78,12 @@ export const Header = () => {
     <header>
       <nav className="bg-black border-gray-200 px-4 lg:px-6 py-6 dark:bg-black">
         <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-2xl">
-          {/* Logo responsive */}
+          {/* Logo */}
           <Link href="/" className="flex items-center">
             <img src="/logo.png" alt="Logo" className="w-40 sm:w-56 h-auto" />
           </Link>
 
+          {/* Desktop links when NOT logged in */}
           {!isLoggedIn && (
             <div className="hidden ml-16 lg:flex lg:w-auto lg:order-1">
               <ul className="flex flex-row lg:space-x-8 font-medium">
@@ -110,6 +101,7 @@ export const Header = () => {
             </div>
           )}
 
+          {/* Desktop right section */}
           <div className="hidden lg:flex items-center lg:order-2 gap-6 mr-16">
             {isLoggedIn ? (
               <>
@@ -145,6 +137,7 @@ export const Header = () => {
             )}
           </div>
 
+          {/* Mobile menu button */}
           <div className="flex lg:hidden items-center">
             <button className="text-white p-2 focus:outline-none" onClick={toggleMenu}>
               <Menu size={24} />
@@ -153,6 +146,7 @@ export const Header = () => {
         </div>
       </nav>
 
+      {/* Drawer Mobile */}
       <div
         className={`fixed top-0 left-0 h-full w-full z-50 transition-opacity duration-300 ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
         onClick={closeMenu}
@@ -174,16 +168,21 @@ export const Header = () => {
           <ul className="flex flex-col mt-6 space-y-4 p-6">
             {isLoggedIn ? (
               <>
+                {/* Mi perfil */}
+                {user?.role !== "Administrador" && (
+                  <li>
+                    <MenuLink href="/musicianProfile">
+                      <FaUser size={24} className="mr-3" /> Mi perfil
+                    </MenuLink>
+                  </li>
+                )}
 
+                <li>
+                  <MenuLink href="/search">
+                    <IoMdSearch size={26} className="mr-3" /> Explorar estudios
+                  </MenuLink>
+                </li>
 
-                {/* Mi perfil (solo si NO es admin) */}
-{user?.role !== "Administrador" && (
-  <li>
-    <Link href="/musicianProfile" className="w-full py-2 px-3 flex rounded hover:bg-gray-800">
-      <FaUser size={24} className="mr-3" /> Mi perfil
-    </Link>
-  </li>
-)}
                 {user?.role === "Músico" && (
                   <li>
                     <MenuLink href="/myBookings">
@@ -191,7 +190,6 @@ export const Header = () => {
                     </MenuLink>
                   </li>
                 )}
-
 
                 {user?.role === "Dueño de Estudio" && (
                   <>
@@ -223,47 +221,30 @@ export const Header = () => {
                   </>
                 )}
 
-           {user?.role === "Administrador" && (
-  <>
-    <li>
-      <Link
-        href="/admin"
-        className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg"
-      >
-        <MdOutlineDashboardCustomize size={30} className="mr-2" />
-        Dashboard
-      </Link>
-    </li>
-    <li>
-      <Link
-        href="/admin/users"
-        className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg"
-      >
-        <FaUserCog size={30} className="mr-2" />
-        Usuarios
-      </Link>
-    </li>
-    <li>
-      <Link
-        href="/admin/studios"
-        className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg"
-      >
-        <FaBuilding size={30} className="mr-2" />
-        Estudios
-      </Link>
-    </li>
-    <li>
-      <Link
-        href="/admin/reviews"
-        className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg"
-      >
-        <MdReviews size={30} className="mr-2" />
-        Reviews
-      </Link>
-    </li>
-    
-  </>
-)}
+                {user?.role === "Administrador" && (
+                  <>
+                    <li>
+                      <MenuLink href="/admin">
+                        <MdOutlineDashboardCustomize size={24} className="mr-3" /> Dashboard
+                      </MenuLink>
+                    </li>
+                    <li>
+                      <MenuLink href="/admin/users">
+                        <FaUserCog size={24} className="mr-3" /> Usuarios
+                      </MenuLink>
+                    </li>
+                    <li>
+                      <MenuLink href="/admin/studios">
+                        <FaBuilding size={24} className="mr-3" /> Estudios
+                      </MenuLink>
+                    </li>
+                    <li>
+                      <MenuLink href="/admin/reviews">
+                        <MdReviews size={24} className="mr-3" /> Reviews
+                      </MenuLink>
+                    </li>
+                  </>
+                )}
 
                 <li>
                   <button

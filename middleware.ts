@@ -1,19 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const protectedRoutes = [
-  "/myStudio",
-  "/owner",
-  "/profile",
-  "/bookings",
-  "/studios",
-  "/rooms",
-];
+const protectedRoutes = ["/myStudio", "/owner", "/profile", "/bookings", "/studios", "/rooms"];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isProtected = protectedRoutes.some((p) => pathname.startsWith(p));
-  const token = req.cookies.get("userSession")?.value; // cambialo si tu cookie tiene otro nombre
+  const token = req.cookies.get("accessToken")?.value; // ajustá el nombre si es otro
 
   if (isProtected && !token) {
     const url = req.nextUrl.clone();
@@ -21,7 +14,6 @@ export function middleware(req: NextRequest) {
     url.search = "";
     return NextResponse.redirect(url);
   }
-
   return NextResponse.next();
 }
 
