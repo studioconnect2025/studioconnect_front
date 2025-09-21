@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAuthStore, useAuthError } from "@/stores/AuthStore";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { validateEmail, validatePassword } from "@/utils/validators/login";
 import { HiEye, HiEyeOff } from "react-icons/hi";
 
@@ -24,8 +24,8 @@ export default function LoginPage({ onClose }: LoginPageProps) {
   const clearError = useAuthStore((s) => s.clearError);
   const error = useAuthError();
   const router = useRouter();
+  const search = useSearchParams();
 
-  // Validaciones
   const emailErr = validateEmail(email);
   const passErr = validatePassword(password);
   const isValid = !emailErr && !passErr;
@@ -37,15 +37,24 @@ export default function LoginPage({ onClose }: LoginPageProps) {
       setTouchedPassword(true);
       return;
     }
+
     await login({ email, password });
 
     const state = useAuthStore.getState();
     if (state.isAuthenticated) {
+      const api = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000").replace(/\/$/, "");
+      await fetch(`${api}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+        credentials: "include",
+      });
       setSuccessMsg("Login exitoso");
+      const next = search.get("next") || "/";
       setTimeout(() => {
-        router.push("/");
-        onClose?.(); 
-      }, 1000);
+        router.replace(next);
+        onClose?.();
+      }, 700);
     }
   };
 
@@ -86,7 +95,6 @@ export default function LoginPage({ onClose }: LoginPageProps) {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
             <div>
               <label
                 htmlFor="email"
@@ -121,7 +129,6 @@ export default function LoginPage({ onClose }: LoginPageProps) {
               )}
             </div>
 
-            {/* Password */}
             <div>
               <label
                 htmlFor="password"
@@ -164,30 +171,28 @@ export default function LoginPage({ onClose }: LoginPageProps) {
               )}
             </div>
 
-            {/* Remember & Forgot */}
             <div className="flex items-center justify-between">
-  <label className="inline-flex items-center gap-2">
-    <input
-      type="checkbox"
-      checked={remember}
-      onChange={(e) => setRemember(e.target.checked)}
-      className="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-600"
-    />
-    <span className="text-sm text-gray-600">Recordarme</span>
-  </label>
+              <label className="inline-flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-600"
+                />
+                <span className="text-sm text-gray-600">Recordarme</span>
+              </label>
 
-  <Link
-    href="/forgot-password"
-    onClick={() => {
-      onClose?.(); // ✅ Cierra el modal al navegar
-    }}
-    className="text-sm text-sky-700 hover:underline"
-  >
-    ¿Olvidaste tu contraseña?
-  </Link>
-</div>
+              <Link
+                href="/forgot-password"
+                onClick={() => {
+                  onClose?.();
+                }}
+                className="text-sm text-sky-700 hover:underline"
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={!isValid}
@@ -201,7 +206,6 @@ export default function LoginPage({ onClose }: LoginPageProps) {
               Iniciar sesión
             </button>
 
-            {/* Divider */}
             <div className="relative my-2">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-200" />
@@ -213,7 +217,6 @@ export default function LoginPage({ onClose }: LoginPageProps) {
               </div>
             </div>
 
-            {/* Google SSO */}
             <button
               type="button"
               onClick={() => {

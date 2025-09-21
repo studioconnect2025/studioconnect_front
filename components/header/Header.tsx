@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { FaBuilding, FaCalendarCheck, FaUser } from "react-icons/fa";
 import { MdAppRegistration, MdOutlineCardMembership, MdOutlineDashboardCustomize, MdOutlineWavingHand } from "react-icons/md";
@@ -28,9 +28,20 @@ export const Header = () => {
   const closeLoginModal = () => setLoginModalOpen(false);
 
   const router = useRouter();
+  const sp = useSearchParams();
+  const pathname = usePathname();
   const isLoggedIn = useIsAuth();
   const user = useAuthUser();
   const logout = useAuthStore((s) => s.logout);
+
+  useEffect(() => {
+    if (sp.get("auth") === "login") {
+      setLoginModalOpen(true);
+      const params = new URLSearchParams(sp.toString());
+      params.delete("auth");
+      router.replace(`${pathname}${params.toString() ? `?${params.toString()}` : ""}`, { scroll: false });
+    }
+  }, [sp, router, pathname]);
 
   useEffect(() => {
     let mounted = true;
