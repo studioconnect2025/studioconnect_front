@@ -9,7 +9,7 @@ import { MdAppRegistration, MdOutlineCardMembership, MdOutlineDashboardCustomize
 import { TbLogin } from "react-icons/tb";
 import { CgStudio } from "react-icons/cg";
 import { CiLogin } from "react-icons/ci";
-import { IoMdMenu } from "react-icons/io";
+import { IoMdMenu, IoMdSearch } from "react-icons/io";
 
 import { useIsAuth, useAuthUser, useAuthStore } from "@/stores/AuthStore";
 import { Modal } from "@/components/modal/modal";
@@ -166,6 +166,11 @@ export const Header = () => {
                     <FaUser size={24} className="mr-3" /> Mi perfil
                   </MenuLink>
                 </li>
+                 <li>
+                    <MenuLink href="/search">
+                      <IoMdSearch size={26} className="mr-3" /> Explorar estudios
+                    </MenuLink>
+                  </li>
 
                 {user?.role === "Músico" && (
                   <li>
@@ -173,6 +178,7 @@ export const Header = () => {
                       <FaCalendarCheck size={24} className="mr-3" /> Mis reservas
                     </MenuLink>
                   </li>
+                  
                 )}
 
                 {user?.role === "Dueño de Estudio" && (
