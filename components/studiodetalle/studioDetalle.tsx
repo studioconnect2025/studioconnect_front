@@ -61,7 +61,6 @@ export default function StudioDetailsClient({ studio }: any) {
     : rooms.flatMap((r) => r.images ?? []);
 
   const center: [number, number] = [studio.lat ?? -34.6037, studio.lng ?? -58.3816];
-
   const room = rooms.find((r) => r.id === selectedRoomId);
 
   const instrumentsTotal =
@@ -81,7 +80,6 @@ export default function StudioDetailsClient({ studio }: any) {
       : 0;
 
   const effectiveHours = Math.max(hoursSelected, room?.minHours ?? 1);
-
   const total = basePrice * effectiveHours + instrumentsTotal;
 
   const handleInstrumentChange = (
@@ -117,7 +115,6 @@ export default function StudioDetailsClient({ studio }: any) {
       return;
     }
 
-    // 🚨 Validación: no permitir fechas pasadas
     const today = new Date();
     const chosenDate = new Date(selectedDate + "T00:00:00");
 
@@ -166,9 +163,7 @@ export default function StudioDetailsClient({ studio }: any) {
     try {
       await BookingService.createBooking(payload);
       toast.success(
-        `Reserva creada con éxito! ${
-          instrumentNames ? `Instrumentos: ${instrumentNames}` : ""
-        }`
+        `Reserva creada con éxito! ${instrumentNames ? `Instrumentos: ${instrumentNames}` : ""}`
       );
       router.push("/myBookings");
     } catch (error) {
@@ -180,19 +175,17 @@ export default function StudioDetailsClient({ studio }: any) {
   const prevPhoto = () =>
     setCurrentPhotoIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
   const nextPhoto = () =>
-    setCurrentPhotoIndex((prev) =>
-      prev === photos.length - 1 ? 0 : prev + 1
-    );
+    setCurrentPhotoIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1));
 
   return (
     <main className="min-h-screen bg-[#F9FAFB] text-[#0B0F12] font-sans">
       <ToastContainer position="top-right" autoClose={3000} />
-      <div className="mx-auto max-w-[1600px] px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8">
+      <div className="mx-auto max-w-[1300px] px-4 sm:px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px]">
           {/* Columna izquierda */}
-          <div className="space-y-4">
-            {/* Carrusel de fotos */}
-            <section className="relative w-full rounded-xl overflow-hidden shadow-xl bg-black h-[450px] flex items-center justify-center">
+          <div className="space-y-3">
+            {/* Carrusel */}
+            <section className="relative w-full rounded-xl overflow-hidden shadow-xl bg-black h-[300px] sm:h-[450px] flex items-center justify-center">
               {photos.length > 0 && (
                 <img
                   src={photos[currentPhotoIndex]}
@@ -202,63 +195,56 @@ export default function StudioDetailsClient({ studio }: any) {
               )}
               <button
                 onClick={prevPhoto}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 bg-white/30 hover:bg-white/60 text-black p-2 rounded-full transition cursor-pointer"
+                className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 bg-white/30 hover:bg-white/60 text-black p-2 rounded-full transition cursor-pointer"
               >
                 <FaChevronLeft />
               </button>
               <button
                 onClick={nextPhoto}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-white/30 hover:bg-white/60 text-black p-2 rounded-full transition cursor-pointer"
+                className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 bg-white/30 hover:bg-white/60 text-black p-2 rounded-full transition cursor-pointer"
               >
                 <FaChevronRight />
               </button>
             </section>
 
             {/* Tarjeta estudio */}
-            <section className="rounded-xl border border-[#E5E7EB] bg-gradient-to-b from-[#036D9D] to-[#0B0F12] p-6 text-white shadow-md">
-              <h1 className="text-xl font-bold">{studio.name}</h1>
-              <p className="mt-1 text-sm text-white/80">
-                {studio.address ?? studio.city}
-              </p>
+            <section className="rounded-xl border border-[#E5E7EB] bg-gradient-to-b from-[#036D9D] to-[#0B0F12] p-4 sm:p-6 text-white shadow-md">
+              <h1 className="text-lg sm:text-xl font-bold">{studio.name}</h1>
+              <p className="mt-1 text-sm text-white/80">{studio.address ?? studio.city}</p>
               {studio.description && (
-                <p className="mt-3 text-sm leading-relaxed text-white/90">
-                  {studio.description}
-                </p>
+                <p className="mt-2 text-sm leading-relaxed text-white/90">{studio.description}</p>
               )}
               {studio.openingTime && studio.closingTime && (
                 <p className="mt-2 text-sm text-white/80">
-                  Horarios de atención: {studio.openingTime} a{" "}
-                  {studio.closingTime}
+                  Horarios: {studio.openingTime} a {studio.closingTime}
                 </p>
               )}
             </section>
 
-            {/* Salas disponibles */}
-            <section className="rounded-xl border border-white/20 bg-gradient-to-b from-[#036D9D] to-[#0B0F12] p-6 text-white shadow-xl">
-              <h2 className="text-xl font-semibold mb-4">Salas disponibles</h2>
-              <div className="space-y-5">
+            {/* Salas */}
+            <section className="rounded-xl border border-white/20 bg-gradient-to-b from-[#036D9D] to-[#0B0F12] p-4 sm:p-6 text-white shadow-xl">
+              <h2 className="text-lg sm:text-xl font-semibold mb-4">Salas disponibles</h2>
+              <div className="space-y-4">
                 {rooms.map((r) => (
                   <div
                     key={r.id}
-                    className="rounded-2xl border border-white/20 bg-white/10 shadow-inner p-4"
+                    className="rounded-2xl border border-white/20 bg-white/10 shadow-inner p-3 sm:p-4"
                   >
-                    <h3 className="text-lg font-semibold mb-2">{r.name}</h3>
-                    <p className="text-sm text-white/80 mb-2">
+                    <h3 className="text-base sm:text-lg font-semibold mb-1">{r.name}</h3>
+                    <p className="text-xs sm:text-sm text-white/80 mb-2">
                       {r.capacity ? `Capacidad: ${r.capacity} · ` : ""}
-                      {r.pricePerHour
-                        ? `$${r.pricePerHour}/hora · `
-                        : "Consultar · "}
+                      {r.pricePerHour ? `$${r.pricePerHour}/hora · ` : "Consultar · "}
                       {r.features?.slice(0, 3).join(" · ")}
                     </p>
 
                     {r.images && r.images.length > 0 && (
-                      <div className="flex overflow-x-auto gap-3 mb-3">
+                      <div className="flex overflow-x-auto gap-2 sm:gap-3 mb-2">
                         {r.images.map((img, idx) => (
                           <img
                             key={idx}
                             src={img}
                             alt={`${r.name} ${idx}`}
-                            className="h-[120px] object-contain rounded-lg flex-shrink-0"
+                            className="h-[80px] sm:h-[120px] object-contain rounded-lg flex-shrink-0"
                           />
                         ))}
                       </div>
@@ -266,49 +252,31 @@ export default function StudioDetailsClient({ studio }: any) {
 
                     {r.instruments && r.instruments.length > 0 && (
                       <div>
-                        <p className="text-sm font-medium mb-2">
-                          Instrumentos:
-                        </p>
-                        <ul className="space-y-2">
+                        <p className="text-sm font-medium mb-1">Instrumentos:</p>
+                        <ul className="space-y-1 sm:space-y-2">
                           {r.instruments.map((inst) => (
                             <li
                               key={inst.id}
-                              className="flex items-center justify-between bg-white/10 px-3 py-2 rounded-lg border border-white/30"
+                              className="flex items-center justify-between bg-white/10 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-white/30"
                             >
-                              <span>{inst.name}</span>
-                              <div className="flex items-center gap-4">
+                              <span className="text-xs sm:text-sm">{inst.name}</span>
+                              <div className="flex items-center gap-2 sm:gap-3">
                                 <div className="flex items-center gap-1 bg-white/10 rounded px-1 py-0.5">
                                   <button
-                                    onClick={() =>
-                                      handleInstrumentChange(
-                                        inst.id,
-                                        -1,
-                                        inst.name,
-                                        r.id
-                                      )
-                                    }
-                                    className="w-8 h-8 flex items-center justify-center rounded bg-white/20 hover:bg-white/30 transition cursor-pointer"
+                                    onClick={() => handleInstrumentChange(inst.id, -1, inst.name, r.id)}
+                                    className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded bg-white/20 hover:bg-white/30 transition cursor-pointer"
                                   >
                                     -
                                   </button>
-                                  <span className="w-8 text-center">
-                                    {selectedInstruments[inst.id] || 0}
-                                  </span>
+                                  <span className="w-6 sm:w-8 text-center text-xs sm:text-sm">{selectedInstruments[inst.id] || 0}</span>
                                   <button
-                                    onClick={() =>
-                                      handleInstrumentChange(
-                                        inst.id,
-                                        1,
-                                        inst.name,
-                                        r.id
-                                      )
-                                    }
-                                    className="w-8 h-8 flex items-center justify-center rounded bg-white/20 hover:bg-white/30 transition cursor-pointer"
+                                    onClick={() => handleInstrumentChange(inst.id, 1, inst.name, r.id)}
+                                    className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded bg-white/20 hover:bg-white/30 transition cursor-pointer"
                                   >
                                     +
                                   </button>
                                 </div>
-                                <span className="text-white/70 text-sm w-[60px] text-right">
+                                <span className="text-white/70 text-xs sm:text-sm w-[50px] sm:w-[60px] text-right">
                                   ${inst.price}
                                 </span>
                               </div>
@@ -319,63 +287,46 @@ export default function StudioDetailsClient({ studio }: any) {
                     )}
                   </div>
                 ))}
-                {rooms.length === 0 && (
-                  <p className="text-sm text-white/70">
-                    Este estudio aún no tiene salas publicadas.
-                  </p>
-                )}
+                {rooms.length === 0 && <p className="text-sm text-white/70">Este estudio aún no tiene salas publicadas.</p>}
               </div>
             </section>
 
             {/* Mapa */}
-            <section className="rounded-xl border border-white/20 bg-gradient-to-b from-[#036D9D] to-[#0B0F12] p-6 shadow-md">
-              <h2 className="text-xl font-semibold mb-3 text-amber-50">
-                Ubicación
-              </h2>
+            <section className="rounded-xl border border-white/20 bg-gradient-to-b from-[#036D9D] to-[#0B0F12] p-4 sm:p-6 shadow-md">
+              <h2 className="text-lg sm:text-xl font-semibold mb-2 text-amber-50">Ubicación</h2>
               <ClientUserLocationMap center={center} />
-              <p className="mt-2 text-sm text-white">
-                {studio.address ?? studio.city}
-              </p>
+              <p className="mt-1 text-sm text-white">{studio.address ?? studio.city}</p>
             </section>
           </div>
 
           {/* Columna derecha */}
-          <aside className="lg:col-span-1">
-            <div className="sticky top-4 space-y-4">
-              <section className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-md">
+          <aside className="lg:col-span-1 mt-6 lg:mt-0">
+            <div className="lg:sticky lg:top-4 lg:max-w-[350px] lg:ml-auto">
+              <section className="rounded-xl border border-[#E5E7EB] bg-white p-4 sm:p-6 shadow-md">
                 <div className="flex items-baseline justify-between">
-                  <p className="text-[18px] font-semibold">
-                    ${basePrice.toLocaleString()}{" "}
-                    <span className="text-sm font-normal">/hora</span>
+                  <p className="text-sm sm:text-[18px] font-semibold">
+                    ${basePrice.toLocaleString()} <span className="text-xs font-normal">/hora</span>
                   </p>
-                  <span className="text-xs text-[#0B0F12]/60">
-                    Mínimo {room?.minHours ?? 1} horas
-                  </span>
+                  <span className="text-xs text-[#0B0F12]/60">Mínimo {room?.minHours ?? 1} h</span>
                 </div>
 
-                <div className="space-y-3 mt-3">
-                  <select
-                    className="w-full border rounded-lg p-2 text-sm"
-                    onChange={(e) => {
-                      setSelectedRoomId(e.target.value);
-                      setSelectedInstruments({});
-                    }}
-                  >
-                    <option value="">Seleccione una sala</option>
-                    {rooms.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.name} - ${r.pricePerHour}/hora - Mínimo {r.minHours}{" "}
-                        h
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <select
+                  className="w-full border rounded-lg p-2 text-sm"
+                  onChange={(e) => {
+                    setSelectedRoomId(e.target.value);
+                    setSelectedInstruments({});
+                  }}
+                >
+                  <option value="">Seleccione una sala</option>
+                  {rooms.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name} - ${r.pricePerHour}/hora - Mínimo {r.minHours} h
+                    </option>
+                  ))}
+                </select>
 
-                {/* Fecha y horas */}
-                <div className="mt-4 space-y-3">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Fecha
-                  </label>
+                <div className="space-y-2 mt-2">
+                  <label className="block text-sm font-medium text-gray-700">Fecha</label>
                   <input
                     type="date"
                     value={selectedDate}
@@ -383,9 +334,7 @@ export default function StudioDetailsClient({ studio }: any) {
                     className="w-full border rounded-lg p-2"
                   />
 
-                  <label className="block text-sm font-medium text-gray-700 mt-2">
-                    Hora de inicio
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mt-2">Hora de inicio</label>
                   <input
                     type="time"
                     value={startTime}
@@ -395,9 +344,7 @@ export default function StudioDetailsClient({ studio }: any) {
                     max={studio.closingTime ?? "23:59"}
                   />
 
-                  <label className="block text-sm font-medium text-gray-700 mt-2">
-                    Hora de fin
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mt-2">Hora de fin</label>
                   <input
                     type="time"
                     value={endTime}
@@ -408,8 +355,7 @@ export default function StudioDetailsClient({ studio }: any) {
                   />
                 </div>
 
-                {/* Total */}
-                <div className="text-sm text-gray-600 mt-3 border-t pt-3 space-y-1">
+                <div className="text-sm text-gray-600 mt-2 border-t pt-2 space-y-1">
                   <p>Horas: {effectiveHours}</p>
                   <p>Instrumentos: +${instrumentsTotal}</p>
                   <p className="font-bold text-lg">Total: ${total}</p>
@@ -417,7 +363,7 @@ export default function StudioDetailsClient({ studio }: any) {
 
                 <button
                   onClick={handleReserve}
-                  className="w-full bg-sky-700 hover:bg-black cursor-pointer text-white font-semibold py-3 rounded-lg mt-4 shadow transition"
+                  className="w-full bg-sky-700 hover:bg-black cursor-pointer text-white font-semibold py-3 rounded-lg mt-2 shadow transition"
                 >
                   Reservar ahora
                 </button>

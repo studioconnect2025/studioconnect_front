@@ -17,33 +17,39 @@ export function Footer() {
 
   return (
     <footer className="bg-gradient-to-b from-[#00618E] to-[#25665800] text-gray-300">
-      <div className="max-w-6xl mx-auto px-6 py-12 flex flex-col items-center">
-        {/* Logo de la página */}
-        <div className="flex items-center gap-2 mb-8">
-          <img src="/logo.png" alt="Logo de StudioConnect" className="h-14" />
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 flex flex-col items-center">
+        {/* Logo */}
+        <div className="flex items-center gap-2 mb-6 sm:mb-8">
+          <img src="/logo.png" alt="Logo de StudioConnect" className="h-10 sm:h-14" />
         </div>
 
         {/* Colaboradores */}
-        <div className="mb-8">
-          <span className="text-white text-xl font-semibold">Colaboradores</span>
-          <div className="flex flex-wrap justify-center gap-6 mt-4">
+        <div className="mb-6 sm:mb-8 w-full">
+          <span className="text-white text-lg sm:text-xl font-semibold text-center block">
+            Colaboradores
+          </span>
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mt-4">
             {colaboradores.map((colaborador, index) => (
-              <div key={index} className="flex flex-col items-center gap-2">
+              <div key={index} className="flex flex-col items-center gap-1 sm:gap-2 w-[100px]">
                 <a
                   href={colaborador.github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-white hover:text-gray-300"
+                  className="flex flex-col items-center gap-1 text-white hover:text-gray-300 text-[10px] sm:text-sm"
                 >
-                  <FaGithub className="h-8 w-8" />
-                  <span>{colaborador.nombre}</span>
+                  <FaGithub className="h-5 w-5 sm:h-8 sm:w-8" />
+                  <span className="text-center">{colaborador.nombre}</span>
                 </a>
               </div>
             ))}
           </div>
         </div>
-        <div className="border-t border-gray-700 mt-8" />
-        <div className="max-w-6xl mx-auto px-6 py-6 text-center text-sm text-gray-400">
+
+        {/* Divider */}
+        <div className="border-t border-gray-700 w-full mt-4 sm:mt-8" />
+
+        {/* Copyright */}
+        <div className="max-w-6xl mx-auto px-2 sm:px-6 py-4 text-center text-[10px] sm:text-sm text-gray-400">
           <p>© {year} StudioConnect. Todos los derechos reservados.</p>
         </div>
       </div>
