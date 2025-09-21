@@ -6,7 +6,6 @@ import * as Yup from "yup";
 import { registerMusician } from "@/services/register.services";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { RiMusicAiLine } from "react-icons/ri";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import dynamic from "next/dynamic";
 import {
@@ -279,24 +278,6 @@ export default function RegisterForm({ defaultValues }: { defaultValues?: Defaul
   return (
     <div>
       <ToastContainer position="top-right" autoClose={3000} />
-      
-      {/* Header Section */}
-      <div className="bg-sky-800 text-white py-12 px-4 text-center">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex justify-center mb-4">
-            <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center">
-              <RiMusicAiLine size={60} className="text-sky-700" />
-            </div>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-semibold">
-            Registra tu cuenta de usuario músico
-          </h1>
-          <p className="mt-2 text-sm md:text-base text-gray-200">
-            Únete a StudioConnect y comienza a reservar increíbles estudios de grabación!.
-          </p>
-        </div>
-      </div>
-
       {/* Form Section */}
       <div className="flex items-center justify-center bg-gray-100 py-6">
         <div className="w-full max-w-2xl bg-white ml-4 rounded-xl shadow-lg p-6">

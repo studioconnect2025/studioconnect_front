@@ -9,8 +9,9 @@ import { MdAppRegistration, MdOutlineCardMembership, MdOutlineDashboardCustomize
 import { TbLogin } from "react-icons/tb";
 import { CgStudio } from "react-icons/cg";
 import { CiLogin } from "react-icons/ci";
-import { AiOutlineForm } from "react-icons/ai";
 import { IoMdMenu } from "react-icons/io";
+import { FaUserCog } from "react-icons/fa";
+import { MdReviews, MdSettings } from "react-icons/md";
 
 import { useIsAuth, useAuthUser, useAuthStore } from "@/stores/AuthStore";
 import { Modal } from "@/components/modal/modal";
@@ -72,12 +73,24 @@ export const Header = () => {
     };
   }, [isLoggedIn]);
 
+  // Wrapper para links que cierren menú al navegar
+  const MenuLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
+    <Link
+      href={href}
+      className="w-full py-2 px-3 flex rounded hover:bg-gray-800"
+      onClick={() => closeMenu()}
+    >
+      {children}
+    </Link>
+  );
+
   return (
     <header>
       <nav className="bg-black border-gray-200 px-4 lg:px-6 py-6 dark:bg-black">
         <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-2xl">
+          {/* Logo responsive */}
           <Link href="/" className="flex items-center">
-            <img src="/logo.png" alt="Logo" className="w-56 h-auto" />
+            <img src="/logo.png" alt="Logo" className="w-40 sm:w-56 h-auto" />
           </Link>
 
           {!isLoggedIn && (
@@ -126,12 +139,9 @@ export const Header = () => {
                 </button>
               </>
             ) : (
-              <>
-                <button onClick={openLoginModal} className="text-white hover:bg-sky-800 cursor-pointer flex p-2 mr-5 rounded-lg">
-                  <CiLogin size={30} className="mr-2" /> Iniciar sesión
-                </button>
-
-              </>
+              <button onClick={openLoginModal} className="text-white hover:bg-sky-800 cursor-pointer flex p-2 mr-5 rounded-lg">
+                <CiLogin size={30} className="mr-2" /> Iniciar sesión
+              </button>
             )}
           </div>
 
@@ -164,55 +174,103 @@ export const Header = () => {
           <ul className="flex flex-col mt-6 space-y-4 p-6">
             {isLoggedIn ? (
               <>
-                <li>
-                  <Link href="/musicianProfile" className="w-full py-2 px-3 flex rounded hover:bg-gray-800">
-                    <FaUser size={24} className="mr-3" /> Mi perfil
-                  </Link>
-                </li>
 
+
+                {/* Mi perfil (solo si NO es admin) */}
+{user?.role !== "Administrador" && (
+  <li>
+    <Link href="/musicianProfile" className="w-full py-2 px-3 flex rounded hover:bg-gray-800">
+      <FaUser size={24} className="mr-3" /> Mi perfil
+    </Link>
+  </li>
+)}
                 {user?.role === "Músico" && (
                   <li>
-                    <Link href="/myBookings" className="w-full py-2 px-3 flex rounded hover:bg-gray-800">
+                    <MenuLink href="/myBookings">
                       <FaCalendarCheck size={24} className="mr-3" /> Mis reservas
-                    </Link>
+                    </MenuLink>
                   </li>
                 )}
+
 
                 {user?.role === "Dueño de Estudio" && (
                   <>
                     <li>
-                      <Link href="/memberships" className="flex w-full py-2 px-3 rounded hover:bg-gray-800">
+                      <MenuLink href="/memberships">
                         <MdOutlineCardMembership size={24} className="mr-3" /> Planes
-                      </Link>
+                      </MenuLink>
                     </li>
                     <li>
-                      <Link href="/studioRegister" className="w-full py-2 px-3 flex rounded hover:bg-gray-800">
+                      <MenuLink href="/studioRegister">
                         <MdAppRegistration size={24} className="mr-3" /> Registrar mi estudio
-                      </Link>
+                      </MenuLink>
                     </li>
                     <li>
-                      <Link href="/studioDashboard" className="flex w-full py-2 px-3 rounded hover:bg-gray-800">
+                      <MenuLink href="/studioDashboard">
                         <MdOutlineDashboardCustomize size={24} className="mr-3" /> Dashboard
-                      </Link>
+                      </MenuLink>
                     </li>
                     <li>
-                      <Link href="/myStudio" className="flex w-full py-2 px-3 rounded hover:bg-gray-800">
+                      <MenuLink href="/myStudio">
                         <FaBuilding size={24} className="mr-3" /> Mi estudio
-                      </Link>
+                      </MenuLink>
                     </li>
                     <li>
-                      <Link href="/studioRooms" className="flex w-full py-2 px-3 rounded hover:bg-gray-800">
+                      <MenuLink href="/studioRooms">
                         <CgStudio size={24} className="mr-3" /> Mis salas
-                      </Link>
+                      </MenuLink>
                     </li>
                   </>
                 )}
+
+           {user?.role === "Administrador" && (
+  <>
+    <li>
+      <Link
+        href="/admin"
+        className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg"
+      >
+        <MdOutlineDashboardCustomize size={30} className="mr-2" />
+        Dashboard
+      </Link>
+    </li>
+    <li>
+      <Link
+        href="/admin/users"
+        className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg"
+      >
+        <FaUserCog size={30} className="mr-2" />
+        Usuarios
+      </Link>
+    </li>
+    <li>
+      <Link
+        href="/admin/studios"
+        className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg"
+      >
+        <FaBuilding size={30} className="mr-2" />
+        Estudios
+      </Link>
+    </li>
+    <li>
+      <Link
+        href="/admin/reviews"
+        className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg"
+      >
+        <MdReviews size={30} className="mr-2" />
+        Reviews
+      </Link>
+    </li>
+    
+  </>
+)}
 
                 <li>
                   <button
                     onClick={async () => {
                       await logout();
                       router.push("/");
+                      closeMenu();
                     }}
                     className="w-full flex text-left cursor-pointer py-2 px-3 rounded hover:bg-gray-800"
                   >
@@ -223,31 +281,21 @@ export const Header = () => {
             ) : (
               <>
                 <li>
-                  <Link
-                    href="#"
-                    className="block py-2 px-3 text-white rounded hover:bg-gray-800"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      openLoginModal();
-                    }}
+                  <MenuLink href="/useMusicianForm">Únete como músico</MenuLink>
+                </li>
+                <li>
+                  <MenuLink href="/useOwnerForm">Únete como anfitrión</MenuLink>
+                </li>
+                <li>
+                  <button
+                    className="block py-2 px-3 text-white rounded hover:bg-gray-800 w-full text-left"
+                    onClick={() => { openLoginModal(); closeMenu(); }}
                   >
-                    Únete como músico
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/useOwnerForm" className="block py-2 px-3 text-white rounded hover:bg-gray-800">
-                    Únete como anfitrión
-                  </Link>
-                </li>
-                <li>
-                  <button className="block py-2 px-3 text-white rounded hover:bg-gray-800 w-full text-left" onClick={openLoginModal}>
                     Iniciar sesión
                   </button>
                 </li>
                 <li>
-                  <Link href="/joinStudioConnect" className="block py-2 px-3 rounded bg-[#015C85] text-white">
-                    Registrarse
-                  </Link>
+                  <MenuLink href="/joinStudioConnect">Registrarse</MenuLink>
                 </li>
               </>
             )}

@@ -1,52 +1,56 @@
 "use client";
 
-import Link from "next/link";
-import { Twitter, Instagram, Linkedin } from "lucide-react";
+import { FaGithub } from "react-icons/fa";
+
+const colaboradores = [
+  { nombre: "Ezequiel Petruzzi", github: "https://github.com/epetruzzi" },
+  { nombre: "Daiana L.", github: "https://github.com/Daiana-L" },
+  { nombre: "Mariano Ricoy", github: "https://github.com/MarianoRicoy" },
+  { nombre: "Vicky Gallo", github: "https://github.com/VickyGallo" },
+  { nombre: "Shxntiyi", github: "https://github.com/Shxntiyi" },
+  { nombre: "Rafael Álvarez", github: "https://github.com/RafaelAlvarezSM" },
+  { nombre: "Jesús VG", github: "https://github.com/JesusVG1" },
+];
 
 export function Footer() {
   const year = new Date().getFullYear();
 
   return (
     <footer className="bg-gradient-to-b from-[#00618E] to-[#25665800] text-gray-300">
-      <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
-        <div>
-          <h3 className="text-lg font-semibold text-white mb-3">StudioConnect</h3>
-          <p className="text-sm">
-            Conectando músicos con estudios perfectos en todo el país.
-          </p>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 flex flex-col items-center">
+        {/* Logo */}
+        <div className="flex items-center gap-2 mb-6 sm:mb-8">
+          <img src="/logo.png" alt="Logo de StudioConnect" className="h-10 sm:h-14" />
         </div>
-        <div>
-          <h4 className="font-semibold text-white mb-3">Para músicos</h4>
-          <ul className="space-y-2 text-sm">
-            <li><Link href="#" className="hover:text-white">Encuentra estudios</Link></li>
-            <li><Link href="#" className="hover:text-white">Reservas</Link></li>
-            <li><Link href="#" className="hover:text-white">Reviews</Link></li>
-          </ul>
+
+        {/* Colaboradores */}
+        <div className="mb-6 sm:mb-8 w-full">
+          <span className="text-white text-lg sm:text-xl font-semibold text-center block">
+            Colaboradores
+          </span>
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mt-4">
+            {colaboradores.map((colaborador, index) => (
+              <div key={index} className="flex flex-col items-center gap-1 sm:gap-2 w-[100px]">
+                <a
+                  href={colaborador.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-1 text-white hover:text-gray-300 text-[10px] sm:text-sm"
+                >
+                  <FaGithub className="h-5 w-5 sm:h-8 sm:w-8" />
+                  <span className="text-center">{colaborador.nombre}</span>
+                </a>
+              </div>
+            ))}
+          </div>
         </div>
-        <div>
-          <h4 className="font-semibold text-white mb-3">Para propietarios de estudios</h4>
-          <ul className="space-y-2 text-sm">
-            <li><Link href="#" className="hover:text-white">Sumar mi estudio</Link></li>
-            <li><Link href="#" className="hover:text-white">Gestionar reservas</Link></li>
-            <li><Link href="#" className="hover:text-white">Análisis y métricas</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-semibold text-white mb-3">Soporte</h4>
-          <ul className="space-y-2 text-sm">
-            <li><Link href="#" className="hover:text-white">Centro de ayuda</Link></li>
-            <li><Link href="#" className="hover:text-white">Contáctanos</Link></li>
-            <li><Link href="#" className="hover:text-white">Términos de servicio</Link></li>
-          </ul>
-        </div>
-      </div>
-      <div className="border-t border-gray-700" />
-      <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between text-sm text-gray-400">
-        <p>© {year} StudioConnect. Todos los derechos reservados.</p>
-        <div className="flex gap-4 mt-4 md:mt-0">
-          <Link href="#" className="hover:text-white"><Twitter className="h-5 w-5" /></Link>
-          <Link href="#" className="hover:text-white"><Instagram className="h-5 w-5" /></Link>
-          <Link href="#" className="hover:text-white"><Linkedin className="h-5 w-5" /></Link>
+
+        {/* Divider */}
+        <div className="border-t border-gray-700 w-full mt-4 sm:mt-8" />
+
+        {/* Copyright */}
+        <div className="max-w-6xl mx-auto px-2 sm:px-6 py-4 text-center text-[10px] sm:text-sm text-gray-400">
+          <p>© {year} StudioConnect. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>
