@@ -5,7 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { FaBuilding, FaCalendarCheck, FaUser } from "react-icons/fa";
-import { MdAppRegistration, MdOutlineCardMembership, MdOutlineDashboardCustomize, MdOutlineWavingHand } from "react-icons/md";
+import {
+  MdAppRegistration,
+  MdOutlineCardMembership,
+  MdOutlineDashboardCustomize,
+  MdOutlineWavingHand,
+} from "react-icons/md";
 import { TbLogin } from "react-icons/tb";
 import { CgStudio } from "react-icons/cg";
 import { CiLogin } from "react-icons/ci";
@@ -36,14 +41,19 @@ export const Header = () => {
 
     const fetchProfile = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("accessToken")
+            : null;
         if (!token || !isLoggedIn) return;
 
         const data = await profileService.getMyProfile();
         if (!mounted) return;
 
         if (data?.profile) {
-          const fullName = `${data.profile.nombre ?? ""} ${data.profile.apellido ?? ""}`.trim();
+          const fullName = `${data.profile.nombre ?? ""} ${
+            data.profile.apellido ?? ""
+          }`.trim();
           setProfileName(fullName);
         } else {
           setProfileName("");
@@ -61,7 +71,13 @@ export const Header = () => {
   }, [isLoggedIn]);
 
   // Wrapper para links que cierren menú al navegar
-  const MenuLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
+  const MenuLink = ({
+    href,
+    children,
+  }: {
+    href: string;
+    children: React.ReactNode;
+  }) => (
     <Link
       href={href}
       className="w-full py-2 px-3 flex rounded hover:bg-gray-800"
@@ -84,12 +100,18 @@ export const Header = () => {
             <div className="hidden ml-16 lg:flex lg:w-auto lg:order-1">
               <ul className="flex flex-row lg:space-x-8 font-medium">
                 <li>
-                  <Link href="/useMusicianForm" className="block py-2 px-3 cursor-pointer text-white hover:text-gray-400">
+                  <Link
+                    href="/useMusicianForm"
+                    className="block py-2 px-3 cursor-pointer text-white hover:text-gray-400"
+                  >
                     Únete como músico
                   </Link>
                 </li>
                 <li>
-                  <Link href="/useOwnerForm" className="block py-2 px-3 cursor-pointer text-white hover:text-gray-400">
+                  <Link
+                    href="/useOwnerForm"
+                    className="block py-2 px-3 cursor-pointer text-white hover:text-gray-400"
+                  >
                     Únete como anfitrión
                   </Link>
                 </li>
@@ -106,8 +128,12 @@ export const Header = () => {
                 </span>
 
                 {user?.role === "Dueño de Estudio" && (
-                  <Link href="/memberships" className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg">
-                    <MdOutlineCardMembership size={30} className="mr-2" /> Planes
+                  <Link
+                    href="/memberships"
+                    className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg"
+                  >
+                    <MdOutlineCardMembership size={30} className="mr-2" />{" "}
+                    Planes
                   </Link>
                 )}
 
@@ -121,27 +147,39 @@ export const Header = () => {
                   <TbLogin size={30} className="mr-2" /> Cerrar sesión
                 </button>
 
-                <button className="text-white flex cursor-pointer hover:bg-sky-800 p-2 rounded-lg" onClick={toggleMenu}>
+                <button
+                  className="text-white flex cursor-pointer hover:bg-sky-800 p-2 rounded-lg"
+                  onClick={toggleMenu}
+                >
                   <IoMdMenu size={30} className="mr-2" /> Menú
                 </button>
               </>
             ) : (
-              <button onClick={openLoginModal} className="text-white hover:bg-sky-800 cursor-pointer flex p-2 mr-5 rounded-lg">
+              <button
+                onClick={openLoginModal}
+                className="text-white hover:bg-sky-800 cursor-pointer flex p-2 mr-5 rounded-lg"
+              >
                 <CiLogin size={30} className="mr-2" /> Iniciar sesión
               </button>
             )}
           </div>
 
           <div className="flex lg:hidden items-center">
-            <button className="text-white p-2 focus:outline-none" onClick={toggleMenu}>
+            <button
+              className="text-white p-2 focus:outline-none"
+              onClick={toggleMenu}
+            >
               <Menu size={24} />
             </button>
           </div>
         </div>
       </nav>
 
+      {/* Drawer Mobile */}
       <div
-        className={`fixed top-0 left-0 h-full w-full z-50 transition-opacity duration-300 ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+        className={`fixed top-0 left-0 h-full w-full z-50 transition-opacity duration-300 ${
+          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
         onClick={closeMenu}
       >
         <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 lg:hidden"></div>
@@ -166,11 +204,11 @@ export const Header = () => {
                     <FaUser size={24} className="mr-3" /> Mi perfil
                   </MenuLink>
                 </li>
-                 <li>
-                    <MenuLink href="/search">
-                      <IoMdSearch size={26} className="mr-3" /> Explorar estudios
-                    </MenuLink>
-                  </li>
+                <li>
+                  <MenuLink href="/search">
+                    <IoMdSearch size={26} className="mr-3" /> Explorar estudios
+                  </MenuLink>
+                </li>
 
                 {user?.role === "Músico" && (
                   <li>
@@ -178,24 +216,29 @@ export const Header = () => {
                       <FaCalendarCheck size={24} className="mr-3" /> Mis reservas
                     </MenuLink>
                   </li>
-                  
                 )}
 
                 {user?.role === "Dueño de Estudio" && (
                   <>
                     <li>
                       <MenuLink href="/memberships">
-                        <MdOutlineCardMembership size={24} className="mr-3" /> Planes
+                        <MdOutlineCardMembership size={24} className="mr-3" />{" "}
+                        Planes
                       </MenuLink>
                     </li>
                     <li>
                       <MenuLink href="/studioRegister">
-                        <MdAppRegistration size={24} className="mr-3" /> Registrar mi estudio
+                        <MdAppRegistration size={24} className="mr-3" /> Registrar
+                        mi estudio
                       </MenuLink>
                     </li>
                     <li>
                       <MenuLink href="/studioDashboard">
-                        <MdOutlineDashboardCustomize size={24} className="mr-3" /> Dashboard
+                        <MdOutlineDashboardCustomize
+                          size={24}
+                          className="mr-3"
+                        />{" "}
+                        Dashboard
                       </MenuLink>
                     </li>
                     <li>
@@ -235,7 +278,10 @@ export const Header = () => {
                 <li>
                   <button
                     className="block py-2 px-3 text-white rounded hover:bg-gray-800 w-full text-left"
-                    onClick={() => { openLoginModal(); closeMenu(); }}
+                    onClick={() => {
+                      openLoginModal();
+                      closeMenu();
+                    }}
                   >
                     Iniciar sesión
                   </button>
