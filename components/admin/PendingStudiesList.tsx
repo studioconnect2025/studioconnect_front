@@ -1,9 +1,15 @@
-// components/admin/studios/PendingStudiesList.tsx
+// components/admin/PendingStudiesList.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import ReviewDialog from "./ReviewDialog";
-import { AdminStudiosService, type AdminStudio, type PendingResponse } from "@/services/admin/AdminStudios";
+import {
+  AdminStudiosService,
+  type AdminStudio,
+  type PendingResponse,
+} from "@/services/admin/AdminStudios";
+import { useStudiosStore } from "@/stores/admin/StudiosStore";
+import { toast } from "react-toastify";
 
 function getItems(data: PendingResponse): AdminStudio[] {
   return Array.isArray(data) ? data : data.items;
@@ -25,6 +31,8 @@ export default function PendingStudiesList() {
   const total = useMemo(() => getTotal(data), [data]);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
+  const refreshAll = useStudiosStore((s) => s.refreshAll);
+
   const fetchPage = async (p = 1) => {
     setLoading(true);
     try {
@@ -41,13 +49,26 @@ export default function PendingStudiesList() {
   }, [page]);
 
   const handleApprove = async (id: string) => {
-    await AdminStudiosService.updateRequestStatus(id, { status: "approved" });
-    await fetchPage(page);
+    try {
+      await AdminStudiosService.updateRequestStatus(id, { status: "approved" });
+      toast.success("Estudio aprobado correctamente");
+      await Promise.all([fetchPage(page), refreshAll()]); // 👈 refresca lista y métricas
+    } catch (e: any) {
+      toast.error(e?.message ?? "Error al aprobar. Intenta nuevamente.");
+    }
   };
 
   const handleReject = async (id: string, message: string) => {
-    await AdminStudiosService.updateRequestStatus(id, { status: "rejected", message });
-    await fetchPage(page);
+    try {
+      await AdminStudiosService.updateRequestStatus(id, {
+        status: "rejected",
+        message,
+      });
+      toast.info("Solicitud enviada a revisión");
+      await Promise.all([fetchPage(page), refreshAll()]);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Error al procesar rechazo.");
+    }
   };
 
   return (
@@ -65,58 +86,63 @@ export default function PendingStudiesList() {
         ) : items.length === 0 ? (
           <li className="px-5 py-10 text-center text-gray-500">No hay solicitudes pendientes</li>
         ) : (
-          items.map((s) => (
-            <li key={s.id} className="px-5 py-4 grid grid-cols-12 items-center gap-3">
-              <div className="col-span-6 min-w-0">
-                <p className="truncate text-sm font-semibold text-sky-900">{s.name}</p>
-                <p className="truncate text-xs text-gray-500">
-                  {s.city ?? "—"} · {s.province ?? "—"} · {s.owner?.email ?? (s as any).ownerEmail ?? "—"}
-                </p>
-              </div>
-              <div className="col-span-6 flex justify-end gap-2">
-                <button
-                  type="button"
-                  className="rounded-md border border-gray-200 px-3 py-1.5 text-sm hover:bg-gray-50"
-                  onClick={() => setOpenId(s.id)}
-                >
-                  Ver documentos
-                </button>
-                <button
-                  type="button"
-                  className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm text-emerald-700 hover:bg-emerald-100"
-                  onClick={() => handleApprove(s.id)}
-                >
-                  Aprobar
-                </button>
-                <button
-                  type="button"
-                  className="rounded-md border border-rose-200 bg-rose-50 px-3 py-1.5 text-sm text-rose-700 hover:bg-rose-100"
-                  onClick={() => setRejectId(s.id)}
-                >
-                  Desaprobar
-                </button>
-              </div>
+          items.map((s) => {
+            // A veces pendientes trae id de solicitud y el endpoint espera id del estudio
+            const processId = (s as any).studio?.id ?? s.id;
 
-              {/* Modal ver docs */}
-              {openId === s.id && (
-                <ReviewDialog
-                  title={`Documentación de ${s.name}`}
-                  onClose={() => setOpenId(null)}
-                  documents={(s as any).documents ?? (s as any).comercialRegister ? [(s as any).comercialRegister] : []}
-                />
-              )}
+            return (
+              <li key={s.id} className="px-5 py-4 grid grid-cols-12 items-center gap-3">
+                <div className="col-span-6 min-w-0">
+                  <p className="truncate text-sm font-semibold text-sky-900">{s.name}</p>
+                  <p className="truncate text-xs text-gray-500">
+                    {s.city ?? "—"} · {s.province ?? "—"} · {s.owner?.email ?? (s as any).ownerEmail ?? "—"}
+                  </p>
+                </div>
+                <div className="col-span-6 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    className="rounded-md border border-gray-200 px-3 py-1.5 text-sm hover:bg-gray-50"
+                    onClick={() => setOpenId(s.id)}
+                  >
+                    Ver documentos
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm text-emerald-700 hover:bg-emerald-100"
+                    onClick={() => handleApprove(processId)}
+                  >
+                    Aprobar
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded-md border border-rose-200 bg-rose-50 px-3 py-1.5 text-sm text-rose-700 hover:bg-rose-100"
+                    onClick={() => setRejectId(processId)}
+                  >
+                    Desaprobar
+                  </button>
+                </div>
 
-              {/* Modal rechazo */}
-              {rejectId === s.id && (
-                <ReviewDialog
-                  title={`Motivo de rechazo — ${s.name}`}
-                  mode="reject"
-                  onClose={() => setRejectId(null)}
-                  onSubmit={(msg) => handleReject(s.id, msg)}
-                />
-              )}
-            </li>
-          ))
+                {/* Modal ver docs */}
+                {openId === s.id && (
+                  <ReviewDialog
+                    title={`Documentación de ${s.name}`}
+                    onClose={() => setOpenId(null)}
+                    documents={(s as any).documents ?? (s as any).comercialRegister ? [(s as any).comercialRegister] : []}
+                  />
+                )}
+
+                {/* Modal rechazo */}
+                {rejectId === processId && (
+                  <ReviewDialog
+                    title={`Motivo de rechazo — ${s.name}`}
+                    mode="reject"
+                    onClose={() => setRejectId(null)}
+                    onSubmit={(msg) => handleReject(processId, msg)}
+                  />
+                )}
+              </li>
+            );
+          })
         )}
       </ul>
 

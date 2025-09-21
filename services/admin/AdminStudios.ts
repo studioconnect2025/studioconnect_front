@@ -1,3 +1,4 @@
+// services/admin/AdminStudios.ts
 import { http } from "@/lib/http";
 
 export type AdminStudio = {
@@ -32,91 +33,117 @@ export type PendingResponse = { items: AdminStudio[]; total: number } | AdminStu
 
 const normalizeStatus = (s?: string | null) => {
   const x = (s ?? "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
-  if (x.startsWith("aprob") || x.startsWith("aprov") || x.startsWith("approv")) return "aprobado";
+  if (x.startsWith("aprob") || x.startsWith("aprov") || x.startsWith("approv")) return "aprovado"; // normalizamos a lo que espera backend
   if (x.startsWith("pend")) return "pendiente";
   if (x.startsWith("bloq") || x.startsWith("block")) return "bloqueado";
   return x || "pendiente";
 };
+
 const normalizeList = (list: AdminStudio[] = []) =>
   list.map((s) => ({ ...s, status: normalizeStatus(s.status) }));
 
+function lastNDates(n: number): string[] {
+  const out: string[] = [];
+  const d = new Date();
+  for (let i = n - 1; i >= 0; i--) {
+    const dt = new Date(d);
+    dt.setDate(d.getDate() - i);
+    out.push(dt.toISOString().slice(0, 10));
+  }
+  return out;
+}
+function buildTimeseriesFrom(list: AdminStudio[], days = 30): TimeseriesPoint[] {
+  const map = new Map<string, number>();
+  const keys = lastNDates(days);
+  keys.forEach((k) => map.set(k, 0));
+  list.forEach((s) => {
+    const k = (s.createdAt ?? s.updatedAt ?? "").slice(0, 10);
+    if (map.has(k)) map.set(k, (map.get(k) ?? 0) + 1);
+  });
+  return keys.map((k) => ({ date: k, count: map.get(k) ?? 0 }));
+}
+
 export const AdminStudiosService = {
-  /** Todos los estudios (si no existe endpoint, hace fallback a activos+pendientes) */
+  /** Unimos activos + pendientes (no existe /admin/studios “todos” en tu backend) */
   async getAll(): Promise<AdminStudio[]> {
-    try {
-      const { data } = await http.get<AdminStudio[]>("/admin/studios");
-      return normalizeList(Array.isArray(data) ? data : []);
-    } catch {
-      const [active, pendingResp] = await Promise.all([
-        AdminStudiosService.getActive(),
-        AdminStudiosService.getPendingRequests({ page: 1, pageSize: 100 }),
-      ]);
-      const pending = Array.isArray(pendingResp) ? pendingResp : pendingResp.items ?? [];
-      return normalizeList([...(active ?? []), ...(pending ?? [])]);
-    }
+    const settled = await Promise.allSettled([
+      AdminStudiosService.getActive(),   // GET /admin/studios/active
+      AdminStudiosService.getPending(),  // GET /admin/studios/pending
+    ]);
+    const active = settled[0].status === "fulfilled" ? settled[0].value : [];
+    const pendingRaw = settled[1].status === "fulfilled" ? settled[1].value : [];
+    const pending = Array.isArray(pendingRaw) ? pendingRaw : pendingRaw.items ?? [];
+    return normalizeList([...(active ?? []), ...(pending ?? [])]);
   },
 
   /** Estudios activos (aprobados) */
   async getActive(): Promise<AdminStudio[]> {
-    const { data } = await http.get<AdminStudio[] | { items: AdminStudio[] }>("/admin/studios/active");
+    const { data } = await http.get<AdminStudio[] | { items: AdminStudio[] }>(
+      "/admin/studios/active"
+    );
     const list = Array.isArray(data) ? data : data?.items ?? [];
     return normalizeList(list);
   },
 
-  /** Solicitudes pendientes, paginadas */
-  async getPendingRequests(params: { page?: number; pageSize?: number }): Promise<PendingResponse> {
+  /** Pendientes — tu endpoint real */
+  async getPending(params?: { page?: number; pageSize?: number }): Promise<PendingResponse> {
     const { page = 1, pageSize = 10 } = params ?? {};
-    const { data } = await http.get<PendingResponse>("/admin/studios/pending-requests", {
+    const { data } = await http.get<PendingResponse>("/admin/studios/pending", {
       params: { page, pageSize },
     });
     if (Array.isArray(data)) return normalizeList(data);
     return { items: normalizeList(data.items ?? []), total: data.total ?? data.items?.length ?? 0 };
   },
 
-  /** Aprobar / Rechazar solicitud */
+  /** Compat para componentes existentes que llamaban getPendingRequests */
+  async getPendingRequests(params: { page?: number; pageSize?: number }): Promise<PendingResponse> {
+    return AdminStudiosService.getPending(params);
+  },
+
+  /** Aprobar / Rechazar solicitud
+   * Swagger: { "status": "aprovado" }  (tal cual con “v”)
+   */
   async updateRequestStatus(
     id: string,
     payload: { status: "approved" | "rejected"; message?: string }
   ) {
-    const { data } = await http.patch(`/admin/studios/requests/${id}`, payload);
+    const map: Record<"approved" | "rejected", string> = {
+      approved: "aprovado",   // exacto como Swagger
+      rejected: "rechazado",  // ajustá si tu backend espera otro string
+    };
+
+    // Swagger dice que espera SOLO "status"
+    const body = { status: map[payload.status] ?? payload.status };
+
+    const { data } = await http.patch(`/admin/studios/${id}/process`, body);
     return data;
   },
 
-  /** Nuevos estudios por día (últimos N días) */
+  /** Serie últimos N días (fallback local con createdAt/updatedAt si no hay endpoint de métricas) */
   async timeseriesNew({ days = 30 }: TimeseriesParams): Promise<TimeseriesPoint[]> {
-    const { data } = await http.get<TimeseriesPoint[]>("/admin/studios/timeseries", {
-      params: { days },
-    });
-    return Array.isArray(data) ? data : [];
+    const active = await AdminStudiosService.getActive();
+    return buildTimeseriesFrom(active, days);
   },
 
-  /** Conteo por estado (normalizado) */
+  /** Conteo por estado (fallback con activos+pendientes) */
   async countByStatus(): Promise<Record<string, number>> {
-    const { data } = await http.get<Record<string, number>>("/admin/studios/status-counts");
-    const out: Record<string, number> = {};
-    Object.entries(data ?? {}).forEach(([k, v]) => (out[normalizeStatus(k)] = Number(v) || 0));
-    return out;
+    const [active, pendResp] = await Promise.all([
+      AdminStudiosService.getActive(),
+      AdminStudiosService.getPending(),
+    ]);
+    const pending = Array.isArray(pendResp) ? pendResp : pendResp.items ?? [];
+    return {
+      aprovado: active.length,   // dejamos la clave normalizada a “aprovado” por consistencia
+      pendiente: pending.length,
+      bloqueado: 0,
+    };
   },
 
-  /** Total de estudios aprobados (o activos) */
+  /** Total “aprovado” */
   async count(): Promise<number> {
-    try {
-      const counts = await AdminStudiosService.countByStatus();
-      return counts["aprobado"] ?? 0;
-    } catch {
-      try {
-        const { data } = await http.get<{ items?: any[]; total?: number } | any[]>(
-          "/admin/studios/active",
-          { params: { page: 1, pageSize: 1 } }
-        );
-        if (Array.isArray(data)) return data.length;
-        if (typeof (data as any)?.total === "number") return (data as any).total;
-        return Array.isArray((data as any)?.items) ? (data as any).items.length : 0;
-      } catch {
-        return 0;
-      }
-    }
+    const counts = await AdminStudiosService.countByStatus();
+    return counts["aprovado"] ?? counts["aprovado"] ?? 0;
   },
 };
 
-export { normalizeStatus }; // si lo querés reutilizar
+export { normalizeStatus };

@@ -236,7 +236,6 @@ export const Header = () => {
   </>
 )}
 
-
                 <li>
                   <button
                     onClick={async () => {
