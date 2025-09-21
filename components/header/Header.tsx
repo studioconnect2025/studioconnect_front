@@ -10,6 +10,8 @@ import { TbLogin } from "react-icons/tb";
 import { CgStudio } from "react-icons/cg";
 import { CiLogin } from "react-icons/ci";
 import { IoMdMenu } from "react-icons/io";
+import { FaUserCog } from "react-icons/fa";
+import { MdReviews, MdSettings } from "react-icons/md";
 
 import { useIsAuth, useAuthUser, useAuthStore } from "@/stores/AuthStore";
 import { Modal } from "@/components/modal/modal";
@@ -161,12 +163,16 @@ export const Header = () => {
           <ul className="flex flex-col mt-6 space-y-4 p-6">
             {isLoggedIn ? (
               <>
-                <li>
-                  <MenuLink href="/musicianProfile">
-                    <FaUser size={24} className="mr-3" /> Mi perfil
-                  </MenuLink>
-                </li>
 
+
+                {/* Mi perfil (solo si NO es admin) */}
+{user?.role !== "Administrador" && (
+  <li>
+    <Link href="/musicianProfile" className="w-full py-2 px-3 flex rounded hover:bg-gray-800">
+      <FaUser size={24} className="mr-3" /> Mi perfil
+    </Link>
+  </li>
+)}
                 {user?.role === "Músico" && (
                   <li>
                     <MenuLink href="/myBookings">
@@ -174,6 +180,7 @@ export const Header = () => {
                     </MenuLink>
                   </li>
                 )}
+
 
                 {user?.role === "Dueño de Estudio" && (
                   <>
@@ -204,6 +211,48 @@ export const Header = () => {
                     </li>
                   </>
                 )}
+
+           {user?.role === "Administrador" && (
+  <>
+    <li>
+      <Link
+        href="/admin"
+        className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg"
+      >
+        <MdOutlineDashboardCustomize size={30} className="mr-2" />
+        Dashboard
+      </Link>
+    </li>
+    <li>
+      <Link
+        href="/admin/users"
+        className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg"
+      >
+        <FaUserCog size={30} className="mr-2" />
+        Usuarios
+      </Link>
+    </li>
+    <li>
+      <Link
+        href="/admin/studios"
+        className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg"
+      >
+        <FaBuilding size={30} className="mr-2" />
+        Estudios
+      </Link>
+    </li>
+    <li>
+      <Link
+        href="/admin/reviews"
+        className="flex py-2 px-3 cursor-pointer text-white hover:bg-sky-800 p-2 rounded-lg"
+      >
+        <MdReviews size={30} className="mr-2" />
+        Reviews
+      </Link>
+    </li>
+    
+  </>
+)}
 
                 <li>
                   <button
