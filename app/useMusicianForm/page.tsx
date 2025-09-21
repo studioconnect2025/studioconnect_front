@@ -4,7 +4,7 @@ import { RiMusicAiLine } from "react-icons/ri";
 export default function MyStudioPage() {
   return (
     <div>
-         <div className="bg-sky-800 text-white py-12 px-4 text-center">
+         <div className="bg-sky-800 text-white py-15 px-4 text-center">
                       <div className="max-w-2xl mx-auto">
                           <div className="flex justify-center mb-4">
                               <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center">
