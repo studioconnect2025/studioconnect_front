@@ -20,7 +20,6 @@ export default function Search() {
 
   const [selectedType, setSelectedType] = useState<string>(type || "Todos");
 
-  // Paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
@@ -94,16 +93,16 @@ export default function Search() {
 
   return (
     <section className="bg-white flex flex-col items-center w-full">
-      {/* Hero con BannerSearch */}
+      {/* Hero con BannerSearch responsive */}
       <div className="w-full bg-sky-700 py-8 px-4 flex flex-col items-center text-center">
         <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-semibold mb-3">
           Encuentra tu estudio ideal
         </h2>
-        <p className="text-white text-sm sm:text-base md:text-lg mb-2 max-w-2xl">
+        <p className="text-white text-sm sm:text-base md:text-lg mb-4 max-w-2xl">
           Busca y filtra entre miles de estudios de grabación profesionales en
           la ubicación de tu preferencia
         </p>
-        <div className="w-full">
+        <div className="w-full max-w-3xl px-2 sm:px-0">
           <BannerSearch
             onLocationSelect={(lat, lng) => {
               console.log("Coordenadas seleccionadas:", lat, lng);
@@ -113,7 +112,7 @@ export default function Search() {
       </div>
 
       {/* Encabezado resultados */}
-      <div className="w-full max-w-[1200px] px-4 mt-8 mb-6 flex justify-between items-center">
+      <div className="w-full max-w-[1200px] px-4 mt-8 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h3 className="text-lg md:text-xl font-semibold text-gray-800">
           {filtered.length} estudios encontrados {location && <span className="text-gray-600">en {location}</span>}
         </h3>
@@ -124,7 +123,7 @@ export default function Search() {
             setSelectedType(e.target.value);
             setCurrentPage(1);
           }}
-          className="border rounded-lg px-4 py-2 text-gray-700"
+          className="border rounded-lg px-4 py-2 text-gray-700 w-full sm:w-auto"
         >
           <option value="Todos">Todos</option>
           <option value="ensayo">Ensayo</option>
@@ -135,7 +134,6 @@ export default function Search() {
 
       {/* Contenedor de resultados */}
       <div className="w-full max-w-[1200px] mb-10 relative min-h-[60vh]">
-        {/* Overlay de carga (solo sobre la sección de estudios) */}
         {loading && (
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white">
             <div className="w-16 h-16 border-4 border-sky-700 border-t-transparent rounded-full animate-spin"></div>
@@ -143,7 +141,6 @@ export default function Search() {
           </div>
         )}
 
-        {/* Grid de cards */}
         {!loading && paginatedStudios.length === 0 ? (
           <div className="col-span-full flex items-center justify-center min-h-[60vh]">
             <p className="text-gray-700 text-lg text-center">
@@ -153,14 +150,15 @@ export default function Search() {
         ) : (
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {paginatedStudios.map((studio) => (
-              <FeaturedStudioCard
-                key={studio.id}
-                id={studio.id}
-                studio={{
-                  ...studio,
-                  pricePerHour: studio.pricePerHour ? Number(studio.pricePerHour) : undefined,
-                }}
-              />
+              <div key={studio.id} className="w-full max-w-full mx-auto">
+                <FeaturedStudioCard
+                  id={studio.id}
+                  studio={{
+                    ...studio,
+                    pricePerHour: studio.pricePerHour ? Number(studio.pricePerHour) : undefined,
+                  }}
+                />
+              </div>
             ))}
           </div>
         )}
@@ -168,7 +166,7 @@ export default function Search() {
 
       {/* Paginación */}
       {!loading && filtered.length > itemsPerPage && (
-        <div className="flex gap-4 mb-10">
+        <div className="flex flex-col sm:flex-row gap-4 mb-10 items-center">
           <button
             onClick={handlePrevPage}
             disabled={currentPage === 1}
