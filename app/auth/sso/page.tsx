@@ -11,13 +11,13 @@ export default function SSOPage() {
   const setAuth = useAuthStore((s) => s.setAuth);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
 
     if (!token) {
       localStorage.removeItem("accessToken");
       setAuth({ accessToken: null, user: null });
-      router.replace("/login?error=sso_failed");
+      router.replace("/"); // sin /login
       return;
     }
 
@@ -29,17 +29,17 @@ export default function SSOPage() {
             id: claims.sub ?? "",
             email: claims.email ?? "",
             role: claims.role,
-            name: (claims.email?.split("@")[0] as string) ?? "",
+            name: (claims.email?.split("@")[0] ?? "") as string,
           }
         : null;
 
       setAuth({ accessToken: token, user });
-      router.replace("/");
-    } catch (err) {
-      console.error("Error procesando el token SSO:", err);
+      router.replace("/"); // Home
+    } catch (e) {
+      console.error("SSO error:", e);
       localStorage.removeItem("accessToken");
       setAuth({ accessToken: null, user: null });
-      router.replace("/login?error=sso_failed");
+      router.replace("/"); // Home
     }
   }, [router, setAuth]);
 
