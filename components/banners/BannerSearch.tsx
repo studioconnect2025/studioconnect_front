@@ -108,9 +108,9 @@ export const BannerSearch = ({
         <div className="flex-shrink-0 w-full sm:w-auto">
           <button
             onClick={handleSearch}
-            className="flex items-center justify-center gap-2 bg-sky-700 hover:bg-sky-800 transition text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-sm sm:text-base w-full sm:w-auto h-full sm:h-auto mt-5"
+            className="flex items-center justify-center gap-2 bg-sky-700 hover:bg-sky-800 transition text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl cursor-pointer text-sm sm:text-base w-full sm:w-auto h-full sm:h-auto mt-5"
           >
-            <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Search className="w-4  h-4 sm:w-5 sm:h-5" />
             Buscar
           </button>
         </div>

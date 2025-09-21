@@ -58,7 +58,7 @@ export default function Home() {
             </div>
             {/* Si es dueño de estudio -> OwnerToolbar, si es musico -> BannerSearch */}
             <div
-                className="bg-gray-100 flex flex-col items-center p-4 sm:p-6 relative z-[1000]"
+                className="bg-white flex flex-col items-center p-4 sm:p-6 relative z-[1000]"
                 data-aos="fade-right"
                 data-aos-delay="300"
             >
@@ -84,7 +84,7 @@ export default function Home() {
             </div>
             {/* Mapa de ubicación */}
             <div
-                className="bg-white flex flex-col items-center p-4 sm:p-6 -mt-6"
+                className="bg-white flex flex-col items-center p-4 sm:p-6 "
                 data-aos="fade-right"
                 data-aos-delay="500"
             >
