@@ -90,7 +90,7 @@ export const BannerSearch = ({
           </div>
 
           {results.length > 0 && (
-            <ul className="absolute top-full mt-1 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-52 sm:max-h-60 overflow-y-auto text-sm">
+            <ul className="absolute top-full mt-1 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-xl z-1000 max-h-52 sm:max-h-60 overflow-y-auto text-sm">
               {results.map((r, i) => (
                 <li
                   key={i}
@@ -108,9 +108,9 @@ export const BannerSearch = ({
         <div className="flex-shrink-0 w-full sm:w-auto">
           <button
             onClick={handleSearch}
-            className="flex items-center justify-center gap-2 bg-sky-700 hover:bg-sky-800 transition text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-sm sm:text-base w-full sm:w-auto h-full sm:h-auto mt-5"
+            className="flex items-center justify-center gap-2 bg-sky-700 hover:bg-sky-800 transition text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-xl cursor-pointer text-sm sm:text-base w-full sm:w-auto h-full sm:h-auto mt-5"
           >
-            <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Search className="w-4  h-4 sm:w-5 sm:h-5" />
             Buscar
           </button>
         </div>

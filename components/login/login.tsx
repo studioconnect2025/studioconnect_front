@@ -168,7 +168,7 @@ export default function LoginPage({ onClose }: LoginPageProps) {
                 type="checkbox"
                 checked={remember}
                 onChange={(e) => setRemember(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-600"
+                className="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-600 cursor-pointer"
               />
               Recordarme
             </label>
@@ -187,7 +187,7 @@ export default function LoginPage({ onClose }: LoginPageProps) {
             type="submit"
             disabled={!isValid}
             aria-disabled={!isValid}
-            className={`w-full py-2 sm:py-3 px-3 sm:px-4 rounded-md text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-700 ${
+            className={`w-full py-2 sm:py-3 px-3 sm:px-4 rounded-md text-xs sm:text-sm text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-700 cursor-pointer ${
               isValid
                 ? "bg-sky-700 hover:bg-sky-800"
                 : "bg-sky-300 cursor-not-allowed"
@@ -216,7 +216,7 @@ export default function LoginPage({ onClose }: LoginPageProps) {
               const redirect = `${window.location.origin}/auth/sso`;
               window.location.href = `${api}/auth/google/login?redirect_uri=${encodeURIComponent(redirect)}`;
             }}
-            className="w-full flex items-center justify-center gap-2 py-2 sm:py-3 px-3 sm:px-4 rounded-md border border-gray-300 bg-white text-gray-700 text-xs sm:text-sm hover:bg-gray-100"
+            className="w-full flex items-center justify-center gap-2 py-2 sm:py-3 px-3 sm:px-4 rounded-md border border-gray-300 bg-white text-gray-700 text-xs sm:text-sm hover:bg-gray-100 cursor-pointer"
           >
             <img src="/google-icon.svg" alt="Google" className="h-4 sm:h-5 w-4 sm:w-5" />
             Continuar con Google

@@ -222,9 +222,7 @@ const MusicianSchema = Yup.object().shape({
     )
     .required("Requerido"),
 
-  codigoPostal: Yup.string()
-    .matches(/^\d{4,6}$/, "Debe tener 4 a 6 dígitos")
-    .required("Requerido"),
+   codigoPostal: Yup.string().required("Requerido"),
 });
 
 // =================== Types ===================
