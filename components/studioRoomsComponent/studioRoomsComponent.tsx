@@ -2,7 +2,7 @@
 
 import { FC, useEffect, useState } from "react";
 import { FaEdit } from "react-icons/fa";
-import { FaTrashArrowUp } from "react-icons/fa6";
+import { FaDoorOpen, FaPiggyBank, FaTrashArrowUp } from "react-icons/fa6";
 import Link from "next/link";
 import Swal from "sweetalert2";
 import { toast, ToastContainer } from "react-toastify";
@@ -11,6 +11,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { roomsService } from "@/services/rooms.service";
 import { instrumentsService } from "@/services/instruments.service";
 import type { Room as RoomType, Instrument as InstrumentType } from "@/types/Rooms";
+import { getMyStudio, type Studio } from "@/services/myStudio.services";
+
 
 // ==================== Modal Edición Sala ====================
 interface EditRoomModalProps {
@@ -340,11 +342,18 @@ const RoomsGrid: FC = () => {
     // Mapea roomId => instrumentos
     const [instrumentsMap, setInstrumentsMap] = useState<Record<string, InstrumentType[]>>({});
 
+      // 🔥 MOD: estado del estudio
+    const [studio, setStudio] = useState<Studio | null>(null);
+
     const fetchRooms = async () => {
         setLoading(true);
         try {
             const roomsData = await roomsService.getRooms();
             const instrumentsData = await instrumentsService.getInstruments();
+
+                        // 🔥 MOD: obtener estudio del dueño
+            const { studio } = await getMyStudio();
+            setStudio(studio);
 
             const map: Record<string, InstrumentType[]> = {};
             roomsData.forEach((room: RoomType) => {
@@ -421,25 +430,47 @@ const RoomsGrid: FC = () => {
             <ToastContainer />
 
             {/* Header */}
-            <div className="bg-sky-800 flex flex-col md:flex-row md:items-center justify-between text-white py-6 px-4 md:px-8 shadow-md mb-6 w-full">
-                <div className="mb-4 md:mb-0 max-w-xl">
-                    <h1 className="text-xl md:text-2xl font-semibold">
-                        Gestión de Salas del Estudio
-                    </h1>
-                    <p className="text-sm text-sky-100 mt-1">
-                        Administra las salas de tu estudio, agrega nuevos
-                        instrumentos y edita los detalles de las salas existentes.
-                    </p>
+          <div className="bg-sky-800 flex flex-col md:flex-row md:items-center justify-between text-white py-6 px-4 md:px-8 shadow-md mb-6 w-full">
+  <div className="max-w-2xl mx-auto flex flex-col items-center text-center">
+    {/* Icono + Título */}
+    <div className="flex items-center justify-center gap-4 mb-4">
+      <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center">
+        <FaDoorOpen size={40} className="text-sky-700" />
+      </div>
+      <h1 className="text-4xl font-semibold">Gestión de Salas del Estudio</h1>
+    </div>
+
+    {/* Texto descriptivo */}
+    <p className="text-sm font-medium text-gray-200">
+      Administra las salas de tu estudio, agrega nuevos instrumentos y edita los detalles de las salas existentes.
+    </p>
+  </div>
+
+  {/* Botón */}
+  <div className="justify-start md:justify-end mt-4 md:mt-0">
+    <Link
+      href="/createRoom"
+      className="inline-flex items-center gap-2 bg-black px-3 py-2 rounded-lg shadow hover:bg-gray-900 text-sm text-white cursor-pointer"
+    >
+      <span className="text-lg">＋</span> Agregar nueva sala
+    </Link>
+  </div>
+</div>
+
+            {/* 🔥 MOD: Aviso de autorización */}
+            {studio && (
+                <div
+                    className={`w-full text-center py-3 mb-6 font-bold text-3xl rounded-lg ${
+                        studio.status === "AUTHORIZED"
+                            ? "bg-green-100 text-green-700 border border-green-300"
+                            : "bg-red-100 text-red-800 border border-red-300"
+                    }`}
+                >
+                    {studio.status === "AUTHORIZED"
+                        ? "Ya estás autorizado para gestionar tu estudio"
+                        : "Tu estudio aún espera autorización"}
                 </div>
-                <div className="flex justify-start md:justify-end">
-                    <Link
-                        href="/createRoom"
-                        className="inline-flex items-center gap-2 bg-black px-3 py-2 rounded-lg shadow hover:bg-gray-900 text-sm text-white cursor-pointer"
-                    >
-                        <span className="text-lg">＋</span> Agregar nueva sala
-                    </Link>
-                </div>
-            </div>
+            )}
 
             {/* Grid de salas */}
             <div className="w-full items-center max-w-[120vh] mb-10 py-4">
