@@ -2,7 +2,7 @@
 
 import { FC, useEffect, useState, useCallback } from "react";
 import { FaEdit } from "react-icons/fa";
-import { FaDoorOpen, FaPiggyBank, FaTrashArrowUp } from "react-icons/fa6";
+import { FaDoorOpen, FaTrashArrowUp } from "react-icons/fa6";
 import Link from "next/link";
 import Swal from "sweetalert2";
 import { toast, ToastContainer } from "react-toastify";
@@ -548,22 +548,6 @@ const RoomsGrid: FC = () => {
           </Link>
         </div>
       </div>
-
-      {/* Aviso de autorización */}
-      {studio && (
-        <div
-          className={`w-full text-center py-3 mb-6 font-bold text-3xl rounded-lg ${
-            studio.status === "AUTHORIZED"
-              ? "bg-green-100 text-green-700 border border-green-300"
-              : "bg-red-100 text-red-800 border border-red-300"
-          }`}
-        >
-          {studio.status === "AUTHORIZED"
-            ? "Ya estás autorizado para gestionar tu estudio"
-            : "Tu estudio aún espera autorización"}
-        </div>
-      )}
-
       {/* Grid de salas */}
       <div className="mb-10 w-full max-w-[120vh] items-center py-4">
         {rooms.length === 0 ? (

@@ -4,29 +4,30 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
-import { FaBuilding, FaCalendarCheck, FaUser, FaUserCog } from "react-icons/fa";
-import {
-  MdAppRegistration,
-  MdOutlineCardMembership,
-  MdOutlineDashboardCustomize,
-  MdOutlineWavingHand,
-  MdReviews,
-} from "react-icons/md";
+import { FaBuilding, FaCalendarCheck, FaUser, FaPiggyBank } from "react-icons/fa6";
+import { MdAppRegistration, MdOutlineCardMembership, MdOutlineDashboardCustomize, MdOutlineWavingHand, MdReviews } from "react-icons/md";
 import { TbLogin } from "react-icons/tb";
 import { CgStudio } from "react-icons/cg";
 import { CiLogin } from "react-icons/ci";
 import { IoMdMenu, IoMdSearch } from "react-icons/io";
-
 import { useIsAuth, useAuthUser, useAuthStore } from "@/stores/AuthStore";
 import { Modal } from "@/components/modal/modal";
 import LoginPage from "@/components/login/login";
 import { profileService } from "@/services/musician.services";
-import { FaPiggyBank } from "react-icons/fa6";
+import { OwnerService } from "@/services/studio.services";
+
+export enum StudioStatus {
+  APPROVED = "aprovado",
+  PENDING = "pendiente",
+  REJECTED = "rechazado",
+}
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [profileName, setProfileName] = useState("");
+  const [studioStatus, setStudioStatus] = useState<string | null>(null);
+  const [loadingStudioStatus, setLoadingStudioStatus] = useState(true);
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
@@ -38,32 +39,58 @@ export const Header = () => {
   const user = useAuthUser();
   const logout = useAuthStore((s) => s.logout);
 
+  // Cargar perfil
   useEffect(() => {
     let mounted = true;
 
     const fetchProfile = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
-        if (!token || !isLoggedIn) return;
-
+        if (!isLoggedIn) return;
         const data = await profileService.getMyProfile();
         if (!mounted) return;
-
         if (data?.profile) {
-          const fullName = `${data.profile.nombre ?? ""} ${data.profile.apellido ?? ""}`.trim();
-          setProfileName(fullName);
+          setProfileName(`${data.profile.nombre ?? ""} ${data.profile.apellido ?? ""}`.trim());
         } else {
           setProfileName("");
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error("Error cargando perfil en Header:", error);
       }
     };
 
-    if (isLoggedIn) fetchProfile();
-
+    fetchProfile();
     return () => { mounted = false; };
   }, [isLoggedIn]);
+
+  // Cargar estado del estudio
+  useEffect(() => {
+    const fetchMyStudios = async () => {
+      try {
+        if (user?.role === "Dueño de Estudio" && isLoggedIn) {
+          const studios = await OwnerService.getMyStudios();
+          if (studios.length > 0) {
+            const status = studios[0].status || null;
+            setStudioStatus(status);
+
+            // Guardar en cookie para middleware
+            if (typeof window !== "undefined") {
+              document.cookie = `studioStatus=${status}; path=/`;
+            }
+          } else {
+            setStudioStatus(null);
+          }
+        }
+      } catch (error) {
+        console.error("Error obteniendo estudio del dueño:", error);
+        setStudioStatus(null);
+      } finally {
+        setLoadingStudioStatus(false);
+      }
+    };
+
+    if (isLoggedIn) fetchMyStudios();
+    else setLoadingStudioStatus(false);
+  }, [user, isLoggedIn]);
 
   const MenuLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
     <Link
@@ -127,12 +154,18 @@ export const Header = () => {
                   <TbLogin size={30} className="mr-2" /> Cerrar sesión
                 </button>
 
-                <button className="text-white flex cursor-pointer hover:bg-sky-800 p-2 rounded-lg" onClick={toggleMenu}>
+                <button
+                  className="text-white flex cursor-pointer hover:bg-sky-800 p-2 rounded-lg"
+                  onClick={toggleMenu}
+                >
                   <IoMdMenu size={30} className="mr-2" /> Menú
                 </button>
               </>
             ) : (
-              <button onClick={openLoginModal} className="text-white hover:bg-sky-800 cursor-pointer flex p-2 mr-5 rounded-lg">
+              <button
+                onClick={openLoginModal}
+                className="text-white hover:bg-sky-800 cursor-pointer flex p-2 mr-5 rounded-lg"
+              >
                 <CiLogin size={30} className="mr-2" /> Iniciar sesión
               </button>
             )}
@@ -149,7 +182,9 @@ export const Header = () => {
 
       {/* Drawer Mobile */}
       <div
-        className={`fixed top-0 left-0 h-full w-full z-50 transition-opacity duration-300 ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+        className={`fixed top-0 left-0 h-full w-full z-50 transition-opacity duration-300 ${
+          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
         onClick={closeMenu}
       >
         <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 lg:hidden"></div>
@@ -169,7 +204,6 @@ export const Header = () => {
           <ul className="flex flex-col mt-6 space-y-4 p-6">
             {isLoggedIn ? (
               <>
-                {/* Mi perfil */}
                 {user?.role !== "Administrador" && (
                   <li>
                     <MenuLink href="/musicianProfile">
@@ -178,24 +212,22 @@ export const Header = () => {
                   </li>
                 )}
 
-                {/* Solo músicos pueden ver Explorar estudios */}
                 {user?.role === "Músico" && (
-                  <li>
-                    <MenuLink href="/search">
-                      <IoMdSearch size={26} className="mr-3" /> Explorar estudios
-                    </MenuLink>
-                  </li>
+                  <>
+                    <li>
+                      <MenuLink href="/search">
+                        <IoMdSearch size={26} className="mr-3" /> Explorar estudios
+                      </MenuLink>
+                    </li>
+                    <li>
+                      <MenuLink href="/myBookings">
+                        <FaCalendarCheck size={24} className="mr-3" /> Mis reservas
+                      </MenuLink>
+                    </li>
+                  </>
                 )}
 
-                {user?.role === "Músico" && (
-                  <li>
-                    <MenuLink href="/myBookings">
-                      <FaCalendarCheck size={24} className="mr-3" /> Mis reservas
-                    </MenuLink>
-                  </li>
-                )}
-
-                {user?.role === "Dueño de Estudio" && (
+                {user?.role === "Dueño de Estudio" && !loadingStudioStatus && (
                   <>
                     <li>
                       <MenuLink href="/memberships">
@@ -207,28 +239,31 @@ export const Header = () => {
                         <MdAppRegistration size={24} className="mr-3" /> Registrar mi estudio
                       </MenuLink>
                     </li>
-                    <li>
-                      <MenuLink href="/studioDashboard">
-                        <MdOutlineDashboardCustomize size={24} className="mr-3" /> Dashboard
-                      </MenuLink>
-                    </li>
-                    <li>
-                      <MenuLink href="/myStudio">
-                        <FaBuilding size={24} className="mr-3" /> Mi estudio
-                      </MenuLink>
-                    </li>
-                    <li>
-                      <MenuLink href="/studioRooms">
-                        <CgStudio size={24} className="mr-3" /> Mis salas
-                      </MenuLink>
-                    </li>
-                     {/* 🚀 NUEVO LINK AGREGADO AQUÍ */}
-                    <li>
-                      <MenuLink href="/bankAccountForm">
-                        <FaPiggyBank size={24} className="mr-3" /> Cuenta Bancaria
-                      </MenuLink>
-                    </li>
-                    {/* 🚀 FIN DE CAMBIO */}
+
+                    {studioStatus === StudioStatus.APPROVED && (
+                      <>
+                        <li>
+                          <MenuLink href="/studioDashboard">
+                            <MdOutlineDashboardCustomize size={24} className="mr-3" /> Dashboard
+                          </MenuLink>
+                        </li>
+                        <li>
+                          <MenuLink href="/myStudio">
+                            <FaBuilding size={24} className="mr-3" /> Mi estudio
+                          </MenuLink>
+                        </li>
+                        <li>
+                          <MenuLink href="/studioRooms">
+                            <CgStudio size={24} className="mr-3" /> Mis salas
+                          </MenuLink>
+                        </li>
+                        <li>
+                          <MenuLink href="/bankAccountForm">
+                            <FaPiggyBank size={24} className="mr-3" /> Cuenta Bancaria
+                          </MenuLink>
+                        </li>
+                      </>
+                    )}
                   </>
                 )}
 
@@ -241,7 +276,7 @@ export const Header = () => {
                     </li>
                     <li>
                       <MenuLink href="/admin/users">
-                        <FaUserCog size={24} className="mr-3" /> Usuarios
+                        <FaUser size={24} className="mr-3" /> Usuarios
                       </MenuLink>
                     </li>
                     <li>
@@ -281,7 +316,10 @@ export const Header = () => {
                 <li>
                   <button
                     className="block py-2 px-3 text-white rounded hover:bg-gray-800 w-full text-left"
-                    onClick={() => { openLoginModal(); closeMenu(); }}
+                    onClick={() => {
+                      openLoginModal();
+                      closeMenu();
+                    }}
                   >
                     Iniciar sesión
                   </button>
