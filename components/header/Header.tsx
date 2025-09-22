@@ -21,6 +21,7 @@ import { useIsAuth, useAuthUser, useAuthStore } from "@/stores/AuthStore";
 import { Modal } from "@/components/modal/modal";
 import LoginPage from "@/components/login/login";
 import { profileService } from "@/services/musician.services";
+import { FaPiggyBank } from "react-icons/fa6";
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -221,6 +222,13 @@ export const Header = () => {
                         <CgStudio size={24} className="mr-3" /> Mis salas
                       </MenuLink>
                     </li>
+                     {/* 🚀 NUEVO LINK AGREGADO AQUÍ */}
+                    <li>
+                      <MenuLink href="/bankAccountForm">
+                        <FaPiggyBank size={24} className="mr-3" /> Cuenta Bancaria
+                      </MenuLink>
+                    </li>
+                    {/* 🚀 FIN DE CAMBIO */}
                   </>
                 )}
 

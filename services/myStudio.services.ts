@@ -13,6 +13,7 @@ export type Studio = {
   rating?: number;
   reviewsCount?: number;
   services?: string[]; 
+  status?: string;
 };
 
 export type Room = {
