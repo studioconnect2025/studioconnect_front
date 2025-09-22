@@ -144,6 +144,15 @@ export const AdminStudiosService = {
     const counts = await AdminStudiosService.countByStatus();
     return counts["aprovado"] ?? counts["aprovado"] ?? 0;
   },
+
+   /** Total de pendientes (cuenta robusta según el tipo de respuesta) */
+  async countPending(): Promise<number> {
+    const resp = await AdminStudiosService.getPending({ page: 1, pageSize: 1 });
+    if (Array.isArray(resp)) return resp.length;
+    return Number(resp.total ?? resp.items?.length ?? 0);
+  },
+
+  
 };
 
 export { normalizeStatus };
