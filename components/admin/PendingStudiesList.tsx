@@ -1,4 +1,3 @@
-// components/admin/PendingStudiesList.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -10,6 +9,7 @@ import {
 } from "@/services/admin/AdminStudios";
 import { useStudiosStore } from "@/stores/admin/StudiosStore";
 import { toast } from "react-toastify";
+import { btnSecondary, btnPrimary, btnDanger } from "@/components/admin/ui";
 
 function getItems(data: PendingResponse): AdminStudio[] {
   return Array.isArray(data) ? data : data.items;
@@ -52,7 +52,7 @@ export default function PendingStudiesList() {
     try {
       await AdminStudiosService.updateRequestStatus(id, { status: "approved" });
       toast.success("Estudio aprobado correctamente");
-      await Promise.all([fetchPage(page), refreshAll()]); // 👈 refresca lista y métricas
+      await Promise.all([fetchPage(page), refreshAll()]);
     } catch (e: any) {
       toast.error(e?.message ?? "Error al aprobar. Intenta nuevamente.");
     }
@@ -60,10 +60,7 @@ export default function PendingStudiesList() {
 
   const handleReject = async (id: string, message: string) => {
     try {
-      await AdminStudiosService.updateRequestStatus(id, {
-        status: "rejected",
-        message,
-      });
+      await AdminStudiosService.updateRequestStatus(id, { status: "rejected", message });
       toast.info("Solicitud enviada a revisión");
       await Promise.all([fetchPage(page), refreshAll()]);
     } catch (e: any) {
@@ -87,7 +84,6 @@ export default function PendingStudiesList() {
           <li className="px-5 py-10 text-center text-gray-500">No hay solicitudes pendientes</li>
         ) : (
           items.map((s) => {
-            // A veces pendientes trae id de solicitud y el endpoint espera id del estudio
             const processId = (s as any).studio?.id ?? s.id;
 
             return (
@@ -101,21 +97,21 @@ export default function PendingStudiesList() {
                 <div className="col-span-6 flex justify-end gap-2">
                   <button
                     type="button"
-                    className="rounded-md border border-gray-200 px-3 py-1.5 text-sm hover:bg-gray-50"
+                    className={btnSecondary}
                     onClick={() => setOpenId(s.id)}
                   >
                     Ver documentos
                   </button>
                   <button
                     type="button"
-                    className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm text-emerald-700 hover:bg-emerald-100"
+                    className={btnPrimary}
                     onClick={() => handleApprove(processId)}
                   >
                     Aprobar
                   </button>
                   <button
                     type="button"
-                    className="rounded-md border border-rose-200 bg-rose-50 px-3 py-1.5 text-sm text-rose-700 hover:bg-rose-100"
+                    className={btnDanger}
                     onClick={() => setRejectId(processId)}
                   >
                     Desaprobar
@@ -127,7 +123,10 @@ export default function PendingStudiesList() {
                   <ReviewDialog
                     title={`Documentación de ${s.name}`}
                     onClose={() => setOpenId(null)}
-                    documents={(s as any).documents ?? (s as any).comercialRegister ? [(s as any).comercialRegister] : []}
+                    documents={
+                      (s as any).documents ??
+                      ((s as any).comercialRegister ? [(s as any).comercialRegister] : [])
+                    }
                   />
                 )}
 
@@ -137,7 +136,7 @@ export default function PendingStudiesList() {
                     title={`Motivo de rechazo — ${s.name}`}
                     mode="reject"
                     onClose={() => setRejectId(null)}
-                    onSubmit={(msg) => handleReject(processId, msg)}
+                    onSubmit={(msg) => handleReject(processId, msg || "")}
                   />
                 )}
               </li>
@@ -149,7 +148,7 @@ export default function PendingStudiesList() {
       {/* Paginación */}
       <div className="flex items-center justify-between px-5 py-3">
         <button
-          className="rounded-md border border-gray-200 px-3 py-1.5 text-sm disabled:opacity-50"
+          className={`${btnSecondary} disabled:opacity-50`}
           disabled={page === 1}
           onClick={() => setPage((p) => Math.max(1, p - 1))}
         >
@@ -159,7 +158,7 @@ export default function PendingStudiesList() {
           {total} resultados • Página {page} / {totalPages}
         </span>
         <button
-          className="rounded-md border border-gray-200 px-3 py-1.5 text-sm disabled:opacity-50"
+          className={`${btnSecondary} disabled:opacity-50`}
           disabled={page >= totalPages}
           onClick={() => setPage((p) => p + 1)}
         >
