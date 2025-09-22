@@ -13,33 +13,42 @@ export default function SSOPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
+    const redirect = params.get("redirect") || "/";
 
     if (!token) {
+      // limpia storage y cookie si vino sin token
       localStorage.removeItem("accessToken");
+      document.cookie = "accessToken=; Path=/; Max-Age=0; SameSite=Lax";
       setAuth({ accessToken: null, user: null });
-      router.replace("/"); // sin /login
+      router.replace("/");
       return;
     }
 
     try {
+      // guarda para el cliente
       localStorage.setItem("accessToken", token);
+
+      // cookie legible por middleware (parche A)
+      document.cookie = `accessToken=${token}; Path=/; Max-Age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+
       const claims = parseJwt<{ sub?: string; email?: string; role?: string }>(token);
       const user: User | null = claims
         ? {
-            id: claims.sub ?? "",
-            email: claims.email ?? "",
-            role: claims.role,
-            name: (claims.email?.split("@")[0] ?? "") as string,
-          }
+          id: claims.sub ?? "",
+          email: claims.email ?? "",
+          role: claims.role,
+          name: (claims.email?.split("@")[0] ?? "") as string,
+        }
         : null;
 
       setAuth({ accessToken: token, user });
-      router.replace("/"); // Home
+      router.replace(redirect);
     } catch (e) {
       console.error("SSO error:", e);
       localStorage.removeItem("accessToken");
+      document.cookie = "accessToken=; Path=/; Max-Age=0; SameSite=Lax";
       setAuth({ accessToken: null, user: null });
-      router.replace("/"); // Home
+      router.replace("/");
     }
   }, [router, setAuth]);
 
