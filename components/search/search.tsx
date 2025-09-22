@@ -113,7 +113,7 @@ export default function Search() {
     return (
         <section className="bg-white flex flex-col items-center w-full">
             {/* Hero con BannerSearch responsive */}
-            <div className="w-full bg-sky-700 py-8 px-4 flex flex-col items-center">
+            <div className="w-full bg-sky-800 py-8 px-4 flex flex-col items-center">
                 <div className="flex flex-col items-center text-center">
                     <h2 className="text-white text-2xl sm:text-3xl md:text-2xl font-semibold mb-3">
                         Encuentra tu estudio ideal
