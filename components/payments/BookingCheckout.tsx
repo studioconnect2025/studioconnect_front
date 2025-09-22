@@ -27,7 +27,7 @@ export default function BookingCheckout({ bookingId, instrumentIds = [] }: Booki
         if (!token) throw new Error("No hay sesión activa. Iniciá sesión para pagar.");
 
         const { data } = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}payments/booking`,
+          `${process.env.NEXT_PUBLIC_API_URL}payments/booking`, //revisar
           { bookingId, instrumentIds },
           {
             headers: {
@@ -56,7 +56,7 @@ export default function BookingCheckout({ bookingId, instrumentIds = [] }: Booki
       const result = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/payments/success`,
+          return_url: `${window.location.origin}/myBookings`
         },
         redirect: "if_required", // evita redirect automático si no es necesario
       });
@@ -74,7 +74,7 @@ export default function BookingCheckout({ bookingId, instrumentIds = [] }: Booki
         }
 
         // redirigimos al perfil (misma página para ambos roles)
-        router.push("/musicianProfile");
+        router.push("/myBookings");
       } else {
         // si Stripe hizo redirect, la confirmación se tratará en /payments/success
         // pero por seguridad, guardamos si tenemos paymentIntent

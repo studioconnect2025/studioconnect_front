@@ -328,6 +328,7 @@ const AddInstrumentModal: FC<AddInstrumentModalProps> = ({ roomId, onClose, onAd
     );
 };
 
+
 // ==================== RoomsGrid ====================
 const RoomsGrid: FC = () => {
     const [rooms, setRooms] = useState<RoomType[]>([]);
