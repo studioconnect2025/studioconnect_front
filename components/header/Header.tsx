@@ -21,6 +21,7 @@ import { useIsAuth, useAuthUser, useAuthStore } from "@/stores/AuthStore";
 import { Modal } from "@/components/modal/modal";
 import LoginPage from "@/components/login/login";
 import { profileService } from "@/services/musician.services";
+import { FaPiggyBank } from "react-icons/fa6";
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -154,7 +155,7 @@ export const Header = () => {
         <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 lg:hidden"></div>
 
         <div
-          className={`absolute   top-0 left-0 lg:right-0 lg:left-auto h-full bg-black text-white transform transition-transform duration-300 ${
+          className={`absolute top-0 left-0 lg:right-0 lg:left-auto h-full bg-black text-white transform transition-transform duration-300 ${
             isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-full"
           } w-full sm:w-64 lg:w-[400px]`}
           onClick={(e) => e.stopPropagation()}
@@ -177,11 +178,14 @@ export const Header = () => {
                   </li>
                 )}
 
-                <li>
-                  <MenuLink href="/search">
-                    <IoMdSearch size={26} className="mr-3" /> Explorar estudios
-                  </MenuLink>
-                </li>
+                {/* Solo músicos pueden ver Explorar estudios */}
+                {user?.role === "Músico" && (
+                  <li>
+                    <MenuLink href="/search">
+                      <IoMdSearch size={26} className="mr-3" /> Explorar estudios
+                    </MenuLink>
+                  </li>
+                )}
 
                 {user?.role === "Músico" && (
                   <li>
@@ -218,6 +222,13 @@ export const Header = () => {
                         <CgStudio size={24} className="mr-3" /> Mis salas
                       </MenuLink>
                     </li>
+                     {/* 🚀 NUEVO LINK AGREGADO AQUÍ */}
+                    <li>
+                      <MenuLink href="/bankAccountForm">
+                        <FaPiggyBank size={24} className="mr-3" /> Cuenta Bancaria
+                      </MenuLink>
+                    </li>
+                    {/* 🚀 FIN DE CAMBIO */}
                   </>
                 )}
 

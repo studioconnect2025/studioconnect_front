@@ -56,11 +56,11 @@ export default function Home() {
                     </div>
                 </div>
             </div>
-            {/* Si es dueño de estudio -> OwnerToolbar, si es musico -> BannerSearch */}
+           <div  data-aos="fade-right"
+                data-aos-delay="300">
+             {/* Si es dueño de estudio -> OwnerToolbar, si es musico -> BannerSearch */}
             <div
-                className="bg-white flex flex-col items-center p-4 sm:p-6"
-                data-aos="fade-right"
-                data-aos-delay="300"
+                className="bg-white flex flex-col items-center p-4 sm:p-6  relative z-20"
             >
                 <div className="w-full max-w-6xl">
                     {user?.role === "Dueño de Estudio" ? (
@@ -85,13 +85,12 @@ export default function Home() {
             {/* Mapa de ubicación */}
             <div
                 className="bg-white flex flex-col items-center p-4 sm:p-6 "
-                data-aos="fade-right"
-                data-aos-delay="500"
             >
-                <div className="w-full max-w-6xl rounded-xl shadow-lg">
+                <div className="w-full max-w-6xl rounded-xl shadow-lg  relative z-0">
                     <ClientUserLocationMap center={userCenter} />
                 </div>
             </div>
+           </div>
             {/* Estudios destacados */}
             <div
                 className="bg-white flex flex-col items-center p-4 sm:p-6 -mt-6"
