@@ -109,7 +109,7 @@ export default function Home() {
 
       {/* Sección principal */}
       <div
-        className="bg-white flex flex-col items-center p-4 sm:p-6 relative z-20"
+        className="bg-white flex flex-col items-center p-4 relative z-20"
         data-aos="fade-right"
         data-aos-delay={300}
       >
@@ -166,9 +166,9 @@ export default function Home() {
       </div>
 
       {/* Mapa */}
-      <div className="bg-white flex flex-col items-center p-4 sm:p-6">
+      <div className="bg-white flex flex-col items-center">
         <div className="w-full max-w-6xl rounded-xl shadow-lg relative z-0">
-          <ClientUserLocationMap center={userCenter} />
+          <ClientUserLocationMap defaultCenter={userCenter} />
         </div>
       </div>
 

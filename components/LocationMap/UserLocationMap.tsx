@@ -1,13 +1,10 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Link from "next/link";
 import { OwnerService, Studio } from "@/services/studio.services";
 
-// Íconos
 const studioIcon = new L.Icon({
   iconUrl: "/ubicacion.png",
   iconRetinaUrl: "/ubicacion.png",
@@ -18,33 +15,28 @@ const studioIcon = new L.Icon({
 
 const userIcon = new L.Icon({
   iconUrl: "/ubication2.png",
-  iconRetinaUrl: "/ubicacion2.png",
+  iconRetinaUrl: "/ubication2.png",
   iconSize: [47, 60],
   iconAnchor: [28, 61],
   popupAnchor: [0, -61],
 });
 
-// Dynamic MapContainer para evitar SSR
 const DynamicMapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
   { ssr: false }
 );
-
 const DynamicTileLayer = dynamic(
   () => import("react-leaflet").then((mod) => mod.TileLayer),
   { ssr: false }
 );
-
 const DynamicMarker = dynamic(
   () => import("react-leaflet").then((mod) => mod.Marker),
   { ssr: false }
 );
-
 const DynamicPopup = dynamic(
   () => import("react-leaflet").then((mod) => mod.Popup),
   { ssr: false }
 );
-
 const DynamicTooltip = dynamic(
   () => import("react-leaflet").then((mod) => mod.Tooltip),
   { ssr: false }
@@ -52,9 +44,10 @@ const DynamicTooltip = dynamic(
 
 interface StudiosMapProps {
   center: [number, number];
+  defaultCenter?: [number, number];
 }
 
-export default function StudiosMap({ center }: StudiosMapProps) {
+export default function StudiosMap({ center, defaultCenter }: StudiosMapProps) {
   const [studios, setStudios] = useState<Studio[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -72,6 +65,9 @@ export default function StudiosMap({ center }: StudiosMapProps) {
     }
     fetchStudios();
   }, []);
+
+ 
+  const mapCenter: [number, number] = center || defaultCenter || [-34.6037, -58.3816]; 
 
   if (loading) {
     return (
@@ -91,14 +87,14 @@ export default function StudiosMap({ center }: StudiosMapProps) {
 
   return (
     <div className="h-80 w-full rounded-xl overflow-hidden">
-      <DynamicMapContainer center={center} zoom={10} className="h-full w-full">
+      <DynamicMapContainer center={mapCenter} zoom={10} className="h-full w-full">
         <DynamicTileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
         {/* Marcador usuario */}
-        <DynamicMarker position={center} icon={userIcon}>
+        <DynamicMarker position={mapCenter} icon={userIcon}>
           <DynamicTooltip direction="top" offset={[0, -55]} opacity={1} permanent>
             <span className="font-bold text-sm text-sky-700">Tú</span>
           </DynamicTooltip>
