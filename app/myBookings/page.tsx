@@ -7,8 +7,7 @@ import { OwnerService, Studio } from "@/services/studio.services";
 import Swal from "sweetalert2";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import { useRouter } from "next/navigation"
-
+import { useRouter } from "next/navigation";
 
 interface BookingWithStudio extends Booking {
   studioData?: Studio;
@@ -28,15 +27,13 @@ const Reservas = () => {
     try {
       setLoading(true);
       const data = await BookingService.getMyBookings();
-
-      // Traer datos de cada estudio
       const bookingsWithStudio = await Promise.all(
         data.map(async (b) => {
           try {
             const studioData = await OwnerService.getStudioById(b.studio);
-            return { ...b, studioData };
+            return { ...b, studioData, totalPrice: b.totalPrice };
           } catch {
-            return b; 
+            return { ...b, totalPrice: b.totalPrice };
           }
         })
       );
@@ -54,7 +51,7 @@ const Reservas = () => {
     const now = new Date();
     const bookingDate = new Date(startTime);
     const diffInDays = (bookingDate.getTime() - now.getTime()) / (1000 * 3600 * 24);
-    return diffInDays >= 2; 
+    return diffInDays >= 2;
   };
 
   const cancelReservation = async (bookingId: string) => {
@@ -116,7 +113,6 @@ const Reservas = () => {
     toast.success(`Reserva calificada con ${stars} estrellas`);
   };
 
-  // 🔹 Traducción de estados del backend al front
   const translateStatus = (status: string) => {
     switch (status) {
       case "PENDING": return "Pendiente";
@@ -240,7 +236,6 @@ const Reservas = () => {
                 <div className="flex flex-col sm:flex-row items-end sm:items-center sm:space-x-6 mt-3 sm:mt-0">
                   <p className="font-semibold text-gray-800 mb-2 sm:mb-0">Total ${b.totalPrice}</p>
 
-                  {/* Puntuación con estrellas */}
                   <div className="flex items-center gap-1">
                     {[1,2,3,4,5].map(star => (
                       <FaStar
