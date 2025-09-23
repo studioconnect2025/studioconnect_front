@@ -110,7 +110,7 @@ const CrearSalaForm = () => {
                             };
 
                             const createdRoom = await roomsService.createRoom({
-                                token,
+                                token, 
                                 roomData: roomPayload,
                             });
 

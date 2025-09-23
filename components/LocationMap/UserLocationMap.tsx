@@ -14,9 +14,9 @@ const studioIcon = new L.Icon({
 });
 
 const userIcon = new L.Icon({
-  iconUrl: "/ubication2.png",
-  iconRetinaUrl: "/ubication2.png",
-  iconSize: [47, 60],
+  iconUrl: "/ubicacion2.png",
+  iconRetinaUrl: "/ubicacion2.png",
+  iconSize: [40, 60],
   iconAnchor: [28, 61],
   popupAnchor: [0, -61],
 });
