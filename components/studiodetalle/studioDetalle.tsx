@@ -8,9 +8,10 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useAuthUser, useIsAuth } from "@/stores/AuthStore";
+import StudioLocationMap from "../LocationMap/StudioLocationMap";
 
-const ClientUserLocationMap = dynamic(
-    () => import("@/components/LocationMap/ClientUserLocationMap"),
+const StudioMap = dynamic(
+    () => import("@/components/LocationMap/StudioMap"),
     { ssr: false }
 );
 
@@ -285,7 +286,9 @@ export default function StudioDetailsClient({ studio }: any) {
                             <h2 className="text-lg sm:text-xl font-semibold mb-2 text-amber-50">
                                 Ubicación
                             </h2>
-                            <ClientUserLocationMap defaultCenter={center} />
+                          <StudioMap center={center} />
+
+
                             <p className="mt-1 text-sm text-white">
                                 {studio.address ?? studio.city}
                             </p>
