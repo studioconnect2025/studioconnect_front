@@ -4,12 +4,12 @@ import { FaGithub } from "react-icons/fa";
 
 const colaboradores = [
   { nombre: "Ezequiel Petruzzi", github: "https://github.com/epetruzzi" },
-  { nombre: "Daiana L.", github: "https://github.com/Daiana-L" },
+  { nombre: "Daiana Lopez", github: "https://github.com/Daiana-L" },
   { nombre: "Mariano Ricoy", github: "https://github.com/MarianoRicoy" },
   { nombre: "Vicky Gallo", github: "https://github.com/VickyGallo" },
-  { nombre: "Shxntiyi", github: "https://github.com/Shxntiyi" },
+  { nombre: "Angel Tarazona", github: "https://github.com/Shxntiyi" },
   { nombre: "Rafael Álvarez", github: "https://github.com/RafaelAlvarezSM" },
-  { nombre: "Jesús VG", github: "https://github.com/JesusVG1" },
+  { nombre: "Jesús Valadez", github: "https://github.com/JesusVG1" },
 ];
 
 export function Footer() {
@@ -30,17 +30,16 @@ export function Footer() {
           </span>
           <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mt-4">
             {colaboradores.map((colaborador, index) => (
-              <div key={index} className="flex flex-col items-center gap-1 sm:gap-2 w-[100px]">
-                <a
-                  href={colaborador.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex flex-col items-center gap-1 text-white hover:text-gray-300 text-[10px] sm:text-sm"
-                >
-                  <FaGithub className="h-5 w-5 sm:h-8 sm:w-8" />
-                  <span className="text-center">{colaborador.nombre}</span>
-                </a>
-              </div>
+              <a
+                key={index}
+                href={colaborador.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-center gap-1 sm:gap-2 w-auto min-w-[100px] text-white hover:text-gray-300 text-[10px] sm:text-sm"
+              >
+                <FaGithub className="h-5 w-5 sm:h-8 sm:w-8" />
+                <span className="whitespace-nowrap text-center">{colaborador.nombre}</span>
+              </a>
             ))}
           </div>
         </div>

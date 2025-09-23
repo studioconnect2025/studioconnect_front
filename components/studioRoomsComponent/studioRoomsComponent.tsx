@@ -474,12 +474,13 @@ const RoomsGrid: FC = () => {
     setRooms((prev) => prev.map((r) => (r.id === updatedRoom.id ? { ...r, ...updatedRoom } : r)));
   };
 
-  if (loading)
-    return (
-      <div className="flex min-h-[70vh] items-center justify-center bg-white">
-        <p className="text-gray-700">Cargando salas...</p>
-      </div>
-    );
+  if (loading) {
+  return (
+    <div className="w-full h-screen flex justify-center items-center bg-white">
+      <div className="w-16 h-16 border-4 border-t-sky-700 border-gray-200 rounded-full animate-spin"></div>
+    </div>
+  );
+}
 
   if (error)
     return (

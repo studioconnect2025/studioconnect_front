@@ -158,7 +158,14 @@ export default function MyStudioClient() {
     }
   };
 
-  if (loading) return <div className="bg-white rounded-lg border p-6">Cargando…</div>;
+ if (loading) {
+  return (
+    <div className="w-full h-screen flex justify-center items-center bg-white">
+      <div className="w-16 h-16 border-4 border-t-sky-700 border-gray-200 rounded-full animate-spin"></div>
+    </div>
+  );
+}
+
   if (err) return <div className="bg-red-50 text-red-700 rounded-lg border border-red-200 p-6">{err}</div>;
   if (!studio) return <div className="bg-white rounded-lg border p-6">No se encontró tu estudio.</div>;
 
@@ -167,15 +174,8 @@ export default function MyStudioClient() {
 
   return (
     <div className="bg-white text-slate-900">
-      <div className="w-full bg-sky-800">
-        <div className="mx-auto max-w-6xl px-4 md:px-6 py-3 md:py-4">
-          <h1 className="text-center text-white text-xl md:text-2xl font-semibold">Mi Estudio</h1>
-          <p className="mt-1 text-center text-white/80 text-xs md:text-sm">Gestiona la información y configuración de tu estudio</p>
-        </div>
-      </div>
-
       <div className="py-6 md:py-8 space-y-6 md:space-y-8">
-        <section className="mx-auto max-w-4xl px-4">
+        <section className="mx-auto max-w-6xl px-4">
           <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
             <div className="relative h-56 md:h-64">
               {galleryPhotos.length ? (
@@ -262,7 +262,7 @@ export default function MyStudioClient() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-5xl px-4">
+        <section className="mx-auto max-w-6xl px-4">
           <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-slate-900 font-semibold">Información del Estudio</h3>
