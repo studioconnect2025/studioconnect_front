@@ -207,7 +207,7 @@ export default function StudioDetailsClient({ studio }: any) {
             {/* Mapa */}
             <section className="rounded-xl border border-white/20 bg-gradient-to-b from-[#036D9D] to-[#0B0F12] p-4 sm:p-6 shadow-md">
               <h2 className="text-lg sm:text-xl font-semibold mb-2 text-amber-50">Ubicación</h2>
-              <ClientUserLocationMap center={center} />
+             <ClientUserLocationMap defaultCenter={center} />
               <p className="mt-1 text-sm text-white">{studio.address ?? studio.city}</p>
             </section>
           </div>
