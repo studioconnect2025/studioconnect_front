@@ -1,6 +1,25 @@
 import { http } from "@/lib/http";
 
 /**
+ * Enums
+ */
+export enum BookingStatus {
+  PENDING = "PENDING",
+  CONFIRMED = "CONFIRMED",
+  CANCELLED = "CANCELLED", // cancelada por el dueño
+  CANCELED = "CANCELED", // cancelada por el músico
+  COMPLETADO = "COMPLETADO",
+  CANCELADA = "CANCELADA", // para backend legacy
+}
+
+
+export enum BookingAction {
+  ACTIVE = "ACTIVA",
+  CANCELED = "CANCELADA",
+  REPROGRAMMED = "REPROGRAMADA",
+}
+
+/**
  * Interfaces
  */
 export interface InstrumentBooking {
@@ -11,14 +30,15 @@ export interface InstrumentBooking {
 
 export interface Booking {
   id: string;
-  studio: string;            // estudio asociado
-  room: string;              // nombre de la sala
-  roomId?: string;           // 🔹 opcional: algunos endpoints devuelven roomId
-  userId?: string;           // 🔹 opcional: solo para dueño
+  studio: string;
+  room: string;
+  roomId?: string;
+  userId?: string;
   startTime: string;
   endTime: string;
   totalPrice: number;
-  status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETADO" | "PENDIENTE";
+  status: BookingStatus;
+  action?: BookingAction; // opcional para acción del músico
   isPaid?: boolean;
   instruments?: InstrumentBooking[];
 }
@@ -26,8 +46,8 @@ export interface Booking {
 export interface BookingPayload {
   studioId: string;
   roomId: string;
-  startTime: string;     // ISO string
-  endTime: string;       // ISO string
+  startTime: string;
+  endTime: string;
   instrumentIds?: string[];
 }
 
@@ -35,9 +55,6 @@ export interface BookingPayload {
  * BookingService
  */
 export const BookingService = {
-  /**
-   * Crear una nueva reserva
-   */
   async createBooking(payload: BookingPayload) {
     try {
       const { data } = await http.post("/bookings", payload);
@@ -48,9 +65,6 @@ export const BookingService = {
     }
   },
 
-  /**
-   * Obtener todas mis reservas (músico)
-   */
   async getMyBookings(): Promise<Booking[]> {
     try {
       const { data } = await http.get<Booking[]>("/bookings/musician/my-bookings");
@@ -61,9 +75,6 @@ export const BookingService = {
     }
   },
 
-  /**
-   * Obtener reservas de un usuario específico (ej. dueño)
-   */
   async getUserBookings(userId: string): Promise<Booking[]> {
     try {
       const { data } = await http.get<Booking[]>(`/bookings/user/${userId}`);
@@ -82,7 +93,7 @@ export const BookingService = {
       const token = localStorage.getItem("token");
       const { data } = await http.patch(
         `/bookings/musician/${bookingId}/cancel`,
-        {},
+        undefined,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -94,9 +105,6 @@ export const BookingService = {
     }
   },
 
-  /**
-   * Iniciar pago de una reserva
-   */
   async payBooking(payload: { bookingId: string; instrumentIds?: string[] }) {
     try {
       const { data } = await http.post("/payments/booking", payload);
@@ -107,9 +115,6 @@ export const BookingService = {
     }
   },
 
-  /**
-   * Confirmar un pago (Stripe webhook / client confirmación)
-   */
   async confirmPayment(paymentIntentId: string) {
     try {
       const { data } = await http.get(`/payments/confirm/${paymentIntentId}`);
@@ -120,9 +125,6 @@ export const BookingService = {
     }
   },
 
-  /**
-   * Capturar pago (solo dueño del estudio)
-   */
   async capturePayment(paymentIntentId: string) {
     try {
       const { data } = await http.post(`/payments/capture/${paymentIntentId}`);

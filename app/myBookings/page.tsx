@@ -50,11 +50,7 @@ const Reservas = () => {
     try {
       setLoading(true);
       const data = await BookingService.getMyBookings();
-      const normalized = data.map((b) => ({
-        ...b,
-        totalPrice: typeof b.totalPrice === "string" ? parseFloat(b.totalPrice) : b.totalPrice,
-      }));
-      setBookings(normalized);
+      setBookings(data); // mantenemos tal cual viene del backend
     } catch (error) {
       console.error(error);
       toast.error("Error al cargar tus reservas");
@@ -63,12 +59,28 @@ const Reservas = () => {
     }
   };
 
+  // Nuevo: contar cancelaciones del día
+  const getTodayCancellations = () => {
+    const today = new Date();
+    return bookings.filter((b) => {
+      const updatedAt = new Date(b.startTime);
+      return (
+        b.status === "CANCELADA" &&
+        updatedAt.getDate() === today.getDate() &&
+        updatedAt.getMonth() === today.getMonth() &&
+        updatedAt.getFullYear() === today.getFullYear()
+      );
+    }).length;
+  };
+
   const canCancel = (startTime?: string) => {
     if (!startTime) return false;
     const now = new Date();
     const bookingDate = new Date(startTime);
     const diffInDays = (bookingDate.getTime() - now.getTime()) / (1000 * 3600 * 24);
-    return diffInDays >= 2;
+
+    // Se puede cancelar si faltan al menos 2 días y no se superó el límite diario
+    return diffInDays >= 2 && getTodayCancellations() < 2;
   };
 
   const cancelReservation = async (bookingId: string) => {
@@ -76,7 +88,9 @@ const Reservas = () => {
     if (!booking) return;
 
     if (!canCancel(booking.startTime)) {
-      toast.error("No se puede cancelar esta reserva: faltan menos de 2 días o límite diario alcanzado.");
+      toast.error(
+        "No se puede cancelar esta reserva: faltan menos de 2 días o ya alcanzaste el límite diario de cancelaciones."
+      );
       return;
     }
 
@@ -93,22 +107,33 @@ const Reservas = () => {
 
     if (result.isConfirmed) {
       try {
-        await BookingService.cancelBooking(bookingId);
-        toast.success("Reserva cancelada correctamente");
+        const updatedBooking = await BookingService.cancelBooking(bookingId);
+
         setBookings((prev) =>
-          prev.map((b) => (b.id === bookingId ? { ...b, status: "CANCELLED" } : b))
+          prev.map((b) => (b.id === bookingId ? { ...b, status: updatedBooking.status } : b))
         );
-      } catch (error) {
+
+        toast.success("Reserva cancelada correctamente");
+      } catch (error: any) {
         console.error(error);
-        toast.error("Error al cancelar la reserva");
+
+        if (error?.response?.data?.message) {
+          toast.error(error.response.data.message);
+        } else {
+          toast.error("Error al cancelar la reserva");
+        }
       }
     }
   };
 
   const now = new Date();
-  const proximas = bookings.filter((b) => b.startTime && new Date(b.startTime) >= now && b.status !== "CANCELLED");
-  const pasadas = bookings.filter((b) => b.startTime && new Date(b.startTime) < now && b.status !== "CANCELLED");
-  const canceladas = bookings.filter((b) => b.status === "CANCELLED");
+  const proximas = bookings.filter(
+    (b) => b.startTime && new Date(b.startTime) >= now && b.status !== "CANCELADA"
+  );
+  const pasadas = bookings.filter(
+    (b) => b.startTime && new Date(b.startTime) < now && b.status !== "CANCELADA"
+  );
+  const canceladas = bookings.filter((b) => b.status === "CANCELADA");
 
   const formatDuration = (start?: string, end?: string) => {
     if (!start || !end) return "";
@@ -126,14 +151,16 @@ const Reservas = () => {
 
   const translateStatus = (status: string) => {
     switch (status) {
-      case "PENDING":
       case "PENDIENTE":
+      case "PENDING":
         return "Pendiente";
       case "CONFIRMED":
+      case "CONFIRMADA":
         return "Confirmada";
+      case "CANCELADA":
       case "CANCELLED":
         return "Cancelada";
-      case "COMPLETADO":
+      case "COMPLETADA":
         return "Completado";
       default:
         return status;
@@ -168,7 +195,9 @@ const Reservas = () => {
       <ToastContainer />
       <div className="w-full bg-sky-800 text-white py-10 text-center">
         <h1 className="text-2xl md:text-3xl font-bold">Mis Reservas</h1>
-        <p className="mt-4 text-base md:text-lg max-w-2xl mx-auto">Gestiona tus reservas de salas</p>
+        <p className="mt-4 text-base md:text-lg max-w-2xl mx-auto">
+          Gestiona tus reservas de salas
+        </p>
         <div className="flex justify-center mt-2">
           <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center">
             <FaCalendarCheck size={40} className="text-sky-700" />
@@ -183,9 +212,14 @@ const Reservas = () => {
           <div className="space-y-4">
             {proximas.length === 0 && <p className="text-gray-500">No tienes próximas reservas.</p>}
             {proximas.map((b) => (
-              <div key={b.id} className="border rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+              <div
+                key={b.id}
+                className="border rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center"
+              >
                 <div>
-                  <h3 className="font-semibold text-gray-800">{b.studio} - {b.room}</h3>
+                  <h3 className="font-semibold text-gray-800">
+                    {b.studio} - {b.room}
+                  </h3>
                   <div className="flex items-center text-sm text-gray-600 mt-1 space-x-4">
                     <span className="flex items-center gap-1">
                       <FaCalendarAlt className="text-sky-700" /> {formatDateFromISO(b.startTime)}
@@ -201,11 +235,10 @@ const Reservas = () => {
                   {renderInstruments(b.instruments)}
                 </div>
 
-                {/* Bloque derecho centrado verticalmente */}
                 <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end space-x-0 sm:space-x-3 mt-3 sm:mt-0 w-full sm:w-auto gap-2">
                   <p className="font-semibold text-gray-800">Total ${b.totalPrice}</p>
 
-                  {b.status !== "CANCELLED" && (
+                  {b.status !== "CANCELADA" && (
                     <button
                       onClick={() => router.push(`/payments/booking/${b.id}`)}
                       className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-800 transition"
@@ -214,7 +247,7 @@ const Reservas = () => {
                     </button>
                   )}
 
-                  {b.status !== "CANCELLED" && (
+                  {b.status !== "CANCELADA" && (
                     canCancel(b.startTime) ? (
                       <button
                         onClick={() => cancelReservation(b.id)}
@@ -232,7 +265,7 @@ const Reservas = () => {
                     )
                   )}
 
-                  {b.status === "CANCELLED" && (
+                  {b.status === "CANCELADA" && (
                     <span className="text-red-600 font-semibold px-4 py-2 rounded-md border border-red-300">
                       {translateStatus(b.status)}
                     </span>
