@@ -2,11 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { getMyStudio, type Studio } from "@/services/myStudio.services";
+import {
+  getMyStudio,
+  updateMyStudio,
+  deleteStudioPhoto, // 1. Importar la nueva función
+  type Studio,
+} from "@/services/myStudio.services";
 import { roomsService } from "@/services/rooms.service";
 import EditStudioModal from "@/components/myStudio/EditStudioModal";
 import RoomsSection from "@/components/myStudio/RoomsSection";
-import { FaMapMarkerAlt } from "react-icons/fa";
+import { FaMapMarkerAlt, FaTimes } from "react-icons/fa"; // 2. Importar el ícono para el botón
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 function isImageLikeUrl(s: string) {
@@ -28,7 +33,7 @@ function collectImageUrlsDeep(input: any, acc: Set<string>) {
   if (typeof input === "object") {
     for (const [k, v] of Object.entries(input)) {
       if (
-        ["url","secure_url","image","imageUrl","src","path","photo","photoUrl","cover","coverPhoto","banner","thumbnail","thumb"].includes(k) &&
+        ["url", "secure_url", "image", "imageUrl", "src", "path", "photo", "photoUrl", "cover", "coverPhoto", "banner", "thumbnail", "thumb"].includes(k) &&
         typeof v === "string" &&
         isImageLikeUrl(v)
       ) {
@@ -99,6 +104,60 @@ export default function MyStudioClient() {
     if (photoIdx >= galleryPhotos.length) setPhotoIdx(0);
   }, [galleryPhotos.length, photoIdx]);
 
+  // 3. Función para manejar la eliminación de fotos
+  const handleDeletePhoto = async (indexToDelete: number) => {
+    if (!studio?.id) return;
+
+    // Obtenemos la URL de la foto que se quiere eliminar
+    const photoUrlToDelete = galleryPhotos[indexToDelete];
+
+    // --- LÓGICA CORREGIDA ---
+    // Si es una URL de vista previa (blob), solo actualizamos el estado local.
+    if (photoUrlToDelete.startsWith('blob:')) {
+      setStudio(prevStudio => {
+        if (!prevStudio) return null;
+        
+        // Creamos una nueva copia del array de fotos
+        const updatedPhotos = [...(prevStudio.photos || [])];
+        
+        // Buscamos y eliminamos la URL blob del array
+        const photoIndexInState = updatedPhotos.findIndex(p => p === photoUrlToDelete);
+        if (photoIndexInState > -1) {
+          updatedPhotos.splice(photoIndexInState, 1);
+        }
+
+        return { ...prevStudio, photos: updatedPhotos };
+      });
+      alert("Vista previa eliminada.");
+      return; // Detenemos la ejecución aquí, no hay nada más que hacer.
+    }
+
+    // Si es una foto real (http/https), procedemos con la llamada a la API.
+    if (!confirm("¿Estás seguro de que quieres eliminar esta foto del servidor?")) {
+      return;
+    }
+
+    try {
+      await deleteStudioPhoto(studio.id, indexToDelete);
+
+      setStudio(prevStudio => {
+        if (!prevStudio) return null;
+        const updatedPhotos = [...(prevStudio.photos || [])];
+        updatedPhotos.splice(indexToDelete, 1);
+        return { ...prevStudio, photos: updatedPhotos };
+      });
+      
+      alert("Foto eliminada correctamente.");
+      if (photoIdx >= galleryPhotos.length - 1) {
+        setPhotoIdx(0);
+      }
+
+    } catch (error) {
+      console.error("Error al eliminar la foto:", error);
+      alert("No se pudo eliminar la foto. Inténtalo de nuevo.");
+    }
+  };
+
   if (loading) return <div className="bg-white rounded-lg border p-6">Cargando…</div>;
   if (err) return <div className="bg-red-50 text-red-700 rounded-lg border border-red-200 p-6">{err}</div>;
   if (!studio) return <div className="bg-white rounded-lg border p-6">No se encontró tu estudio.</div>;
@@ -164,14 +223,24 @@ export default function MyStudioClient() {
               <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
                 {galleryPhotos.length
                   ? galleryPhotos.map((u, i) => (
-                      <button
-                        key={u + i}
-                        onClick={() => setPhotoIdx(i)}
-                        className={`h-10 w-28 rounded-md border ${i === photoIdx ? "border-sky-500 ring-1 ring-sky-300" : "border-slate-200"} overflow-hidden`}
-                        aria-label={`Foto ${i + 1}`}
-                      >
-                        <img src={u} alt={`Foto ${i + 1}`} className="h-full w-full object-cover" />
-                      </button>
+                      <div key={u + i} className="relative flex-shrink-0">
+                        <button
+                          onClick={() => setPhotoIdx(i)}
+                          className={`h-10 w-28 rounded-md border ${i === photoIdx ? "border-sky-500 ring-1 ring-sky-300" : "border-slate-200"} overflow-hidden`}
+                          aria-label={`Foto ${i + 1}`}
+                        >
+                          <img src={u} alt={`Foto ${i + 1}`} className="h-full w-full object-cover" />
+                        </button>
+                        
+                        {/* 4. Botón de eliminar */}
+                        <button
+                          onClick={() => handleDeletePhoto(i)}
+                          className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-600 text-white grid place-items-center hover:bg-red-700 transition-colors"
+                          aria-label="Eliminar foto"
+                        >
+                          <FaTimes size={10} />
+                        </button>
+                      </div>
                     ))
                   : Array.from({ length: 5 }).map((_, i) => (
                       <div key={i} className="h-10 w-28 rounded-md border border-slate-200 bg-slate-100 grid place-items-center text-[12px] text-slate-600">
@@ -278,15 +347,29 @@ export default function MyStudioClient() {
           openingTime: (studio as any).openingTime,
           closingTime: (studio as any).closingTime,
           photos: (studio as any).photos ?? [],
+          phone: (studio as any).phone,
+          email: (studio as any).email,
         }}
-        onSaved={(u) => {
-          setStudio((prev: any) => {
-            if (!prev) return u;
-            const prevPhotos = (prev?.photos ?? []) as string[];
-            const nextPhotos = (u?.photos?.length ? u.photos : prevPhotos) as string[];
-            return { ...prev, ...u, photos: nextPhotos };
-          });
-          setPhotoIdx(0);
+        onSaved={async (updatedData) => {
+           try {
+            if (!studio?.id) {
+              alert("No se pudo encontrar el ID del estudio para actualizar.");
+              return;
+            }
+            const updatedStudioFromServer = await updateMyStudio(studio.id, updatedData);
+
+            setStudio((prev) => ({
+              ...prev,
+              ...updatedStudioFromServer,
+            }));
+            
+            setPhotoIdx(0);
+            setOpenEdit(false);
+
+          } catch (error) {
+            console.error("Error al actualizar el estudio:", error);
+            alert("Hubo un error al guardar los cambios. Inténtalo de nuevo.");
+          }
         }}
       />
     </div>

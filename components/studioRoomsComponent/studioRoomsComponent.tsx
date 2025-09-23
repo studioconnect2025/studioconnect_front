@@ -34,8 +34,20 @@ const EditRoomModal: FC<EditRoomModalProps> = ({ room, onClose, onUpdated }) => 
   const [images, setImages] = useState<FileList | null>(null);
   const [imagesPreview, setImagesPreview] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-
   const [instruments, setInstruments] = useState<InstrumentType[]>([]);
+
+  useEffect(() => {
+    if (!room) return;
+    setFormData({
+      name: room.name,
+      capacity: room.capacity ?? 0,
+      size: room.size ?? 0,
+      pricePerHour: room.pricePerHour ?? "",
+      description: room.description ?? "",
+    });
+    setImagesPreview(room.imageUrls || []);
+    setInstruments(room.instruments || []);
+  }, [room]);
 
   const handleDeleteImage = async (index: number) => {
     const result = await Swal.fire({
@@ -58,19 +70,6 @@ const EditRoomModal: FC<EditRoomModalProps> = ({ room, onClose, onUpdated }) => 
       toast.error("No se pudo eliminar la imagen");
     }
   };
-
-  useEffect(() => {
-    if (!room) return;
-    setFormData({
-      name: room.name,
-      capacity: room.capacity ?? 0,
-      size: room.size ?? 0,
-      pricePerHour: room.pricePerHour ?? "",
-      description: room.description ?? "",
-    });
-    setImagesPreview(room.imageUrls || []);
-    setInstruments(room.instruments || []);
-  }, [room]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -97,16 +96,19 @@ const EditRoomModal: FC<EditRoomModalProps> = ({ room, onClose, onUpdated }) => 
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+ const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
+      // 1. Prepara los datos específicos de la SALA
       const roomData = {
-        ...formData,
-        capacity: Number(formData.capacity),
-        size: Number(formData.size),
-        pricePerHour: String(formData.pricePerHour),
+        name: formData.name,
+        description: formData.description,
+        capacity: Number(formData.capacity) || 0,
+        size: Number(formData.size) || 0, // Usamos 'size' como corregimos antes
+        pricePerHour: Number(formData.pricePerHour) || 0,
       };
+
       const updatedRoom = await roomsService.updateRoom({ roomId: room.id, roomData });
 
       if (images) {
@@ -132,9 +134,7 @@ const EditRoomModal: FC<EditRoomModalProps> = ({ room, onClose, onUpdated }) => 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-lg">
         <h2 className="mb-4 text-lg font-semibold text-gray-700">Editar Sala</h2>
-
         <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-          {/* Inputs con labels claros */}
           <div className="flex flex-col">
             <label className="text-sm font-medium text-gray-700">Nombre</label>
             <input
@@ -145,7 +145,6 @@ const EditRoomModal: FC<EditRoomModalProps> = ({ room, onClose, onUpdated }) => 
               placeholder="Ej: Sala 1"
             />
           </div>
-
           <div className="flex flex-col">
             <label className="text-sm font-medium text-gray-700">Capacidad</label>
             <input
@@ -157,7 +156,6 @@ const EditRoomModal: FC<EditRoomModalProps> = ({ room, onClose, onUpdated }) => 
               placeholder="Ej: 5"
             />
           </div>
-
           <div className="flex flex-col">
             <label className="text-sm font-medium text-gray-700">Tamaño (m²)</label>
             <input
@@ -169,7 +167,6 @@ const EditRoomModal: FC<EditRoomModalProps> = ({ room, onClose, onUpdated }) => 
               placeholder="Ej: 20"
             />
           </div>
-
           <div className="flex flex-col">
             <label className="text-sm font-medium text-gray-700">Precio por hora (USD)</label>
             <input
@@ -181,7 +178,6 @@ const EditRoomModal: FC<EditRoomModalProps> = ({ room, onClose, onUpdated }) => 
               placeholder="Ej: 25.00"
             />
           </div>
-
           <div className="col-span-2 flex flex-col">
             <label className="text-sm font-medium text-gray-700">Descripción</label>
             <textarea
@@ -192,8 +188,6 @@ const EditRoomModal: FC<EditRoomModalProps> = ({ room, onClose, onUpdated }) => 
               placeholder="Detalles, equipamiento, etc."
             />
           </div>
-
-          {/* Instrumentos en el modal */}
           <div className="col-span-2 mt-2">
             <h3 className="mb-2 text-sm font-semibold text-gray-700">Instrumentos</h3>
             {instruments.length > 0 ? (
@@ -218,8 +212,6 @@ const EditRoomModal: FC<EditRoomModalProps> = ({ room, onClose, onUpdated }) => 
               <p className="text-sm text-gray-600">No hay instrumentos asignados.</p>
             )}
           </div>
-
-          {/* Imágenes */}
           {imagesPreview.length > 0 && (
             <div className="col-span-2 grid grid-cols-3 gap-2">
               {imagesPreview.map((img, idx) => (
@@ -236,12 +228,9 @@ const EditRoomModal: FC<EditRoomModalProps> = ({ room, onClose, onUpdated }) => 
               ))}
             </div>
           )}
-
           <div className="col-span-2 text-gray-700">
             <input type="file" multiple onChange={(e) => setImages(e.target.files)} />
           </div>
-
-          {/* Botones */}
           <div className="col-span-2 mt-4 flex justify-end gap-2">
             <button
               type="button"
@@ -264,7 +253,7 @@ const EditRoomModal: FC<EditRoomModalProps> = ({ room, onClose, onUpdated }) => 
   );
 };
 
-/* ==================== Modal Agregar Instrumento ==================== */
+// ... (AddInstrumentModal no necesita cambios)
 interface AddInstrumentModalProps {
   roomId: string;
   onClose: () => void;
@@ -305,7 +294,6 @@ const AddInstrumentModal: FC<AddInstrumentModalProps> = ({ roomId, onClose, onAd
         token,
       });
 
-      // normalizo por si viene envuelto (created.instrument)
       const raw = (created as any)?.instrument ?? created;
       const normalized: InstrumentType = {
         id: raw.id ?? crypto.randomUUID(),
@@ -318,7 +306,7 @@ const AddInstrumentModal: FC<AddInstrumentModalProps> = ({ roomId, onClose, onAd
         room: raw.room,
       };
 
-      onAdded(normalized); // update optimista en la card
+      onAdded(normalized);
       onClose();
       toast.success("Instrumento agregado correctamente");
     } catch (error) {
@@ -414,44 +402,38 @@ const AddInstrumentModal: FC<AddInstrumentModalProps> = ({ roomId, onClose, onAd
   );
 };
 
+
 const RoomsGrid: FC = () => {
   const [rooms, setRooms] = useState<RoomType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedRoom, setSelectedRoom] = useState<RoomType | null>(null);
   const [instrumentRoomId, setInstrumentRoomId] = useState<string | null>(null);
-
-  // roomId => instrumentos
   const [instrumentsMap, setInstrumentsMap] = useState<Record<string, InstrumentType[]>>({});
-
-  // estado del estudio
   const [studio, setStudio] = useState<Studio | null>(null);
 
   const fetchRooms = useCallback(async () => {
     setLoading(true);
+    setError(null); // Limpiar errores previos
     try {
-      const roomsData = await roomsService.getRooms();
+      // Usamos el endpoint correcto que requiere autenticación.
+      const roomsData = await roomsService.getMyRooms();
+      setRooms(roomsData);
+
+    
       const instrumentsData = await instrumentsService.getInstruments();
-
-      // obtener estudio del dueño
-      const { studio } = await getMyStudio();
-      setStudio(studio);
-
       const map: Record<string, InstrumentType[]> = {};
       roomsData.forEach((room: RoomType) => {
         map[room.id] = instrumentsData
           .filter((inst: InstrumentType) => inst.room?.id === room.id)
-          .map((x: any) => ({
-            ...x,
-            price: Number(x.price ?? 0),
-          }));
-      });
+           .map((x: any) => ({ ...x, price: Number(x.price ?? 0) }));
+       });
+       setInstrumentsMap(map);
 
-      setRooms(roomsData);
-      setInstrumentsMap(map);
     } catch (err: any) {
       console.error(err);
-      setError(err?.message || "Error al obtener salas");
+      // Mensaje de error más descriptivo.
+      setError(err?.response?.data?.message || "No se pudieron cargar tus salas. Por favor, verifica que has iniciado sesión.");
     } finally {
       setLoading(false);
     }
@@ -477,11 +459,6 @@ const RoomsGrid: FC = () => {
     try {
       await roomsService.deleteRoom({ roomId });
       setRooms((prev) => prev.filter((r) => r.id !== roomId));
-      setInstrumentsMap((prev) => {
-        const copy = { ...prev };
-        delete copy[roomId];
-        return copy;
-      });
       toast.success("Sala eliminada correctamente");
     } catch (error) {
       console.error(error);
@@ -489,15 +466,8 @@ const RoomsGrid: FC = () => {
     }
   };
 
-  // Agrega instrumento y lo ves sin recargar: optimista + refetch
   const handleInstrumentAdded = async (roomId: string, instrument: InstrumentType) => {
-    // update optimista
-    setInstrumentsMap((prev) => ({
-      ...prev,
-      [roomId]: [...(prev[roomId] || []), { ...instrument, price: Number(instrument.price ?? 0) }],
-    }));
-    // sync con backend
-    await fetchRooms();
+    await fetchRooms(); // Recargamos todo para mantener la consistencia.
   };
 
   const handleRoomUpdated = (updatedRoom: RoomType) => {
@@ -513,55 +483,53 @@ const RoomsGrid: FC = () => {
 
   if (error)
     return (
-      <div className="flex min-h-[70vh] items-center justify-center bg-white">
-        <p className="text-red-500">{error}</p>
+      <div className="flex min-h-[70vh] flex-col items-center justify-center bg-white p-4">
+        <div className="text-center">
+            <h2 className="text-xl font-semibold text-red-600">Ocurrió un error</h2>
+            <p className="mt-2 text-gray-700">{error}</p>
+            <p className="mt-2 text-sm text-gray-500">Por favor, intenta recargar la página o verifica tu sesión.</p>
+        </div>
       </div>
     );
 
   return (
     <section className="flex min-h-[70vh] w-full flex-col items-center bg-white">
       <ToastContainer />
-      {/* Header */}
-      <div className="bg-sky-800 flex flex-col md:flex-row md:items-center justify-between text-white py-6 px-4 md:px-8 shadow-md mb-6 w-full">
-        <div className="max-w-2xl mx-auto flex flex-col items-center text-center">
-          {/* Icono + Título */}
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center">
-              <FaDoorOpen size={40} className="text-sky-700" />
-            </div>
-            <h1 className="text-4xl font-semibold">Gestión de Salas del Estudio</h1>
-          </div>
-
-          {/* Texto descriptivo */}
-          <p className="text-sm font-medium text-gray-200">
-            Administra las salas de tu estudio, agrega nuevos instrumentos y edita los detalles de las salas existentes.
-          </p>
-        </div>
-
-        {/* Botón */}
-        <div className="justify-start md:justify-end mt-4 md:mt-0">
-          <Link
-            href="/createRoom"
-            className="inline-flex items-center gap-2 bg-black px-3 py-2 rounded-lg shadow hover:bg-gray-900 text-sm text-white cursor-pointer"
-          >
-            <span className="text-lg">＋</span> Agregar nueva sala
-          </Link>
-        </div>
+  <div className="bg-sky-800 flex flex-col items-center text-center text-white py-10 px-4 md:px-8 shadow-md mb-6 w-full">
+  <div className="max-w-2xl flex flex-col items-center">
+    <div className="flex items-center justify-center gap-4 mb-4">
+      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center">
+        <FaDoorOpen size={30} className="text-sky-700" />
       </div>
-      {/* Grid de salas */}
-      <div className="mb-10 w-full max-w-[120vh] items-center py-4">
+      <h1 className="text-3xl font-semibold">Gestión de Salas del Estudio</h1>
+    </div>
+    <p className="text-sm font-medium text-gray-200">
+      Administra las salas de tu estudio, agrega nuevos instrumentos y edita los detalles de las salas existentes.
+    </p>
+  </div>
+
+  <div className="mt-6">
+    <Link
+      href="/createRoom"
+      className="inline-flex items-center gap-2 bg-black px-3 py-2 rounded-lg shadow hover:bg-gray-900 text-sm text-white cursor-pointer"
+    >
+      <span className="text-lg">＋</span> Agregar nueva sala
+    </Link>
+  </div>
+</div>
+
+      <div className="mb-10 w-full max-w-7xl items-center py-4 px-4">
         {rooms.length === 0 ? (
           <div className="flex min-h-[30vh] items-center justify-center">
             <p className="text-center text-lg text-gray-700">Todavía no has creado salas.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {rooms.map((room) => (
               <div
                 key={room.id}
                 className="flex flex-col rounded-xl border shadow-sm transition hover:shadow-xl"
               >
-                {/* Imagen */}
                 <div className="h-48 overflow-hidden rounded-t-xl bg-gray-200">
                   {room.imageUrls?.[0] ? (
                     <img src={room.imageUrls[0]} alt={room.name} className="h-full w-full object-cover" />
@@ -571,8 +539,6 @@ const RoomsGrid: FC = () => {
                     </div>
                   )}
                 </div>
-
-                {/* Info */}
                 <div className="flex flex-1 flex-col gap-2 p-4">
                   <h2 className="text-2xl text-gray-900">{room.name}</h2>
                   <p className="text-lg text-gray-500">
@@ -585,8 +551,6 @@ const RoomsGrid: FC = () => {
                     Precio por hora: <span className="font-medium text-gray-700">{money(room.pricePerHour)}</span>
                   </p>
                   <p className="text-sm text-gray-600">{room.description || "Sin descripción"}</p>
-
-                  {/* Instrumentos */}
                   <div className="mt-3">
                     <h3 className="mb-2 text-lg font-semibold text-gray-800">Instrumentos</h3>
                     {instrumentsMap[room.id] && instrumentsMap[room.id].length > 0 ? (
@@ -608,8 +572,6 @@ const RoomsGrid: FC = () => {
                       ＋ Agregar instrumento
                     </button>
                   </div>
-
-                  {/* Acciones */}
                   <div className="mt-4 flex items-center justify-end gap-3">
                     <button
                       onClick={() => setSelectedRoom(room)}
@@ -632,8 +594,6 @@ const RoomsGrid: FC = () => {
           </div>
         )}
       </div>
-
-      {/* Modales */}
       {selectedRoom && (
         <EditRoomModal room={selectedRoom} onClose={() => setSelectedRoom(null)} onUpdated={handleRoomUpdated} />
       )}
@@ -649,3 +609,4 @@ const RoomsGrid: FC = () => {
 };
 
 export default RoomsGrid;
+
