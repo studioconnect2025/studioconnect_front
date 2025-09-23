@@ -92,7 +92,7 @@ export default function StudioDetailsClient({ studio }: any) {
 
     const effectiveHours = Math.max(hoursSelected, room?.minHours ?? 1);
     const subtotal = basePrice * effectiveHours + instrumentTotal;
-    const total = subtotal * 1.15;
+    const total = subtotal; // <-- ya no se cobra la tarifa del 15%
 
     const formatUSD = (value: number) =>
         new Intl.NumberFormat("en-US", {
@@ -107,6 +107,19 @@ export default function StudioDetailsClient({ studio }: any) {
             return;
         }
 
+        // Validación de horas de instrumento
+        if (
+            selectedInstrumentId &&
+            Number(instrumentHours) > hoursSelected
+        ) {
+            toast.error(
+                `Las horas de alquiler del instrumento no pueden exceder las horas de la sala (${hoursSelected.toFixed(
+                    2
+                )}h).`
+            );
+            return;
+        }
+
         const payload: BookingPayload = {
             studioId: studio.id,
             roomId: selectedRoomId,
@@ -118,7 +131,7 @@ export default function StudioDetailsClient({ studio }: any) {
                     : [],
         };
 
-        setLoading(true); // <-- inicio carga
+        setLoading(true);
         try {
             await BookingService.createBooking(payload);
             toast.success("Reserva creada con éxito!");
@@ -127,7 +140,7 @@ export default function StudioDetailsClient({ studio }: any) {
             console.error(error);
             toast.error("Error al crear la reserva. Intenta nuevamente.");
         } finally {
-            setLoading(false); // <-- fin carga
+            setLoading(false);
         }
     };
 
@@ -444,10 +457,7 @@ export default function StudioDetailsClient({ studio }: any) {
                                         Instrumentos: +
                                         {formatUSD(instrumentTotal)}
                                     </p>
-                                    <p>
-                                        Tarifa de servicios (15%): +
-                                        {formatUSD(subtotal * 0.15)}
-                                    </p>
+                                    {/* Se eliminó la tarifa del 15% */}
                                     <p className="font-bold text-lg">
                                         Total: {formatUSD(total)} USD
                                     </p>
@@ -464,7 +474,7 @@ export default function StudioDetailsClient({ studio }: any) {
                                         !isLoggedIn ||
                                         user?.role !== "Músico" ||
                                         loading
-                                    } // <-- deshabilita mientras carga
+                                    }
                                 >
                                     {loading
                                         ? "Cargando…"
