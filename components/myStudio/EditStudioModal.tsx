@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import ModalShell from "@/components/common/ModalShell";
 import { FaClock, FaImages, FaPlus, FaTags, FaTimes } from "react-icons/fa";
 
+// --- TIPOS DE DATOS ---
 type StudioInit = {
   name?: string;
   city?: string;
@@ -19,6 +20,7 @@ type StudioInit = {
 
 type NewFile = { file: File; preview: string };
 
+// --- COMPONENTE PRINCIPAL ---
 export default function EditStudioModal({
   open,
   onClose,
@@ -30,30 +32,44 @@ export default function EditStudioModal({
   initial: StudioInit;
   onSaved: (updated: any) => void;
 }) {
-  const [data, setData] = useState<StudioInit>(initial || {});
-  const [chips, setChips] = useState<string[]>(initial?.services ?? []);
+  // Estado para los datos del formulario (nombre, ciudad, etc.)
+  const [data, setData] = useState<StudioInit>({});
+  
+  // Estado para los servicios (chips)
+  const [chips, setChips] = useState<string[]>([]);
   const [chipInput, setChipInput] = useState("");
-  const [files, setFiles] = useState<NewFile[]>([]);
-  const [urlsInit, setUrlsInit] = useState<string[]>(initial?.photos ?? []);
+
+  // === LA CLAVE DE LA CORRECCIÓN: ESTADOS SEPARADOS PARA FOTOS ===
+  // 1. Estado para los NUEVOS archivos que el usuario selecciona (File y su preview 'blob:')
+  const [newFiles, setNewFiles] = useState<NewFile[]>([]);
+  // 2. Estado para las URLs de las fotos que YA EXISTEN en el servidor ('https://...')
+  const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
+  
   const dropRef = useRef<HTMLDivElement>(null);
 
+  // --- EFECTO PARA REINICIAR EL ESTADO DEL MODAL ---
+  // Se ejecuta cada vez que el modal se abre o los datos iniciales cambian
   useEffect(() => {
-    setData(initial || {});
-    setChips(initial?.services ?? []);
-    setFiles([]);
-    setUrlsInit(initial?.photos ?? []);
-    setChipInput("");
+    if (open) {
+      setData(initial || {});
+      setChips(initial?.services ?? []);
+      setNewFiles([]); // Limpia los archivos nuevos
+      setExistingImageUrls(initial?.photos ?? []); // Carga las fotos existentes
+      setChipInput("");
+    }
   }, [open, initial]);
 
+  // --- MANEJADORES DE ESTADO (SIN CAMBIOS GRANDES) ---
   const set = (k: keyof StudioInit) => (e: any) =>
     setData((s) => ({ ...s, [k]: e?.target?.value }));
 
   const addChip = () => {
     const v = chipInput.trim();
-    if (!v) return;
-    if (!chips.includes(v)) setChips((c) => [...c, v]);
+    if (!v || chips.includes(v)) return;
+    setChips((c) => [...c, v]);
     setChipInput("");
   };
+
   const removeChip = (i: number) =>
     setChips((c) => c.filter((_, idx) => idx !== i));
 
@@ -61,33 +77,39 @@ export default function EditStudioModal({
     if (!list || !list.length) return;
     const arr: NewFile[] = [];
     Array.from(list).forEach((f) => {
-      if (!f.type.startsWith("image/")) return;
-      arr.push({ file: f, preview: URL.createObjectURL(f) });
+      if (f.type.startsWith("image/")) {
+        // Creamos el objeto con el archivo y su URL de previsualización
+        arr.push({ file: f, preview: URL.createObjectURL(f) });
+      }
     });
-    setFiles((prev) => [...prev, ...arr]);
+    setNewFiles((prev) => [...prev, ...arr]);
   };
 
-  const removeFile = (i: number) => {
-    setFiles((all) => {
-      const copy = [...all];
-      const item = copy[i];
-      if (item) URL.revokeObjectURL(item.preview);
-      copy.splice(i, 1);
-      return copy;
+  // --- FUNCIONES SEPARADAS PARA ELIMINAR FOTOS ---
+  // Función para eliminar un archivo NUEVO de la lista de previsualización
+  const removeNewFile = (indexToRemove: number) => {
+    setNewFiles((currentFiles) => {
+      const fileToRemove = currentFiles[indexToRemove];
+      if (fileToRemove) {
+        URL.revokeObjectURL(fileToRemove.preview); // Importante: liberar memoria
+      }
+      return currentFiles.filter((_, index) => index !== indexToRemove);
     });
   };
 
+  // Función para eliminar una foto EXISTENTE de la lista de URLs
+  const removeExistingUrl = (indexToRemove: number) => {
+    setExistingImageUrls((currentUrls) =>
+      currentUrls.filter((_, index) => index !== indexToRemove)
+    );
+  };
+  
+  // Lógica para drag and drop
   useEffect(() => {
     const node = dropRef.current;
     if (!node) return;
-    const over = (e: any) => {
-      e.preventDefault();
-      if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
-    };
-    const drop = (e: any) => {
-      e.preventDefault();
-      onPickFiles(e.dataTransfer?.files || null);
-    };
+    const over = (e: DragEvent) => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = "copy"; };
+    const drop = (e: DragEvent) => { e.preventDefault(); onPickFiles(e.dataTransfer?.files || null); };
     node.addEventListener("dragover", over);
     node.addEventListener("drop", drop);
     return () => {
@@ -96,41 +118,34 @@ export default function EditStudioModal({
     };
   }, []);
 
+  // === FUNCIÓN onSave: LA PARTE MÁS IMPORTANTE ===
   const onSave = () => {
-    const previews = files.map((f) => f.preview);
+    // Se construye un payload limpio y bien definido:
+    // - 'photos' solo contiene las URLs de las fotos existentes que se conservaron.
+    // - 'photoFiles' solo contiene los nuevos archivos (File objects) para subir.
+    // Con esto, NUNCA se envía una URL 'blob:' al servicio.
     onSaved({
       ...data,
       services: chips,
-      photos: [...previews, ...urlsInit],
-      photoFiles: files.map((f) => f.file),
+      photos: existingImageUrls,
+      photoFiles: newFiles.map((f) => f.file),
     });
     onClose();
   };
 
   const footer = (
     <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-      <button
-        onClick={onClose}
-        className="h-10 px-4 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-      >
+      <button onClick={onClose} className="h-10 px-4 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
         Cancelar
       </button>
-      <button
-        onClick={onSave}
-        className="h-10 px-5 rounded-lg bg-sky-700 text-white hover:bg-sky-800"
-      >
+      <button onClick={onSave} className="h-10 px-5 rounded-lg bg-sky-700 text-white hover:bg-sky-800">
         Guardar cambios
       </button>
     </div>
   );
 
   return (
-    <ModalShell
-      open={open}
-      onClose={onClose}
-      title="Editar datos del estudio"
-      footer={footer}
-    >
+    <ModalShell open={open} onClose={onClose} title="Editar datos del estudio" footer={footer}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-xs text-slate-600 mb-1">Nombre</label>
@@ -258,38 +273,20 @@ export default function EditStudioModal({
               </label>
             </div>
 
-            {(files.length > 0 || urlsInit.length > 0) && (
+            {(newFiles.length > 0 || existingImageUrls.length > 0) && (
               <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 gap-3">
-                {urlsInit.map((u, i) => (
-                  <div
-                    key={`u-${i}`}
-                    className="relative rounded-lg overflow-hidden border border-slate-200 bg-white"
-                  >
-                    <img src={u} alt="" className="h-24 w-full object-cover" />
-                    <button
-                      onClick={() =>
-                        setUrlsInit((arr) => arr.filter((_, idx) => idx !== i))
-                      }
-                      className="absolute top-1 right-1 h-6 w-6 rounded-full bg-black/60 text-white grid place-items-center"
-                      aria-label="Quitar"
-                    >
-                      <FaTimes size={10} />
-                    </button>
+                {/* Renderizar fotos existentes */}
+                {existingImageUrls.map((url, index) => (
+                  <div key={`existing-${index}`} className="relative rounded-lg overflow-hidden border border-slate-200 bg-white">
+                    <img src={url} alt="Foto existente" className="h-24 w-full object-cover" />
+                    <button onClick={() => removeExistingUrl(index)} className="absolute top-1 right-1 h-6 w-6 rounded-full bg-black/60 text-white grid place-items-center" aria-label="Quitar"><FaTimes size={10} /></button>
                   </div>
                 ))}
-                {files.map((f, i) => (
-                  <div
-                    key={`f-${i}`}
-                    className="relative rounded-lg overflow-hidden border border-slate-200 bg-white"
-                  >
-                    <img src={f.preview} alt="" className="h-24 w-full object-cover" />
-                    <button
-                      onClick={() => removeFile(i)}
-                      className="absolute top-1 right-1 h-6 w-6 rounded-full bg-black/60 text-white grid place-items-center"
-                      aria-label="Quitar"
-                    >
-                      <FaTimes size={10} />
-                    </button>
+                {/* Renderizar previsualizaciones de fotos nuevas */}
+                {newFiles.map((fileObj, index) => (
+                  <div key={`new-${index}`} className="relative rounded-lg overflow-hidden border border-slate-200 bg-white">
+                    <img src={fileObj.preview} alt="Vista previa" className="h-24 w-full object-cover" />
+                    <button onClick={() => removeNewFile(index)} className="absolute top-1 right-1 h-6 w-6 rounded-full bg-black/60 text-white grid place-items-center" aria-label="Quitar"><FaTimes size={10} /></button>
                   </div>
                 ))}
               </div>
