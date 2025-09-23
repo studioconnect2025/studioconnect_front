@@ -6,11 +6,13 @@ import {
   AdminStudiosService,
   type AdminStudio,
   type PendingResponse,
+  type ComercialRegisterResp,
 } from "@/services/admin/AdminStudios";
 import { useStudiosStore } from "@/stores/admin/StudiosStore";
 import { toast } from "react-toastify";
 import { btnSecondary, btnPrimary, btnDanger } from "@/components/admin/ui";
 
+// Normalización de respuesta (lista simple o paginada)
 function getItems(data: PendingResponse): AdminStudio[] {
   return Array.isArray(data) ? data : data.items;
 }
@@ -24,7 +26,13 @@ export default function PendingStudiesList() {
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
+  // Modal ver docs
   const [openId, setOpenId] = useState<string | null>(null);
+  const [docLoading, setDocLoading] = useState(false);
+  const [docError, setDocError] = useState<string | null>(null);
+  const [doc, setDoc] = useState<ComercialRegisterResp | null>(null);
+
+  // Modal rechazo
   const [rejectId, setRejectId] = useState<string | null>(null);
 
   const items = useMemo(() => getItems(data), [data]);
@@ -48,9 +56,24 @@ export default function PendingStudiesList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
-  const handleApprove = async (id: string) => {
+  const handleOpenDocs = async (studioId: string) => {
+    setOpenId(studioId);
+    setDoc(null);
+    setDocError(null);
+    setDocLoading(true);
     try {
-      await AdminStudiosService.updateRequestStatus(id, { status: "approved" });
+      const r = await AdminStudiosService.getComercialRegister(studioId);
+      setDoc(r);
+    } catch (e: any) {
+      setDocError(e?.message || "No se pudo obtener el documento");
+    } finally {
+      setDocLoading(false);
+    }
+  };
+
+  const handleApprove = async (studioId: string) => {
+    try {
+      await AdminStudiosService.updateRequestStatus(studioId, { status: "approved" });
       toast.success("Estudio aprobado correctamente");
       await Promise.all([fetchPage(page), refreshAll()]);
     } catch (e: any) {
@@ -58,9 +81,9 @@ export default function PendingStudiesList() {
     }
   };
 
-  const handleReject = async (id: string, message: string) => {
+  const handleReject = async (studioId: string, message: string) => {
     try {
-      await AdminStudiosService.updateRequestStatus(id, { status: "rejected", message });
+      await AdminStudiosService.updateRequestStatus(studioId, { status: "rejected", message });
       toast.info("Solicitud enviada a revisión");
       await Promise.all([fetchPage(page), refreshAll()]);
     } catch (e: any) {
@@ -84,8 +107,7 @@ export default function PendingStudiesList() {
           <li className="px-5 py-10 text-center text-gray-500">No hay solicitudes pendientes</li>
         ) : (
           items.map((s) => {
-            const processId = (s as any).studio?.id ?? s.id;
-
+            const studioId = (s as any).studio?.id ?? s.id;
             return (
               <li key={s.id} className="px-5 py-4 grid grid-cols-12 items-center gap-3">
                 <div className="col-span-6 min-w-0">
@@ -94,56 +116,64 @@ export default function PendingStudiesList() {
                     {s.city ?? "—"} · {s.province ?? "—"} · {s.owner?.email ?? (s as any).ownerEmail ?? "—"}
                   </p>
                 </div>
+
                 <div className="col-span-6 flex justify-end gap-2">
                   <button
                     type="button"
                     className={btnSecondary}
-                    onClick={() => setOpenId(s.id)}
+                    onClick={() => handleOpenDocs(studioId)}
                   >
                     Ver documentos
                   </button>
                   <button
                     type="button"
                     className={btnPrimary}
-                    onClick={() => handleApprove(processId)}
+                    onClick={() => handleApprove(studioId)}
                   >
                     Aprobar
                   </button>
                   <button
                     type="button"
                     className={btnDanger}
-                    onClick={() => setRejectId(processId)}
+                    onClick={() => setRejectId(studioId)}
                   >
                     Desaprobar
                   </button>
                 </div>
-
-                {/* Modal ver docs */}
-                {openId === s.id && (
-                  <ReviewDialog
-                    title={`Documentación de ${s.name}`}
-                    onClose={() => setOpenId(null)}
-                    documents={
-                      (s as any).documents ??
-                      ((s as any).comercialRegister ? [(s as any).comercialRegister] : [])
-                    }
-                  />
-                )}
-
-                {/* Modal rechazo */}
-                {rejectId === processId && (
-                  <ReviewDialog
-                    title={`Motivo de rechazo — ${s.name}`}
-                    mode="reject"
-                    onClose={() => setRejectId(null)}
-                    onSubmit={(msg) => handleReject(processId, msg || "")}
-                  />
-                )}
               </li>
             );
           })
         )}
       </ul>
+
+      {/* Modal ver docs */}
+      {openId && (
+        <ReviewDialog
+          title="Registro comercial"
+          loading={docLoading}
+          error={docError || undefined}
+          documents={
+            doc
+              ? [{ url: doc.inline, name: "Registro comercial (inline)", type: "pdf", download: doc.download }]
+              : []
+          }
+          onClose={() => {
+            setOpenId(null);
+            setDoc(null);
+            setDocError(null);
+          }}
+        />
+      )}
+
+      {/* Modal rechazo */}
+      {rejectId && (
+        <ReviewDialog
+          title="Motivo de rechazo"
+          mode="reject"
+          onSubmit={(msg) => handleReject(rejectId, msg || "")}
+          onClose={() => setRejectId(null)}
+        />
+      )}
 
       {/* Paginación */}
       <div className="flex items-center justify-between px-5 py-3">
