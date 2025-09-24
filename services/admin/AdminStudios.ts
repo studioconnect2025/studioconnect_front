@@ -31,6 +31,12 @@ export type TimeseriesPoint = { date: string; count: number };
 export type TimeseriesParams = { days?: number };
 export type PendingResponse = { items: AdminStudio[]; total: number } | AdminStudio[];
 
+/** << NUEVO >> respuesta del endpoint /studios/{id}/comercial-register */
+export type ComercialRegisterResp = {
+  inline: string;   // URL para ver embebido (iframe)
+  download: string; // URL con fl_attachment para descarga
+};
+
 const normalizeStatus = (s?: string | null) => {
   const x = (s ?? "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
   if (x.startsWith("aprob") || x.startsWith("aprov") || x.startsWith("approv")) return "aprovado"; // normalizamos a lo que espera backend
@@ -102,6 +108,7 @@ export const AdminStudiosService = {
 
   /** Aprobar / Rechazar solicitud
    * Swagger: { "status": "aprovado" }  (tal cual con “v”)
+   * Tu endpoint aquí usa /admin/studios/{id}/process (mantengo eso)
    */
   async updateRequestStatus(
     id: string,
@@ -142,17 +149,21 @@ export const AdminStudiosService = {
   /** Total “aprovado” */
   async count(): Promise<number> {
     const counts = await AdminStudiosService.countByStatus();
-    return counts["aprovado"] ?? counts["aprovado"] ?? 0;
+    return counts["aprovado"] ?? 0;
   },
 
-   /** Total de pendientes (cuenta robusta según el tipo de respuesta) */
+  /** Total de pendientes (cuenta robusta según el tipo de respuesta) */
   async countPending(): Promise<number> {
     const resp = await AdminStudiosService.getPending({ page: 1, pageSize: 1 });
     if (Array.isArray(resp)) return resp.length;
     return Number(resp.total ?? resp.items?.length ?? 0);
   },
 
-  
+  /** << NUEVO >> Obtener la URL segura del registro comercial (PDF) */
+  async getComercialRegister(studioId: string): Promise<ComercialRegisterResp> {
+    const { data } = await http.get<ComercialRegisterResp>(`/studios/${studioId}/comercial-register`);
+    return data;
+  },
 };
 
 export { normalizeStatus };

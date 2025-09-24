@@ -176,7 +176,7 @@ export default function RegisterPage() {
       const files = { photos: values.photos, comercialRegister: values.comercialRegister };
       await registerStudio(values, files);
       toast.success("¡Estudio registrado correctamente!", { position: "top-center" });
-      setTimeout(() => router.push("/myStudio"), 2000);
+      setTimeout(() => router.push("/"), 2000);
     } catch (err: any) {
       toast.error("Error al registrar estudio. Por favor, inténtalo de nuevo.", { position: "top-center" });
       console.error(err);

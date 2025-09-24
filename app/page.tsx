@@ -11,16 +11,24 @@ import ClientUserLocationMap from "@/components/LocationMap/ClientUserLocationMa
 import { FeaturedStudiosList } from "@/components/studio/FeatureStudioList";
 import WhyChooseStudioConnect from "@/components/WhyChooseStudioConnect/WhyChooseStudioConnect";
 import { OwnerToolbar } from "@/components/ownerToolBar/ownerToolBar";
-import { useAuthUser, useIsAuth } from "@/stores/AuthStore";
+import { useAuthUser, useAuthStore, useIsAuth } from "@/stores/AuthStore";
 import ReviewList from "@/components/reviews/ReviewList";
+import { http } from "@/lib/http";
+import JoinStudioConnect from "@/components/joinStudioConnect/joinStudioConnet";
 
 export default function Home() {
     const isLoggedIn = useIsAuth();
     const user = useAuthUser();
+    const token = useAuthStore((s) => s.accessToken);
+
     const [userCenter, setUserCenter] = useState<[number, number]>([
         -34.6037, -58.3816,
     ]);
+    const [hasStudio, setHasStudio] = useState<boolean | null>(null);
+    const [studioStatus, setStudioStatus] = useState<string | null>(null);
+    const [loadingStudio, setLoadingStudio] = useState(false);
 
+    // Inicializamos AOS
     useEffect(() => {
         AOS.init({
             duration: 500,
@@ -30,42 +38,88 @@ export default function Home() {
         });
     }, []);
 
+    // Cargamos info del estudio solo si el usuario es dueño
+    useEffect(() => {
+        if (user?.role === "Dueño de Estudio" && token) {
+            setLoadingStudio(true);
+            http.get("/users/me")
+                .then((res) => {
+                    const estudio = res.data.studio;
+                    if (estudio) {
+                        setHasStudio(true);
+                        setStudioStatus(estudio.status);
+                    } else {
+                        setHasStudio(false);
+                    }
+                })
+                .catch((err) => {
+                    console.error("Error al obtener usuario:", err);
+                    setHasStudio(false);
+                })
+                .finally(() => setLoadingStudio(false));
+        }
+    }, [user, token]);
+
+    // Loader/Skeleton
+    const renderLoader = (
+        <div className="flex flex-col items-center justify-center p-8">
+            <svg
+                className="animate-spin h-10 w-10 text-sky-700 mb-4"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+            >
+                <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                />
+                <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                />
+            </svg>
+            <p className="text-gray-700 text-lg">
+                Cargando información de tu estudio...
+            </p>
+        </div>
+    );
+
     return (
         <div className="bg-white">
-            {" "}
-            {/* Fondo blanco global */}
-            {/* Banner principal con degradé estático */}
+            {/* Banner principal */}
             <div className="flex flex-col md:flex-row justify-center items-center pt-10 pb-10 px-4 sm:px-6 bg-gradient-to-b from-sky-800 to-black overflow-hidden">
                 <div className="flex flex-col md:flex-row w-full max-w-6xl justify-between items-center gap-8">
-                    {/* Texto con animación desde la derecha */}
                     <div
                         className="w-full md:w-1/2 flex items-center justify-center"
                         data-aos="fade-right"
-                        data-aos-delay="100"
+                        data-aos-delay={100}
                     >
                         <BannerText />
                     </div>
-
-                    {/* Imagen con animación desde la izquierda */}
                     <div
                         className="w-full md:w-1/2 flex justify-center"
                         data-aos="fade-left"
-                        data-aos-delay="200"
+                        data-aos-delay={200}
                     >
                         <BannerImg />
                     </div>
                 </div>
             </div>
-           <div  data-aos="fade-right"
-                data-aos-delay="300">
-             {/* Si es dueño de estudio -> OwnerToolbar, si es musico -> BannerSearch */}
+
+            {/* Sección principal */}
             <div
-                className="bg-white flex flex-col items-center p-4 sm:p-6  relative z-20"
+                className="bg-white flex flex-col items-center p-4 relative z-20"
+                data-aos="fade-right"
+                data-aos-delay={300}
             >
                 <div className="w-full max-w-6xl">
-                    {user?.role === "Dueño de Estudio" ? (
-                        <OwnerToolbar />
-                    ) : (
+                    {/* Usuarios no logueados o músicos */}
+                    {!user || user.role !== "Dueño de Estudio" ? (
                         <div className="flex flex-col mt-8 ">
                             <h2 className="text-black text-2xl sm:text-3xl md:text-3xl text-center mb-3">
                                 Encuentra tu estudio ideal
@@ -79,46 +133,81 @@ export default function Home() {
                                 }
                             />
                         </div>
+                    ) : (
+                        // Dueño de Estudio
+                        <>
+                            {loadingStudio ? (
+                                renderLoader
+                            ) : hasStudio ? (
+                                studioStatus === "aprovado" ? (
+                                    <OwnerToolbar />
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center p-8 border rounded-xl bg-yellow-50 text-center">
+                                        <h2 className="text-2xl font-semibold text-yellow-800 mb-2">
+                                            Tu estudio está pendiente de
+                                            aprobación
+                                        </h2>
+                                        <p className="text-yellow-700">
+                                            Pronto recibirás una notificación
+                                            sobre si tu estudio cumple con los
+                                            requisitos para usar StudioConnect.
+                                        </p>
+                                    </div>
+                                )
+                            ) : (
+                                <div className="flex flex-col items-center justify-center p-8 border rounded-xl bg-gray-50 text-center">
+                                    <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+                                        No has registrado tu estudio todavía
+                                    </h2>
+                                    <p className="text-gray-700 mb-4">
+                                        Para comenzar a usar StudioConnect
+                                        necesitas registrar tu estudio.
+                                    </p>
+                                    <a
+                                        href="/studioRegister"
+                                        className="px-6 py-2 bg-sky-700 text-white font-medium rounded-lg shadow hover:bg-sky-800 transition"
+                                    >
+                                        Ir a registrar estudio
+                                    </a>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
-            {/* Mapa de ubicación */}
-            <div
-                className="bg-white flex flex-col items-center p-4 sm:p-6 "
-            >
-                <div className="w-full max-w-6xl rounded-xl shadow-lg  relative z-0">
-                    <ClientUserLocationMap center={userCenter} />
+
+            {/* Mapa */}
+            <div className="bg-white flex flex-col items-center">
+                <div className="w-full max-w-6xl rounded-xl shadow-lg relative z-0">
+                    <ClientUserLocationMap defaultCenter={userCenter} />
                 </div>
             </div>
-           </div>
+
             {/* Estudios destacados */}
             <div
                 className="bg-white flex flex-col items-center p-4 sm:p-6 -mt-6"
                 data-aos="fade-right"
-                data-aos-delay="600"
+                data-aos-delay={600}
             >
                 <div className="w-full max-w-6xl">
                     <FeaturedStudiosList limit={3} />
                 </div>
             </div>
+
             {/* Por qué elegir StudioConnect */}
             <div
                 className="bg-white"
                 data-aos="fade-right"
-                data-aos-delay="700"
+                data-aos-delay={700}
             >
                 <WhyChooseStudioConnect />
             </div>
-            {/* Reseñas */}
-            <div
-                className="bg-white flex flex-col items-center p-4 sm:p-6 -mt-6"
-                data-aos="fade-right"
-                data-aos-delay="800"
-            >
-                <div className="w-full max-w-6xl">
-                    <ReviewList />
+
+            {!isLoggedIn && (
+                <div data-aos="fade-right" data-aos-delay={600}>
+                    <JoinStudioConnect />
                 </div>
-            </div>
+            )}
         </div>
     );
 }

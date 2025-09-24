@@ -1,133 +1,28 @@
 import { http } from "@/lib/http";
 
 export const roomsService = {
-  createRoom: async ({ token, roomData }: { token: string; roomData: any }) => {
-    try {
-      const response = await http.post("/rooms", roomData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error creando la sala:", error);
-      throw error;
-    }
-  },
-
-  uploadRoomImages: async ({
-    token,
-    roomId,
-    imagesFormData,
-  }: {
-    token?: string;
-    roomId: string;
-    imagesFormData: FormData;
-  }) => {
-    try {
-      const accessToken =
-        token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
-      if (!accessToken) throw new Error("No hay token disponible");
-
-      const response = await http.post(`/rooms/${roomId}/images`, imagesFormData, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error subiendo imágenes de la sala:", error);
-      throw error;
-    }
-  },
-
-  getRooms: async (token?: string) => {
-    try {
-      const accessToken =
-        token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
-      if (!accessToken) throw new Error("No hay token disponible");
-
-      const response = await http.get("/owners/me/studio/rooms", {
-        headers: { Authorization: `Bearer ${accessToken}`, Accept: "application/json" },
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error obteniendo salas:", error);
-      throw error;
-    }
-  },
-
-  deleteRoom: async ({ token, roomId }: { token?: string; roomId: string }) => {
-    try {
-      const accessToken =
-        token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
-      if (!accessToken) throw new Error("No hay token disponible");
-
-      const response = await http.delete(`/owners/me/studio/rooms/${roomId}`, {
-        headers: { Authorization: `Bearer ${accessToken}`, Accept: "application/json" },
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error eliminando la sala:", error);
-      throw error;
-    }
-  },
-
-  updateRoom: async ({
-    token,
-    roomId,
-    roomData,
-  }: {
-    token?: string;
-    roomId: string;
-    roomData: any;
-  }) => {
-    try {
-      const accessToken =
-        token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
-      if (!accessToken) throw new Error("No hay token disponible");
-
-      const response = await http.put(`/owners/me/studio/rooms/${roomId}`, roomData, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/json",
-        },
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error actualizando la sala:", error);
-      throw error;
-    }
-  },
-
-  deleteRoomImage: async ({
-    roomId,
-    imageIndex,
-    token,
-  }: {
-    roomId: string;
-    imageIndex: number;
-    token?: string;
-  }) => {
-    try {
-      const accessToken =
-        token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
-      if (!accessToken) throw new Error("No hay token disponible");
-
-      const response = await http.delete(`/rooms/${roomId}/images/${imageIndex}`, {
-        headers: { Authorization: `Bearer ${accessToken}`, Accept: "application/json" },
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error eliminando la imagen de la sala:", error);
-      throw error;
-    }
-  },
-
+  /**
+   * Obtiene las salas del estudio del dueño autenticado.
+   * GET /owners/me/studio/rooms
+   */
   getMyRooms: async (token?: string) => {
-    return await roomsService.getRooms(token);
+    const accessToken =
+      token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
+    if (!accessToken) throw new Error("No hay token disponible");
+
+    const response = await http.get("/owners/me/studio/rooms", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    });
+    return response.data;
   },
 
+  /**
+   * Obtiene las salas de un estudio específico (público o autenticado).
+   * GET /rooms/studio/:studioId
+   */
   getRoomsByStudioId: async ({
     studioId,
     token,
@@ -155,7 +50,124 @@ export const roomsService = {
       throw error;
     }
   },
+
+  /**
+   * Crea una nueva sala en el estudio del dueño.
+   * POST /rooms
+   */
+ createRoom: async ({ token, roomData }: { token: string; roomData: any }) => {
+    try {
+      const response = await http.post("/rooms", roomData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error creando la sala:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Actualiza una sala específica.
+   * PUT /owners/me/studio/rooms/:roomId
+   */
+  updateRoom: async ({
+    token,
+    roomId,
+    roomData,
+  }: {
+    token?: string;
+    roomId: string;
+    roomData: any;
+  }) => {
+    const accessToken =
+      token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
+    if (!accessToken) throw new Error("No hay token disponible");
+
+    const response = await http.put(`/owners/me/studio/rooms/${roomId}`, roomData, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    });
+    return response.data;
+  },
+
+  /**
+   * Elimina una sala del dueño.
+   * DELETE /owners/me/studio/rooms/:roomId
+   */
+  deleteRoom: async ({ token, roomId }: { token?: string; roomId: string }) => {
+    const accessToken =
+      token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
+    if (!accessToken) throw new Error("No hay token disponible");
+
+    const response = await http.delete(`/owners/me/studio/rooms/${roomId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    });
+    return response.data;
+  },
+
+  /**
+   * Sube imágenes a una sala.
+   * POST /rooms/:roomId/images
+   */
+  uploadRoomImages: async ({
+    token,
+    roomId,
+    imagesFormData,
+  }: {
+    token?: string;
+    roomId: string;
+    imagesFormData: FormData;
+  }) => {
+    const accessToken =
+      token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
+    if (!accessToken) throw new Error("No hay token disponible");
+
+    const response = await http.post(`/rooms/${roomId}/images`, imagesFormData, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  /**
+   * Elimina una imagen de una sala.
+   * DELETE /rooms/:roomId/images/:imageIndex
+   */
+  deleteRoomImage: async ({
+    roomId,
+    imageIndex,
+    token,
+  }: {
+    roomId: string;
+    imageIndex: number;
+    token?: string;
+  }) => {
+    const accessToken =
+      token ?? (typeof window !== "undefined" ? localStorage.getItem("accessToken") : undefined);
+    if (!accessToken) throw new Error("No hay token disponible");
+
+    const response = await http.delete(`/rooms/${roomId}/images/${imageIndex}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+    });
+    return response.data;
+  },
 } as const;
 
+// Alias para obtener salas de un estudio
 export const getStudioRooms = async (studioId: string, token?: string) =>
   roomsService.getRoomsByStudioId({ studioId, token });

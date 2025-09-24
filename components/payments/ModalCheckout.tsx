@@ -23,7 +23,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY 
 type ModalCheckoutProps = {
   open: boolean;
   onClose: () => void;
-  plan: "monthly" | "yearly";
+  plan: "mensual" | "anual";
 };
 
 // Opciones visuales para CardElement
@@ -128,7 +128,7 @@ export default function ModalCheckout({ open, onClose, plan }: ModalCheckoutProp
           return;
         }
 
-        const formattedPlan = plan === "monthly" ? "MONTHLY" : "YEARLY";
+        const formattedPlan = plan === "mensual" ? "MENSUAL" : "ANUAL";
 
         const { data } = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL}payments/membership`,
@@ -154,7 +154,7 @@ export default function ModalCheckout({ open, onClose, plan }: ModalCheckoutProp
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="bg-white rounded-2xl shadow-lg p-6 max-w-md">
         <DialogTitle className="text-lg font-semibold text-gray-800">
-          Pagar Membresía ({plan === "monthly" ? "Mensual" : "Anual"})
+          Pagar Membresía ({plan === "mensual" ? "Mensual" : "Anual"})
         </DialogTitle>
         <DialogDescription className="text-gray-600 mb-4">
           Ingresá los datos de tu tarjeta para completar el pago.

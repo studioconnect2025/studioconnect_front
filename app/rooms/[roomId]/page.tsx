@@ -3,8 +3,21 @@
 import { useEffect, useState } from "react";
 import ReviewList from "@/components/reviews/ReviewList";
 import ReviewForm from "@/components/reviews/ReviewForm";
-import { BookingService, Booking } from "@/services/booking.services";
+import { BookingService, Booking, BookingStatus } from "@/services/booking.services";
 import { ReviewsService, Review } from "@/services/reviews.service";
+
+/** Helper: intenta token desde localStorage o cookie "token" */
+function getTokenSafe(): string {
+  if (typeof window === "undefined") return "";
+  const ls =
+    localStorage.getItem("token") ??
+    localStorage.getItem("accessToken") ??
+    localStorage.getItem("authToken");
+  if (ls) return ls;
+
+  const m = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : "";
+}
 
 export default function RoomPage(props: any) {
   // ⚡️ Extraemos roomId de forma segura
@@ -28,30 +41,42 @@ export default function RoomPage(props: any) {
         setLoading(true);
         setError(null);
 
-        // 1. Traer reseñas existentes
-        const existingReviews = await ReviewsService.getRoomReviews(roomId);
+        const token = getTokenSafe();
 
-        // 2. Traer reservas del músico
-        const myBookings = await BookingService.getMyBookings();
+        // 1) Traer reseñas de la sala
+        // 2) Traer reservas del músico (si hay token), en paralelo
+        const [existingReviews, myBookings] = await Promise.all([
+          ReviewsService.getRoomReviews(roomId),
+          token ? BookingService.getMyBookings(token) : Promise.resolve<Booking[]>([]),
+        ]);
 
-        // 3. Filtrar reservas de esta sala que ya terminaron y están confirmadas/completadas
         const now = new Date();
-        const validBookings = (myBookings ?? []).filter(
+
+        const isCompletedOrConfirmed = (status: string | BookingStatus) => {
+          const s = String(status).toUpperCase();
+          return s === "CONFIRMED" || s === "COMPLETED" || s === "COMPLETADO";
+        };
+
+        // Coincidencia por roomId (preferente) o por nombre de room (fallback)
+        const isSameRoom = (b: Booking) =>
+          (b.roomId ? b.roomId === roomId : b.room === roomId);
+
+        const finishedBookings = (myBookings ?? []).filter(
           (b) =>
-            b.room === roomId &&
-            ["CONFIRMED", "COMPLETED"].includes((b.status || "").toUpperCase()) &&
+            isSameRoom(b) &&
+            isCompletedOrConfirmed(b.status) &&
+            b.endTime &&
             new Date(b.endTime) < now
         );
 
-        // 4. Encontrar una booking que todavía no tenga reseña
-        const bookingWithoutReview = validBookings.find(
-          (b) => !existingReviews.some((r) => r.booking?.id === b.id)
-        );
+        // Buscar una reserva que todavía no tenga reseña
+        const bookingWithoutReview =
+          finishedBookings.find((b) => !existingReviews.some((r) => r.booking?.id === b.id)) ?? null;
 
-        if (mounted) {
-          setReviews(existingReviews ?? []);
-          setEligibleBooking(bookingWithoutReview ?? null);
-        }
+        if (!mounted) return;
+
+        setReviews(existingReviews ?? []);
+        setEligibleBooking(bookingWithoutReview);
       } catch (err: any) {
         console.error("Error cargando datos de sala:", err);
         if (mounted) setError(err?.message ?? "Error cargando datos");
@@ -61,7 +86,6 @@ export default function RoomPage(props: any) {
     }
 
     fetchData();
-
     return () => {
       mounted = false;
     };
