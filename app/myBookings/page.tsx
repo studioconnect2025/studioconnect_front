@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { FaCalendarAlt, FaClock, FaUsers, FaCalendarCheck, FaStar } from "react-icons/fa";
 import { Booking, BookingService, InstrumentBooking } from "@/services/booking.services";
+import { PaymentsService } from "@/services/payments.service";
 import Swal from "sweetalert2";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -36,7 +37,7 @@ const formatTimeRangeRaw = (start?: string, end?: string) => {
   return `${extractHHMM(start)} - ${extractHHMM(end)}`;
 };
 
-const Reservas = () => {
+export default function Reservas() {
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,13 +45,26 @@ const Reservas = () => {
 
   useEffect(() => {
     fetchBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const getToken = () => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("accessToken") || null;
+  };
 
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const data = await BookingService.getMyBookings();
-      setBookings(data); // mantenemos tal cual viene del backend
+      const token = getToken();
+      if (!token) {
+        toast.error("No hay sesión activa. Iniciá sesión para ver tus reservas.");
+        setBookings([]);
+        return;
+      }
+      // ⬇️ BookingService.getMyBookings REQUIERE token
+      const data = await BookingService.getMyBookings(token);
+      setBookings(data);
     } catch (error) {
       console.error(error);
       toast.error("Error al cargar tus reservas");
@@ -59,28 +73,26 @@ const Reservas = () => {
     }
   };
 
-  // Nuevo: contar cancelaciones del día
+  // Usa updatedAt (si viene) para contar cancelaciones realizadas "hoy"
   const getTodayCancellations = () => {
     const today = new Date();
     return bookings.filter((b) => {
-      const updatedAt = new Date(b.startTime);
+      if (b.status !== "CANCELADA") return false;
+      const when = b.updatedAt ? new Date(b.updatedAt) : null;
+      if (!when) return false;
       return (
-        b.status === "CANCELADA" &&
-        updatedAt.getDate() === today.getDate() &&
-        updatedAt.getMonth() === today.getMonth() &&
-        updatedAt.getFullYear() === today.getFullYear()
+        when.getDate() === today.getDate() &&
+        when.getMonth() === today.getMonth() &&
+        when.getFullYear() === today.getFullYear()
       );
     }).length;
   };
 
   const canCancel = (startTime?: string) => {
     if (!startTime) return false;
-    const now = new Date();
-    const bookingDate = new Date(startTime);
-    const diffInDays = (bookingDate.getTime() - now.getTime()) / (1000 * 3600 * 24);
-
-    // Se puede cancelar si faltan al menos 2 días y no se superó el límite diario
-    return diffInDays >= 2 && getTodayCancellations() < 2;
+    const diffMs = new Date(startTime).getTime() - Date.now();
+    const fortyEightHours = 48 * 60 * 60 * 1000;
+    return diffMs >= fortyEightHours && getTodayCancellations() < 2;
   };
 
   const cancelReservation = async (bookingId: string) => {
@@ -107,22 +119,44 @@ const Reservas = () => {
 
     if (result.isConfirmed) {
       try {
-        const updatedBooking = await BookingService.cancelBooking(bookingId);
-
+        const token = getToken();
+        if (!token) {
+          toast.error("No hay sesión activa.");
+          return;
+        }
+        // ⬇️ BookingService.cancelBooking REQUIERE token
+        const updatedBooking = await BookingService.cancelBooking(bookingId, token);
         setBookings((prev) =>
           prev.map((b) => (b.id === bookingId ? { ...b, status: updatedBooking.status } : b))
         );
-
         toast.success("Reserva cancelada correctamente");
       } catch (error: any) {
         console.error(error);
-
         if (error?.response?.data?.message) {
           toast.error(error.response.data.message);
         } else {
           toast.error("Error al cancelar la reserva");
         }
       }
+    }
+  };
+
+  const canPay = (b: Booking) => {
+    return b.status !== "CANCELADA";
+  };
+
+  const onPayInline = async (b: Booking) => {
+    try {
+      const instrumentIds = b.instruments?.map((i) => i.id);
+      const { clientSecret } = await PaymentsService.payBooking({
+        bookingId: b.id,
+        instrumentIds,
+      });
+      toast.success("Pago iniciado. Completa los datos de tarjeta.");
+      router.push(`/payments/booking/${b.id}?cs=${encodeURIComponent(clientSecret)}`);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.response?.data?.message ?? "No se pudo iniciar el pago");
     }
   };
 
@@ -238,9 +272,9 @@ const Reservas = () => {
                 <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end space-x-0 sm:space-x-3 mt-3 sm:mt-0 w-full sm:w-auto gap-2">
                   <p className="font-semibold text-gray-800">Total ${b.totalPrice}</p>
 
-                  {b.status !== "CANCELADA" && (
+                  {canPay(b) && (
                     <button
-                      onClick={() => router.push(`/payments/booking/${b.id}`)}
+                      onClick={() => onPayInline(b)}
                       className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-800 transition"
                     >
                       Pagar reserva
@@ -334,6 +368,4 @@ const Reservas = () => {
       </div>
     </div>
   );
-};
-
-export default Reservas;
+}
