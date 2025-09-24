@@ -26,7 +26,7 @@ export const PaymentsService = {
    * Crear pago de membresía
    */
   async payMembership(payload: { plan: MembershipPlan }): Promise<MembershipPaymentResponse> {
-    const { data } = await http.post<MembershipPaymentResponse>("/memberships", payload);
+    const { data } = await http.post<MembershipPaymentResponse>("/payments/membership", payload);
     return data;
   },
 
