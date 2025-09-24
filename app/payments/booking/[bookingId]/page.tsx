@@ -1,5 +1,10 @@
 import BookingPaymentClient from "./BookingPaymentClient";
 
-export default function Page({ params }: { params: { bookingId: string } }) {
-  return <BookingPaymentClient bookingId={params.bookingId} />;
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ bookingId: string }>;
+}) {
+  const { bookingId } = await params;
+  return <BookingPaymentClient bookingId={bookingId} />;
 }
