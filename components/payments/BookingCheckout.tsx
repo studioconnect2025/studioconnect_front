@@ -3,54 +3,28 @@
 import { useEffect, useState } from "react";
 import { useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js";
 import Button from "@/components/ui/Button";
-import axios from "axios";
 import { useRouter } from "next/navigation";
+import { PaymentsService } from "@/services/payments.service";
 
 interface BookingCheckoutProps {
+  clientSecret: string | null;
   bookingId: string;
-  instrumentIds?: string[];
 }
 
-export default function BookingCheckout({ bookingId, instrumentIds = [] }: BookingCheckoutProps) {
+export default function BookingCheckout({ clientSecret, bookingId }: BookingCheckoutProps) {
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
 
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  useEffect(() => {
-    const fetchPaymentIntent = async () => {
-      try {
-        const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
-        if (!token) throw new Error("No hay sesión activa. Iniciá sesión para pagar.");
-
-        const { data } = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}payments/booking`, //revisar
-          { bookingId, instrumentIds },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setClientSecret(data.clientSecret);
-      } catch (error: any) {
-        console.error("Error creando PaymentIntent (booking):", error);
-        setErrorMsg(error?.response?.data?.message || error?.message || "Error al crear el pago");
-      }
-    };
-
-    fetchPaymentIntent();
-  }, [bookingId, instrumentIds]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!stripe || !elements) return;
+    if (!stripe || !elements || !clientSecret) return;
 
     setLoading(true);
+    setErrorMsg("");
 
     try {
       const result = await stripe.confirmPayment({
@@ -58,29 +32,26 @@ export default function BookingCheckout({ bookingId, instrumentIds = [] }: Booki
         confirmParams: {
           return_url: `${window.location.origin}/myBookings`
         },
-        redirect: "if_required", // evita redirect automático si no es necesario
+        redirect: "if_required",
       });
 
-      const { error, paymentIntent } = result as any;
+      const { error, paymentIntent } = result;
 
       if (error) {
         setErrorMsg(error.message || "Error al procesar el pago");
       } else if (paymentIntent?.status === "succeeded") {
         try {
+          // El pago fue autorizado. Ahora, notifica al backend para capturar el pago.
+          await PaymentsService.confirmPayment(paymentIntent.id, bookingId);
           localStorage.setItem("bookingJustPaid", bookingId);
           localStorage.setItem("bookingPaymentIntent", paymentIntent.id || "");
         } catch (err) {
-          console.warn("no se pudo guardar bookingJustPaid en localStorage", err);
+          console.error("Error al confirmar el pago en el backend:", err);
+          setErrorMsg("Pago exitoso, pero hubo un error al confirmar. Contacta a soporte.");
         }
-
-        // redirigimos al perfil (misma página para ambos roles)
         router.push("/myBookings");
-      } else {
-        // si Stripe hizo redirect, la confirmación se tratará en /payments/success
-        // pero por seguridad, guardamos si tenemos paymentIntent
-        if (paymentIntent?.id) {
-          localStorage.setItem("bookingPaymentIntent", paymentIntent.id);
-        }
+      } else if ('url' in result && typeof result.url === 'string') {
+        router.push(result.url);
       }
     } catch (err: any) {
       console.error("Error durante confirmPayment:", err);
@@ -91,14 +62,17 @@ export default function BookingCheckout({ bookingId, instrumentIds = [] }: Booki
   };
 
   if (errorMsg) return <p className="text-red-500">{errorMsg}</p>;
-  if (!clientSecret) return <p>Cargando pasarela de pago...</p>;
+  if (!clientSecret) return <p>No se pudo cargar la pasarela de pago. Inténtalo de nuevo.</p>;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto bg-white p-6 rounded-2xl shadow-md">
-      <PaymentElement />
-      <Button type="submit" disabled={!stripe || loading} className="w-full">
-        {loading ? "Procesando..." : "Pagar Reserva"}
-      </Button>
-    </form>
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-md mx-auto bg-white p-6 rounded-2xl shadow-md">
+        <h2 className="text-xl font-semibold text-center mb-4">Pagar Reserva</h2>
+        <PaymentElement />
+        <Button type="submit" disabled={!stripe || loading || !clientSecret} className="w-full bg-sky-700 text-white hover:bg-sky-800 transition">
+          {loading ? "Procesando..." : "Pagar Reserva"}
+        </Button>
+      </form>
+    </div>
   );
 }
