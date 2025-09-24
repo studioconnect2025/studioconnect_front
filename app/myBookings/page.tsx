@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { FaCalendarAlt, FaClock, FaUsers, FaCalendarCheck, FaStar } from "react-icons/fa";
 import { Booking, BookingService, InstrumentBooking } from "@/services/booking.services";
-import { PaymentsService } from "@/services/payments.service";
 import Swal from "sweetalert2";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -50,6 +49,7 @@ export default function Reservas() {
 
   const getToken = () => {
     if (typeof window === "undefined") return null;
+    // usamos accessToken como definiste; si cambia, agregá más claves acá
     return localStorage.getItem("accessToken") || null;
   };
 
@@ -62,7 +62,7 @@ export default function Reservas() {
         setBookings([]);
         return;
       }
-      // ⬇️ BookingService.getMyBookings REQUIERE token
+      // BookingService.getMyBookings REQUIERE token
       const data = await BookingService.getMyBookings(token);
       setBookings(data);
     } catch (error) {
@@ -73,7 +73,7 @@ export default function Reservas() {
     }
   };
 
-  // Usa updatedAt (si viene) para contar cancelaciones realizadas "hoy"
+  // Contar cancelaciones realizadas "hoy" (usa updatedAt si viene)
   const getTodayCancellations = () => {
     const today = new Date();
     return bookings.filter((b) => {
@@ -88,6 +88,7 @@ export default function Reservas() {
     }).length;
   };
 
+  // Se puede cancelar si faltan al menos 48h y no superó el límite diario de 2
   const canCancel = (startTime?: string) => {
     if (!startTime) return false;
     const diffMs = new Date(startTime).getTime() - Date.now();
@@ -124,10 +125,18 @@ export default function Reservas() {
           toast.error("No hay sesión activa.");
           return;
         }
-        // ⬇️ BookingService.cancelBooking REQUIERE token
         const updatedBooking = await BookingService.cancelBooking(bookingId, token);
         setBookings((prev) =>
-          prev.map((b) => (b.id === bookingId ? { ...b, status: updatedBooking.status } : b))
+          prev.map((b) =>
+            b.id === bookingId
+              ? {
+                  ...b,
+                  status: updatedBooking.status,
+                  // reflejamos timestamps si back no los manda
+                  updatedAt: updatedBooking.updatedAt ?? new Date().toISOString(),
+                }
+              : b
+          )
         );
         toast.success("Reserva cancelada correctamente");
       } catch (error: any) {
@@ -141,33 +150,27 @@ export default function Reservas() {
     }
   };
 
-  const canPay = (b: Booking) => {
-    return b.status !== "CANCELADA";
-  };
+  // mostrar pagar solo si NO está cancelada y NO está paga
+  const canPay = (b: Booking) => b.status !== "CANCELADA" && !b.isPaid;
 
-  const onPayInline = async (b: Booking) => {
-    try {
-      const instrumentIds = b.instruments?.map((i) => i.id);
-      const { clientSecret } = await PaymentsService.payBooking({
-        bookingId: b.id,
-        instrumentIds,
-      });
-      toast.success("Pago iniciado. Completa los datos de tarjeta.");
-      router.push(`/payments/booking/${b.id}?cs=${encodeURIComponent(clientSecret)}`);
-    } catch (e: any) {
-      console.error(e);
-      toast.error(e?.response?.data?.message ?? "No se pudo iniciar el pago");
-    }
+  // navega al checkout (la página obtiene el clientSecret)
+  const goToCheckout = (b: Booking) => {
+    router.push(`/payments/booking/${b.id}`);
   };
 
   const now = new Date();
-  const proximas = bookings.filter(
-    (b) => b.startTime && new Date(b.startTime) >= now && b.status !== "CANCELADA"
-  );
-  const pasadas = bookings.filter(
-    (b) => b.startTime && new Date(b.startTime) < now && b.status !== "CANCELADA"
-  );
-  const canceladas = bookings.filter((b) => b.status === "CANCELADA");
+
+  const proximas = bookings
+    .filter((b) => b.startTime && new Date(b.startTime) >= now && b.status !== "CANCELADA")
+    .sort((a, b) => new Date(a.startTime!).getTime() - new Date(b.startTime!).getTime());
+
+  const pasadas = bookings
+    .filter((b) => b.startTime && new Date(b.startTime) < now && b.status !== "CANCELADA")
+    .sort((a, b) => new Date(a.startTime!).getTime() - new Date(b.startTime!).getTime());
+
+  const canceladas = bookings
+    .filter((b) => b.status === "CANCELADA")
+    .sort((a, b) => new Date(a.startTime!).getTime() - new Date(b.startTime!).getTime());
 
   const formatDuration = (start?: string, end?: string) => {
     if (!start || !end) return "";
@@ -195,6 +198,7 @@ export default function Reservas() {
       case "CANCELLED":
         return "Cancelada";
       case "COMPLETADA":
+      case "COMPLETED":
         return "Completado";
       default:
         return status;
@@ -272,31 +276,42 @@ export default function Reservas() {
                 <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end space-x-0 sm:space-x-3 mt-3 sm:mt-0 w-full sm:w-auto gap-2">
                   <p className="font-semibold text-gray-800">Total ${b.totalPrice}</p>
 
-                  {canPay(b) && (
-                    <button
-                      onClick={() => onPayInline(b)}
-                      className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-800 transition"
-                    >
-                      Pagar reserva
-                    </button>
-                  )}
-
+                  {/* Estado de pago segun Dai */}
                   {b.status !== "CANCELADA" && (
-                    canCancel(b.startTime) ? (
-                      <button
-                        onClick={() => cancelReservation(b.id)}
-                        className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-100 transition"
-                      >
-                        Cancelar
-                      </button>
-                    ) : (
-                      <span className="ml-2 relative group cursor-pointer text-gray-500 px-3 py-1 border rounded-full">
-                        ?
-                        <span className="absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 scale-0 group-hover:scale-100 transition-all bg-gray-800 text-white text-xs px-2 py-1 rounded w-64 text-center">
-                          Solo se puede cancelar hasta 2 días antes de la reserva o ya alcanzaste el límite de cancelaciones diarias
+                    <>
+                      {b.isPaid ? (
+                        <span className="bg-green-100 text-green-800 px-4 py-2 rounded-md font-semibold">
+                          Reserva pagada
                         </span>
-                      </span>
-                    )
+                      ) : (
+                        <>
+                          {canPay(b) && (
+                            <button
+                              onClick={() => goToCheckout(b)}
+                              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-800 transition"
+                            >
+                              Pagar reserva
+                            </button>
+                          )}
+
+                          {canCancel(b.startTime) ? (
+                            <button
+                              onClick={() => cancelReservation(b.id)}
+                              className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-100 transition"
+                            >
+                              Cancelar
+                            </button>
+                          ) : (
+                            <span className="ml-2 relative group cursor-pointer text-gray-500 px-3 py-1 border rounded-full">
+                              ?
+                              <span className="absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 scale-0 group-hover:scale-100 transition-all bg-gray-800 text-white text-xs px-2 py-1 rounded w-64 text-center">
+                                Solo se puede cancelar hasta 2 días antes de la reserva o ya alcanzaste el límite de cancelaciones diarias
+                              </span>
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </>
                   )}
 
                   {b.status === "CANCELADA" && (
