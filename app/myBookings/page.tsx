@@ -36,7 +36,7 @@ const formatTimeRangeRaw = (start?: string, end?: string) => {
   return `${extractHHMM(start)} - ${extractHHMM(end)}`;
 };
 
-const Reservas = () => {
+export default function Reservas() {
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,12 +44,26 @@ const Reservas = () => {
 
   useEffect(() => {
     fetchBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const getToken = () => {
+    if (typeof window === "undefined") return null;
+    // usamos accessToken como definiste; si cambia, agregá más claves acá
+    return localStorage.getItem("accessToken") || null;
+  };
 
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const data = await BookingService.getMyBookings();
+      const token = getToken();
+      if (!token) {
+        toast.error("No hay sesión activa. Iniciá sesión para ver tus reservas.");
+        setBookings([]);
+        return;
+      }
+      // BookingService.getMyBookings REQUIERE token
+      const data = await BookingService.getMyBookings(token);
       setBookings(data);
     } catch (error) {
       console.error(error);
@@ -59,26 +73,27 @@ const Reservas = () => {
     }
   };
 
+  // Contar cancelaciones realizadas "hoy" (usa updatedAt si viene)
   const getTodayCancellations = () => {
     const today = new Date();
     return bookings.filter((b) => {
-      const updatedAt = new Date(b.startTime);
+      if (b.status !== "CANCELADA") return false;
+      const when = b.updatedAt ? new Date(b.updatedAt) : null;
+      if (!when) return false;
       return (
-        b.status === "CANCELADA" &&
-        updatedAt.getDate() === today.getDate() &&
-        updatedAt.getMonth() === today.getMonth() &&
-        updatedAt.getFullYear() === today.getFullYear()
+        when.getDate() === today.getDate() &&
+        when.getMonth() === today.getMonth() &&
+        when.getFullYear() === today.getFullYear()
       );
     }).length;
   };
 
+  // Se puede cancelar si faltan al menos 48h y no superó el límite diario de 2
   const canCancel = (startTime?: string) => {
     if (!startTime) return false;
-    const now = new Date();
-    const bookingDate = new Date(startTime);
-    const diffInDays = (bookingDate.getTime() - now.getTime()) / (1000 * 3600 * 24);
-
-    return diffInDays >= 2 && getTodayCancellations() < 2;
+    const diffMs = new Date(startTime).getTime() - Date.now();
+    const fortyEightHours = 48 * 60 * 60 * 1000;
+    return diffMs >= fortyEightHours && getTodayCancellations() < 2;
   };
 
   const cancelReservation = async (bookingId: string) => {
@@ -105,16 +120,27 @@ const Reservas = () => {
 
     if (result.isConfirmed) {
       try {
-        const updatedBooking = await BookingService.cancelBooking(bookingId);
-
+        const token = getToken();
+        if (!token) {
+          toast.error("No hay sesión activa.");
+          return;
+        }
+        const updatedBooking = await BookingService.cancelBooking(bookingId, token);
         setBookings((prev) =>
-          prev.map((b) => (b.id === bookingId ? { ...b, status: updatedBooking.status } : b))
+          prev.map((b) =>
+            b.id === bookingId
+              ? {
+                  ...b,
+                  status: updatedBooking.status,
+                  // reflejamos timestamps si back no los manda
+                  updatedAt: updatedBooking.updatedAt ?? new Date().toISOString(),
+                }
+              : b
+          )
         );
-
         toast.success("Reserva cancelada correctamente");
       } catch (error: any) {
         console.error(error);
-
         if (error?.response?.data?.message) {
           toast.error(error.response.data.message);
         } else {
@@ -124,7 +150,16 @@ const Reservas = () => {
     }
   };
 
+  // mostrar pagar solo si NO está cancelada y NO está paga
+  const canPay = (b: Booking) => b.status !== "CANCELADA" && !b.isPaid;
+
+  // navega al checkout (la página obtiene el clientSecret)
+  const goToCheckout = (b: Booking) => {
+    router.push(`/payments/booking/${b.id}`);
+  };
+
   const now = new Date();
+
   const proximas = bookings
     .filter((b) => b.startTime && new Date(b.startTime) >= now && b.status !== "CANCELADA")
     .sort((a, b) => new Date(a.startTime!).getTime() - new Date(b.startTime!).getTime());
@@ -163,6 +198,7 @@ const Reservas = () => {
       case "CANCELLED":
         return "Cancelada";
       case "COMPLETADA":
+      case "COMPLETED":
         return "Completado";
       default:
         return status;
@@ -240,6 +276,7 @@ const Reservas = () => {
                 <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end space-x-0 sm:space-x-3 mt-3 sm:mt-0 w-full sm:w-auto gap-2">
                   <p className="font-semibold text-gray-800">Total ${b.totalPrice}</p>
 
+                  {/* Estado de pago segun Dai */}
                   {b.status !== "CANCELADA" && (
                     <>
                       {b.isPaid ? (
@@ -248,12 +285,14 @@ const Reservas = () => {
                         </span>
                       ) : (
                         <>
-                          <button
-                            onClick={() => router.push(`/payments/booking/${b.id}`)}
-                            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-800 transition"
-                          >
-                            Pagar reserva
-                          </button>
+                          {canPay(b) && (
+                            <button
+                              onClick={() => goToCheckout(b)}
+                              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-800 transition"
+                            >
+                              Pagar reserva
+                            </button>
+                          )}
 
                           {canCancel(b.startTime) ? (
                             <button
@@ -344,6 +383,4 @@ const Reservas = () => {
       </div>
     </div>
   );
-};
-
-export default Reservas;
+}
