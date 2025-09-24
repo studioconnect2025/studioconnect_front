@@ -29,7 +29,7 @@ export default function RegisterGoogleHandler() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/register/google`,
+        `${process.env.NEXT_PUBLIC_API_URL}auth/register/google`,
         {
           method: "POST",
           headers: {
