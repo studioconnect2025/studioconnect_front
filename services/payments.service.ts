@@ -18,7 +18,7 @@ export interface ConfirmPaymentResponse {
   paymentIntentId: string;
 }
 
-export type MembershipPlan = "MONTHLY" | "ANNUAL";
+export type MembershipPlan = "MENSUAL" | "ANUAL";
 
 export const PaymentsService = {
   /**

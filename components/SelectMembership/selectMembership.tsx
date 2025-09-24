@@ -14,9 +14,9 @@ import ModalCheckout from "@/components/payments/ModalCheckout";
 
 export default function PricingPlans() {
   const [open, setOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("monthly");
+  const [selectedPlan, setSelectedPlan] = useState<"mensual" | "anual">("mensual");
 
-  const handleStart = (plan: "monthly" | "yearly") => {
+  const handleStart = (plan: "mensual" | "anual") => {
     setSelectedPlan(plan);
     setOpen(true);
   };
@@ -71,7 +71,7 @@ export default function PricingPlans() {
                 ))}
               </ul>
               <button
-                onClick={() => handleStart("monthly")}
+                onClick={() => handleStart("mensual")}
                 className="bg-sky-700 text-white py-2 px-6 text-sm sm:text-base md:text-lg rounded-xl w-full sm:w-auto hover:bg-black transition-transform duration-300 ease-in-out hover:scale-110"
               >
                 Empezar
@@ -105,7 +105,7 @@ export default function PricingPlans() {
               </ul>
 
               <button
-                onClick={() => handleStart("yearly")}
+                onClick={() => handleStart("anual")}
                 className="bg-sky-700 text-white py-2 px-6 text-sm sm:text-base md:text-lg rounded-xl w-full sm:w-auto hover:bg-black transition-transform duration-300 ease-in-out hover:scale-110"
               >
                 Empezar
