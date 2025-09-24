@@ -164,6 +164,8 @@ export const BookingService = {
   async confirmPayment(paymentIntentId: string) {
     try {
       const { data } = await http.get(`/payments/confirm/${paymentIntentId}`);
+      console.log("Ver este log",data, paymentIntentId);
+      
       return data;
     } catch (error: any) {
       console.error("Error confirmando pago:", error.response || error);

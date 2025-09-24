@@ -37,7 +37,7 @@ const formatTimeRangeRaw = (start?: string, end?: string) => {
   return `${extractHHMM(start)} - ${extractHHMM(end)}`;
 };
 
-const Reservas = () => {
+export default function Reservas() {
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,12 +45,25 @@ const Reservas = () => {
 
   useEffect(() => {
     fetchBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const getToken = () => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("accessToken") || null;
+  };
 
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const data = await BookingService.getMyBookings();
+      const token = getToken();
+      if (!token) {
+        toast.error("No hay sesión activa. Iniciá sesión para ver tus reservas.");
+        setBookings([]);
+        return;
+      }
+      // ⬇️ BookingService.getMyBookings REQUIERE token
+      const data = await BookingService.getMyBookings(token);
       setBookings(data);
     } catch (error) {
       console.error(error);
@@ -106,7 +119,13 @@ const Reservas = () => {
 
     if (result.isConfirmed) {
       try {
-        const updatedBooking = await BookingService.cancelBooking(bookingId);
+        const token = getToken();
+        if (!token) {
+          toast.error("No hay sesión activa.");
+          return;
+        }
+        // ⬇️ BookingService.cancelBooking REQUIERE token
+        const updatedBooking = await BookingService.cancelBooking(bookingId, token);
         setBookings((prev) =>
           prev.map((b) => (b.id === bookingId ? { ...b, status: updatedBooking.status } : b))
         );
@@ -122,14 +141,10 @@ const Reservas = () => {
     }
   };
 
-  // Mostrar "Pagar" solo si corresponde (ajustá según tu contrato con el back)
   const canPay = (b: Booking) => {
-    // Si tenés paymentStatus, usalo:
-    // return b.status !== "CANCELADA" && (b.paymentStatus === "REQUIRES_PAYMENT" || !b.paymentStatus);
     return b.status !== "CANCELADA";
   };
 
-  // Inicia el pago con payBooking y redirige con clientSecret en query
   const onPayInline = async (b: Booking) => {
     try {
       const instrumentIds = b.instruments?.map((i) => i.id);
@@ -137,7 +152,6 @@ const Reservas = () => {
         bookingId: b.id,
         instrumentIds,
       });
-
       toast.success("Pago iniciado. Completa los datos de tarjeta.");
       router.push(`/payments/booking/${b.id}?cs=${encodeURIComponent(clientSecret)}`);
     } catch (e: any) {
@@ -354,6 +368,4 @@ const Reservas = () => {
       </div>
     </div>
   );
-};
-
-export default Reservas;
+}

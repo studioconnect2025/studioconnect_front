@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useStripe, useElements, PaymentElement } from "@stripe/react-stripe-js";
 import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
@@ -29,9 +29,7 @@ export default function BookingCheckout({ clientSecret, bookingId }: BookingChec
     try {
       const result = await stripe.confirmPayment({
         elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/myBookings`
-        },
+        confirmParams: { return_url: `${window.location.origin}/myBookings` },
         redirect: "if_required",
       });
 
@@ -41,16 +39,19 @@ export default function BookingCheckout({ clientSecret, bookingId }: BookingChec
         setErrorMsg(error.message || "Error al procesar el pago");
       } else if (paymentIntent?.status === "succeeded") {
         try {
-          // El pago fue autorizado. Ahora, notifica al backend para capturar el pago.
-          await PaymentsService.confirmPayment(paymentIntent.id, bookingId);
+          // ✅ usar el método nuevo con bookingId
+          await PaymentsService.confirmBookingPayment(paymentIntent.id, bookingId);
           localStorage.setItem("bookingJustPaid", bookingId);
           localStorage.setItem("bookingPaymentIntent", paymentIntent.id || "");
-        } catch (err) {
-          console.error("Error al confirmar el pago en el backend:", err);
-          setErrorMsg("Pago exitoso, pero hubo un error al confirmar. Contacta a soporte.");
+        } catch (err: any) {
+          console.error("Error al confirmar el pago en el backend:", err?.status, err?.response || err);
+          setErrorMsg(
+            err?.message ||
+              "Pago exitoso, pero hubo un error al confirmar en el backend. Contacta a soporte."
+          );
         }
         router.push("/myBookings");
-      } else if ('url' in result && typeof result.url === 'string') {
+      } else if ("url" in result && typeof result.url === "string") {
         router.push(result.url);
       }
     } catch (err: any) {
