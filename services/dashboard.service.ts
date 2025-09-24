@@ -7,7 +7,6 @@ export type Reservation = {
   musician: string;
   startTime: string;
   endTime: string;
-  status: "CONFIRMADO" | "PENDIENTE";
   isPaid: boolean;
   totalPrice: number | null;
 };

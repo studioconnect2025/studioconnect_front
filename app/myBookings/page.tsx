@@ -50,7 +50,7 @@ const Reservas = () => {
     try {
       setLoading(true);
       const data = await BookingService.getMyBookings();
-      setBookings(data); // mantenemos tal cual viene del backend
+      setBookings(data);
     } catch (error) {
       console.error(error);
       toast.error("Error al cargar tus reservas");
@@ -59,7 +59,6 @@ const Reservas = () => {
     }
   };
 
-  // Nuevo: contar cancelaciones del día
   const getTodayCancellations = () => {
     const today = new Date();
     return bookings.filter((b) => {
@@ -79,7 +78,6 @@ const Reservas = () => {
     const bookingDate = new Date(startTime);
     const diffInDays = (bookingDate.getTime() - now.getTime()) / (1000 * 3600 * 24);
 
-    // Se puede cancelar si faltan al menos 2 días y no se superó el límite diario
     return diffInDays >= 2 && getTodayCancellations() < 2;
   };
 
@@ -127,13 +125,17 @@ const Reservas = () => {
   };
 
   const now = new Date();
-  const proximas = bookings.filter(
-    (b) => b.startTime && new Date(b.startTime) >= now && b.status !== "CANCELADA"
-  );
-  const pasadas = bookings.filter(
-    (b) => b.startTime && new Date(b.startTime) < now && b.status !== "CANCELADA"
-  );
-  const canceladas = bookings.filter((b) => b.status === "CANCELADA");
+  const proximas = bookings
+    .filter((b) => b.startTime && new Date(b.startTime) >= now && b.status !== "CANCELADA")
+    .sort((a, b) => new Date(a.startTime!).getTime() - new Date(b.startTime!).getTime());
+
+  const pasadas = bookings
+    .filter((b) => b.startTime && new Date(b.startTime) < now && b.status !== "CANCELADA")
+    .sort((a, b) => new Date(a.startTime!).getTime() - new Date(b.startTime!).getTime());
+
+  const canceladas = bookings
+    .filter((b) => b.status === "CANCELADA")
+    .sort((a, b) => new Date(a.startTime!).getTime() - new Date(b.startTime!).getTime());
 
   const formatDuration = (start?: string, end?: string) => {
     if (!start || !end) return "";
@@ -239,30 +241,38 @@ const Reservas = () => {
                   <p className="font-semibold text-gray-800">Total ${b.totalPrice}</p>
 
                   {b.status !== "CANCELADA" && (
-                    <button
-                      onClick={() => router.push(`/payments/booking/${b.id}`)}
-                      className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-800 transition"
-                    >
-                      Pagar reserva
-                    </button>
-                  )}
-
-                  {b.status !== "CANCELADA" && (
-                    canCancel(b.startTime) ? (
-                      <button
-                        onClick={() => cancelReservation(b.id)}
-                        className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-100 transition"
-                      >
-                        Cancelar
-                      </button>
-                    ) : (
-                      <span className="ml-2 relative group cursor-pointer text-gray-500 px-3 py-1 border rounded-full">
-                        ?
-                        <span className="absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 scale-0 group-hover:scale-100 transition-all bg-gray-800 text-white text-xs px-2 py-1 rounded w-64 text-center">
-                          Solo se puede cancelar hasta 2 días antes de la reserva o ya alcanzaste el límite de cancelaciones diarias
+                    <>
+                      {b.isPaid ? (
+                        <span className="bg-green-100 text-green-800 px-4 py-2 rounded-md font-semibold">
+                          Reserva pagada
                         </span>
-                      </span>
-                    )
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => router.push(`/payments/booking/${b.id}`)}
+                            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-800 transition"
+                          >
+                            Pagar reserva
+                          </button>
+
+                          {canCancel(b.startTime) ? (
+                            <button
+                              onClick={() => cancelReservation(b.id)}
+                              className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-100 transition"
+                            >
+                              Cancelar
+                            </button>
+                          ) : (
+                            <span className="ml-2 relative group cursor-pointer text-gray-500 px-3 py-1 border rounded-full">
+                              ?
+                              <span className="absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 scale-0 group-hover:scale-100 transition-all bg-gray-800 text-white text-xs px-2 py-1 rounded w-64 text-center">
+                                Solo se puede cancelar hasta 2 días antes de la reserva o ya alcanzaste el límite de cancelaciones diarias
+                              </span>
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </>
                   )}
 
                   {b.status === "CANCELADA" && (

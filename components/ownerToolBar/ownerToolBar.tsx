@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
-import { FaBuilding, FaStar } from "react-icons/fa";
+import { FaBuilding} from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 import { CgStudio } from "react-icons/cg";
+import { FaUser } from "react-icons/fa6";
 
 export const OwnerToolbar = () => {
   const tools = [
@@ -25,9 +26,9 @@ export const OwnerToolbar = () => {
       color: "bg-sky-800",
     },
     {
-      title: "Mis reseñas",
-      icon: <FaStar size={28} />,
-      href: "/myStudio/myReviews",
+      title: "Mis perfil",
+      icon: <FaUser size={28} />,
+      href: "/musicianProfile",
       color: "bg-sky-800",
     },
   ];
