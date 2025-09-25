@@ -70,7 +70,7 @@ export default function BookingPaymentClient({ bookingId }: { bookingId: string 
 
   return (
     <Elements stripe={stripePromise} options={{ clientSecret }}>
-      <div className="max-w-xl mx-auto p-4">
+      <div className="p-4">
         <BookingCheckout bookingId={bookingId} clientSecret={clientSecret} />
       </div>
     </Elements>
