@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Button from "@/components/ui/Button";
+import { http } from "@/lib/http";
 
 export default function RegisterGoogleHandler() {
   const router = useRouter();
@@ -28,24 +29,16 @@ export default function RegisterGoogleHandler() {
     setError(null);
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}auth/register/google`,
+      const { data } = await http.post(
+        "/auth/register/google",
+        { role },
         {
-          method: "POST",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${reg_token}`,
           },
-          body: JSON.stringify({ role }),
         }
       );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "No se pudo completar el registro");
-      }
-
-      const data = await response.json();
       console.log("✅ Registro completado:", data);
 
       const { nombre, apellido, email } = data.user || {};
@@ -69,7 +62,9 @@ export default function RegisterGoogleHandler() {
       }
     } catch (err: any) {
       console.error("❌ Error en el registro:", err);
-      setError(err.message || "Error inesperado en el registro.");
+      setError(
+        err.response?.data?.message || "Error inesperado en el registro."
+      );
     } finally {
       setLoading(false);
     }
